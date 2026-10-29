@@ -10,22 +10,26 @@
 <style>
 /* Layout: operations console — river profile (7 triggers) on top, map + site register side by side, site detail and dam table below. */
 :root{
-  --bg:#F2F6F6; --surface:#FFFFFF; --sunk:#E8EFEF; --ink:#0F2A2E; --muted:#587076; --line:#D6E1E2;
-  --accent:#16958B; --accent-ink:#FFFFFF; --deep:#103D44; --water:#3AAFA4; --water-2:#2C8F87; --sea:#1F9E55; --land:#C9D7D6;
+  /* SCGP CI: navy #202070 · blue #3070B8 · red #D03030 · orange #E08030 · amber #F0B040 */
+  --bg:#F3F5F9; --surface:#FFFFFF; --sunk:#EAEEF5; --ink:#141A3A; --muted:#5A6385; --line:#DCE1EC;
+  --accent:#3070B8; --accent-ink:#FFFFFF; --deep:#202070; --brand-red:#D03030; --brand-orange:#E08030; --brand-amber:#F0B040;
+  --water:#3AAFA4; --water-2:#2C8F87; --sea:#2B8DC4; --land:#C9D7D6;
   --ok:#2E9B57; --watch:#C99A00; --warn:#E06E21; --crit:#D23434; --na:#9AABAE;
   --ok-bg:#E3F3E8; --watch-bg:#FBF2CC; --warn-bg:#FDE7D7; --crit-bg:#FBDEDE; --na-bg:#ECF0F1;
   --f-body:"IBM Plex Sans Thai","Noto Sans Thai","Leelawadee UI",Tahoma,system-ui,sans-serif;
   --f-data:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
-  --r:10px;
+  --r:12px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0A1618; --surface:#102225; --sunk:#0C1B1E; --ink:#E2EDEE; --muted:#8EA5A9; --line:#22393D;
-  --accent:#3CC4B7; --accent-ink:#04201D; --deep:#071F23; --water:#2C8C84; --water-2:#23736C; --sea:#1B7F47; --land:#24393B;
+  --bg:#090C1E; --surface:#12183A; --sunk:#0D1230; --ink:#E6E9F6; --muted:#9AA3C6; --line:#252D55;
+  --accent:#6FA6E8; --accent-ink:#0B1030; --deep:#9EA2F0; --brand-red:#F06A5A; --brand-orange:#F2A050; --brand-amber:#F5C25E;
+  --water:#2C8C84; --water-2:#23736C; --sea:#1F6FA3; --land:#24393B;
   --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
   --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0A1618; --surface:#102225; --sunk:#0C1B1E; --ink:#E2EDEE; --muted:#8EA5A9; --line:#22393D;
-  --accent:#3CC4B7; --accent-ink:#04201D; --deep:#071F23; --water:#2C8C84; --water-2:#23736C; --sea:#1B7F47; --land:#24393B;
+  --bg:#090C1E; --surface:#12183A; --sunk:#0D1230; --ink:#E6E9F6; --muted:#9AA3C6; --line:#252D55;
+  --accent:#6FA6E8; --accent-ink:#0B1030; --deep:#9EA2F0; --brand-red:#F06A5A; --brand-orange:#F2A050; --brand-amber:#F5C25E;
+  --water:#2C8C84; --water-2:#23736C; --sea:#1F6FA3; --land:#24393B;
   --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
   --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}
 
@@ -39,30 +43,80 @@ button{font:inherit;color:inherit}
 .num{font-family:var(--f-data);font-variant-numeric:tabular-nums}
 .eyebrow{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 h1,h2,h3{text-wrap:balance;margin:0}
-h2{font-size:18px;font-weight:600}
+h2{font-size:18px;font-weight:600;display:flex;align-items:center}
 .muted{color:var(--muted)}
 
-/* Header */
-header.top{background:var(--deep);color:#E6F2F1;position:sticky;top:env(safe-area-inset-top,0px);z-index:900}
-header.top .wrap{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 320px}
-.mark{width:40px;height:40px;border-radius:9px;background:#16958B;display:grid;place-items:center;flex:none}
-.brand h1{font-size:19px;font-weight:700;letter-spacing:.01em;color:#FFFFFF}
-.brand p{margin:0;font-size:12.5px;color:#A9C6C4}
+/* Header — white bar with the SCGP logo and the brand gradient strip */
+body::before{background:var(--surface)}
+header.top{background:var(--surface);color:var(--ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:900;box-shadow:0 1px 0 var(--line),0 6px 18px rgba(20,26,58,.06)}
+header.top::after{content:"";display:block;height:4px;background:linear-gradient(90deg,#202070,#3070B8 45%,#D03030 78%,#E08030)}
+header.top .wrap{display:flex;align-items:center;gap:16px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;min-width:0;flex:1 1 360px;text-decoration:none;color:inherit}
+.logo{height:38px;width:auto;display:block}
+.logo-chip{display:inline-flex;flex:none}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-chip{background:#fff;border-radius:9px;padding:5px 9px}}
+:root[data-theme="dark"] .logo-chip{background:#fff;border-radius:9px;padding:5px 9px}
+.brand-div{width:1px;align-self:stretch;background:var(--line);flex:none}
+.brand h1{font-size:19px;font-weight:700;letter-spacing:.01em;color:var(--deep);display:flex;align-items:center;gap:8px}
+.brand p{margin:0;font-size:12.5px;color:var(--muted)}
 .status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
-.pill.live{background:#0E5A3A;color:#BFF5D6}
-.pill.snap{background:#5A4A0E;color:#FBEBB0}
-.pill.load{background:#244B50;color:#CFE6E4}
+.pill.live{background:var(--ok-bg);color:var(--ok)}
+.pill.snap{background:var(--watch-bg);color:var(--watch)}
+.pill.load{background:var(--sunk);color:var(--muted)}
 .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 .pill.live .dot{animation:pulse 1.6s infinite}
 @keyframes pulse{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.pill.live .dot{animation:none}}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:500}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
 .btn:hover{border-color:var(--accent)}
-header .btn{background:transparent;border-color:#3D6268;color:#E6F2F1}
-header .btn:hover{border-color:#7FD3CB}
-.asof{font-size:12px;color:#A9C6C4}
+.btn svg{width:16px;height:16px}
+.btn.spin svg{animation:ai-rot 1s linear infinite}
+.asof{font-size:12px;color:var(--muted)}
+.user-chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 4px}
+.user-chip .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#202070,#3070B8);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.user-chip button,.user-chip a{border:0;background:var(--sunk);border-radius:999px;padding:3px 10px;cursor:pointer;font-size:12px;color:var(--ink);text-decoration:none}
+.demo-chip{font-size:12px;border-radius:999px;padding:3px 10px;background:var(--warn-bg);color:var(--warn);font-weight:600;text-decoration:none}
+
+/* Animated icons (ai-*) — each one acts out what its section measures */
+.ai{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);flex:none;vertical-align:middle;margin-right:8px}
+.ai svg{width:22px;height:22px;overflow:visible}
+h2 .ai{width:32px;height:32px}
+.ai-b{transform-box:fill-box}
+.ai-pulse{animation:ai-pulse 2s ease-out infinite;transform-origin:center;transform-box:fill-box}
+@keyframes ai-pulse{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
+.ai-wave{animation:ai-wave 2.2s linear infinite}
+@keyframes ai-wave{to{transform:translateX(-8px)}}
+.ai-level{animation:ai-level 3s ease-in-out infinite}
+@keyframes ai-level{0%,100%{transform:translateY(2px)}50%{transform:translateY(-3px)}}
+.ai-fall{animation:ai-fall 1.3s linear infinite;opacity:0}
+@keyframes ai-fall{0%{transform:translateY(-2px);opacity:0}20%{opacity:1}100%{transform:translateY(8px);opacity:0}}
+.ai-right{animation:ai-right 1.2s linear infinite}
+@keyframes ai-right{0%{transform:translateX(-3px);opacity:0}30%{opacity:1}100%{transform:translateX(5px);opacity:0}}
+.ai-drip{animation:ai-drip 1.8s ease-in infinite;transform-box:fill-box;transform-origin:top}
+@keyframes ai-drip{0%{transform:translateY(0) scale(.4);opacity:0}30%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(9px);opacity:0}}
+.ai-bounce{animation:ai-bounce 1.6s ease-in-out infinite}
+@keyframes ai-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ai-shadow{animation:ai-shadow 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ai-shadow{50%{transform:scaleX(.6);opacity:.5}}
+.ai-scan{animation:ai-scan 2.4s ease-in-out infinite}
+@keyframes ai-scan{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+.ai-puff{animation:ai-puff 2.4s ease-out infinite;opacity:0;transform-box:fill-box;transform-origin:center}
+@keyframes ai-puff{0%{opacity:0;transform:translate(0,0) scale(.5)}25%{opacity:.8}100%{opacity:0;transform:translate(3px,-9px) scale(1.4)}}
+.ai-node{animation:ai-node 2.1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ai-node{50%{transform:scale(1.35)}}
+.ai-blink{animation:ai-blink 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ai-blink{0%,44%,56%,100%{transform:scaleY(1)}50%{transform:scaleY(.08)}}
+.ai-shake{animation:ai-shake 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 90%}
+@keyframes ai-shake{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-8deg)}80%{transform:rotate(8deg)}90%{transform:rotate(-4deg)}}
+.ai-flash{animation:ai-flash 1s steps(2,start) infinite}
+@keyframes ai-flash{to{opacity:.15}}
+.ai-glow{animation:ai-glow 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ai-glow{50%{transform:scale(1.08)}}
+.ai-tide{animation:ai-tide 2.8s ease-in-out infinite}
+@keyframes ai-tide{0%,100%{transform:translateY(1px)}50%{transform:translateY(-3px)}}
+@keyframes ai-rot{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.ai *{animation:none!important;opacity:1!important}}
 
 main{display:grid;gap:20px;padding-block:20px 40px}
 main>*{min-width:0}
@@ -229,19 +283,19 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
 
 <header class="top">
   <div class="wrap">
-    <div class="brand">
-      <div class="mark" aria-hidden="true">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3c3.5 4.4 6 7.7 6 10.6A6 6 0 0 1 6 13.6C6 10.7 8.5 7.4 12 3z" fill="#FFFFFF"/><path d="M8.5 15.2c1.2.9 2.3 1.2 3.5 1.2s2.3-.3 3.5-1.2" stroke="#16958B" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </div>
-      <div style="min-width:0">
-        <h1>SCGP Water Management</h1>
+    <a class="brand" href="./" title="กลับหน้าเข้าสู่ระบบ">
+      <span class="logo-chip"><img class="logo" src="/*LOGO*/" alt="SCGP"></span>
+      <span class="brand-div" aria-hidden="true"></span>
+      <span style="min-width:0">
+        <h1><span class="ai" data-ico="drop" aria-hidden="true"></span>Water Management Dashboard</h1>
         <p>ติดตามสถานการณ์น้ำสถานประกอบการ SCGP ตาม 7 Risk Trigger Point · BCM</p>
-      </div>
-    </div>
+      </span>
+    </a>
     <div class="status-bar">
       <span id="modePill" class="pill load"><span class="dot"></span><span id="modeText">กำลังโหลดข้อมูล…</span></span>
       <span class="asof" id="asof"></span>
-      <button class="btn" id="refreshBtn" type="button">โหลดข้อมูลใหม่</button>
+      <button class="btn" id="refreshBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>โหลดข้อมูลใหม่</button>
+      <span id="userChip"></span>
     </div>
   </div>
 </header>
@@ -252,7 +306,7 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
     <div class="panel-h">
       <div>
         <div class="eyebrow">เส้นทางน้ำ · 7 Risk Trigger Point</div>
-        <h2 id="h-profile">น้ำจากต้นน้ำถึงพื้นที่ SCGP</h2>
+        <h2 id="h-profile"><span class="ai" data-ico="river" aria-hidden="true"></span>น้ำจากต้นน้ำถึงพื้นที่ SCGP</h2>
       </div>
       <label class="site-pick"><span class="muted">พื้นที่</span><select id="profileSite" aria-label="เลือกพื้นที่ที่จะแสดงเส้นทางน้ำ"></select></label>
     </div>
@@ -269,7 +323,7 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
     <div class="panel-h">
       <div>
         <div class="eyebrow">แผนผังน้ำ · รูปแบบเดียวกับ กฟผ. Water Intelligence Center</div>
-        <h2 id="h-mk">ลุ่มน้ำแม่กลอง: เขื่อน สถานีโทรมาตร และโรงงาน SCGP</h2>
+        <h2 id="h-mk"><span class="ai" data-ico="network" aria-hidden="true"></span>ลุ่มน้ำแม่กลอง: เขื่อน สถานีโทรมาตร และโรงงาน SCGP</h2>
       </div>
       <span class="muted num" id="mkAsof" style="font-size:12.5px"></span>
     </div>
@@ -304,14 +358,14 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
   <section class="split">
     <div class="panel" style="min-width:0">
       <div class="panel-h" style="padding-bottom:12px">
-        <div><div class="eyebrow">แผนที่</div><h2>ที่ตั้งสถานประกอบการ SCGP</h2></div>
+        <div><div class="eyebrow">แผนที่</div><h2><span class="ai" data-ico="pin" aria-hidden="true"></span>ที่ตั้งสถานประกอบการ SCGP</h2></div>
         <span class="muted" style="font-size:12px" id="mapNote"></span>
       </div>
       <div id="map" role="region" aria-label="แผนที่สถานประกอบการและเขื่อน"></div>
     </div>
     <div class="panel" style="min-width:0">
       <div class="panel-h" style="padding-bottom:10px">
-        <div><div class="eyebrow">ทะเบียนพื้นที่</div><h2>สถานะรายพื้นที่ <span class="muted num" id="countLabel" style="font-size:14px;font-weight:500"></span></h2></div>
+        <div><div class="eyebrow">ทะเบียนพื้นที่</div><h2><span class="ai" data-ico="list" aria-hidden="true"></span>สถานะรายพื้นที่ <span class="muted num" id="countLabel" style="font-size:14px;font-weight:500"></span></h2></div>
         <span class="muted" style="font-size:12px">ช่อง 1–7 = Trigger Point</span>
       </div>
       <div class="list">
@@ -327,14 +381,14 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
 
   <section class="panel" aria-labelledby="h-dams">
     <div class="panel-h">
-      <div><div class="eyebrow">Trigger 1–2 · กรมชลประทาน</div><h2 id="h-dams">เขื่อนที่ส่งผลต่อพื้นที่ SCGP</h2></div>
+      <div><div class="eyebrow">Trigger 1–2 · กรมชลประทาน</div><h2 id="h-dams"><span class="ai" data-ico="dam" aria-hidden="true"></span>เขื่อนที่ส่งผลต่อพื้นที่ SCGP</h2></div>
       <span class="muted" style="font-size:12px">เส้นแนวตั้ง = เกณฑ์เฝ้าระวัง 80% ของความจุปกติ</span>
     </div>
     <div class="panel-b scroll-x"><table class="dams" id="damTable"></table></div>
   </section>
 
   <section class="panel" aria-labelledby="h-src">
-    <div class="panel-h"><div><div class="eyebrow">ที่มาข้อมูลและเกณฑ์</div><h2 id="h-src">แหล่งข้อมูลเปิดภาครัฐ และเกณฑ์ของแต่ละ Trigger</h2></div></div>
+    <div class="panel-h"><div><div class="eyebrow">ที่มาข้อมูลและเกณฑ์</div><h2 id="h-src"><span class="ai" data-ico="antenna" aria-hidden="true"></span>แหล่งข้อมูลเปิดภาครัฐ และเกณฑ์ของแต่ละ Trigger</h2></div></div>
     <div class="panel-b" style="display:grid;gap:16px">
       <div class="src-grid">
         <div class="src-card"><h3>คลังข้อมูลน้ำแห่งชาติ (สสน.)</h3><p>ระดับน้ำโทรมาตร ~800 สถานี, ฝนสะสม 24 ชม. ~4,800 สถานี (อัปเดตทุก 10–15 นาที)</p><p><code>api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load</code><br><code>…/public/rain_24h</code></p><p><a href="https://www.thaiwater.net/" target="_blank" rel="noopener">thaiwater.net</a></p></div>
@@ -351,6 +405,7 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
   <footer>ข้อมูลตำแหน่งจาก SCG Location (KMZ) กลุ่ม SCGP 27 บริษัท / 24 พื้นที่ · ข้อมูลน้ำจากหน่วยงานรัฐที่เปิดเผยต่อสาธารณะ ใช้ประกอบการตัดสินใจ BCM ควบคู่กับประกาศทางการ</footer>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>/*TRANSFORM*/</script>
 <script>

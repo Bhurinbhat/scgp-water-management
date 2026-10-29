@@ -56,6 +56,55 @@ function fresh(d) { return d && (refTime() - d) <= CRITERIA.staleHours * 3600e3;
 function refTime() { return new Date(state.data.fetchedAt).getTime(); }
 function km(x) { return x < 1 ? '<1 กม.' : f(x, 1) + ' กม.'; }
 
+/* ---------- Animated icons: each one acts out what it measures ---------- */
+var ICONS = {
+  drop: '<path d="M12 3c3.6 4.6 6 7.8 6 10.8a6 6 0 0 1-12 0C6 10.8 8.4 7.6 12 3z" fill="currentColor"/><circle class="ai-pulse" cx="12" cy="20" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+  river: '<g class="ai-wave"><path d="M0 9q3-3 6 0t6 0 6 0 6 0 6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M-4 15q3-3 6 0t6 0 6 0 6 0 6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".6"/></g>',
+  network: '<path d="M5 6l7 6 7-6M12 12v7" stroke="currentColor" stroke-width="1.6" fill="none"/><circle class="ai-node" cx="5" cy="6" r="2.6" fill="currentColor"/><circle class="ai-node" style="animation-delay:.35s" cx="19" cy="6" r="2.6" fill="currentColor"/><circle class="ai-node" style="animation-delay:.7s" cx="12" cy="12" r="2.6" fill="currentColor"/><circle class="ai-node" style="animation-delay:1.05s" cx="12" cy="19.5" r="2.6" fill="currentColor"/>',
+  pin: '<ellipse class="ai-shadow" cx="12" cy="21" rx="4" ry="1.3" fill="currentColor" opacity=".35"/><g class="ai-bounce"><path d="M12 2a6 6 0 0 1 6 6c0 4.5-6 11-6 11S6 12.5 6 8a6 6 0 0 1 6-6z" fill="currentColor"/><circle cx="12" cy="8" r="2.2" fill="#fff"/></g>',
+  list: '<rect x="3" y="4" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect class="ai-scan" x="4.5" y="6" width="15" height="3" rx="1" fill="currentColor" opacity=".3"/><path d="M7 7.5h10M7 12.5h10M7 17h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  dam: '<path d="M3 21V9h4l3 12z" fill="currentColor"/><clipPath id="aiDamClip"><rect x="10" y="5" width="12" height="16"/></clipPath><g clip-path="url(#aiDamClip)"><g class="ai-level"><rect x="9" y="11" width="14" height="12" fill="currentColor" opacity=".45"/><path d="M9 11q2-1.5 4 0t4 0 4 0" fill="none" stroke="currentColor" stroke-width="1.4"/></g></g>',
+  release: '<path d="M2 20V7h4l3 13z" fill="currentColor"/><g fill="currentColor"><path class="ai-right" d="M11 9l4 2.5-4 2.5z"/><path class="ai-right" style="animation-delay:.4s" d="M14 13l4 2.5-4 2.5z"/><path class="ai-right" style="animation-delay:.8s" d="M17 9l4 2.5-4 2.5z"/></g>',
+  gauge: '<rect x="15" y="3" width="4" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M15 7h2M15 11h2M15 15h2" stroke="currentColor" stroke-width="1.4"/><g class="ai-level"><path d="M1 14q2.5-2 5 0t5 0 5 0 5 0" fill="none" stroke="currentColor" stroke-width="2"/><rect x="1" y="15" width="22" height="7" fill="currentColor" opacity=".3"/></g>',
+  bank: '<path d="M4 12l7-6 7 6v8H4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="9" y="14" width="4" height="6" fill="currentColor" opacity=".5"/><clipPath id="aiBankClip"><rect x="0" y="12" width="24" height="12"/></clipPath><g clip-path="url(#aiBankClip)"><g class="ai-level"><path d="M0 18q3-2 6 0t6 0 6 0 6 0" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="0" y="19" width="24" height="6" fill="currentColor" opacity=".35"/></g></g>',
+  rain: '<path d="M7 13a4 4 0 0 1 .6-8 5.5 5.5 0 0 1 10.5 1.6A3.3 3.3 0 0 1 17.5 13z" fill="currentColor"/><g fill="currentColor"><path class="ai-fall" d="M8 15.5q1 2 0 3-1-1 0-3z"/><path class="ai-fall" style="animation-delay:.45s" d="M12 15.5q1 2 0 3-1-1 0-3z"/><path class="ai-fall" style="animation-delay:.9s" d="M16 15.5q1 2 0 3-1-1 0-3z"/></g>',
+  drain: '<path d="M2 6h11a4 4 0 0 1 4 4v3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M14 13h6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path class="ai-drip" d="M17 15.5q1.6 2.6 0 3.6-1.6-1 0-3.6z" fill="currentColor"/><path d="M12 22h10" stroke="currentColor" stroke-width="1.4" opacity=".5"/>',
+  tide: '<circle cx="18" cy="5.5" r="3" fill="currentColor" opacity=".55"/><g class="ai-tide"><path d="M1 13q2.5-2.5 5 0t5 0 5 0 5 0" fill="none" stroke="currentColor" stroke-width="2"/><path d="M1 17q2.5-2.5 5 0t5 0 5 0 5 0" fill="none" stroke="currentColor" stroke-width="2" opacity=".55"/></g><path d="M5 3v6M3 5l2-2 2 2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>',
+  factory: '<circle class="ai-puff" cx="18" cy="3" r="2.2" fill="currentColor"/><circle class="ai-puff" style="animation-delay:1.2s" cx="18" cy="3" r="2.2" fill="currentColor"/><rect x="16" y="5" width="3.5" height="8" fill="currentColor"/><path d="M2 21V12l5-3v3l5-3v3l5-3v3h4v9z" fill="currentColor"/>',
+  antenna: '<path d="M12 11v10M8 21h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="9" r="2.2" fill="currentColor"/><circle class="ai-pulse" cx="12" cy="9" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><circle class="ai-pulse" style="animation-delay:1s" cx="12" cy="9" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+  siren: '<path d="M7 18v-5a5 5 0 0 1 10 0v5z" fill="currentColor"/><rect x="5" y="18" width="14" height="3" rx="1" fill="currentColor"/><g class="ai-flash" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v3M4 6l2 2M20 6l-2 2M2 13h2M20 13h2"/></g>',
+  alert: '<g class="ai-shake"><path d="M12 3l10 17H2z" fill="currentColor"/><path d="M12 9v5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.3" fill="#fff"/></g>',
+  eye: '<g class="ai-blink"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="currentColor"/></g>',
+  shield: '<g class="ai-glow"><path d="M12 2l8 3v6c0 5-3.4 9.3-8 11-4.6-1.7-8-6-8-11V5z" fill="currentColor"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>'
+};
+var TRIG_ICON = { 1: 'dam', 2: 'release', 3: 'gauge', 4: 'bank', 5: 'rain', 6: 'drain', 7: 'tide' };
+var LVL_ICON = { 0: 'shield', 1: 'eye', 2: 'alert', 3: 'siren' };
+function icon(name, cls, style) { return '<span class="ai ' + (cls || '') + '"' + (style ? ' style="' + style + '"' : '') + ' aria-hidden="true"><svg viewBox="0 0 24 24">' + (ICONS[name] || '') + '</svg></span>'; }
+function paintIcons(root) { Array.prototype.forEach.call((root || document).querySelectorAll('.ai[data-ico]'), function (el) { if (!el.firstChild) el.innerHTML = '<svg viewBox="0 0 24 24">' + (ICONS[el.dataset.ico] || '') + '</svg>'; }); }
+
+/* ---------- Sign-in guard (SCG SSO via Supabase Auth · Microsoft Entra ID) ---------- */
+var auth = { cfg: null, client: null, user: null };
+async function authGuard() {
+  var chip = document.getElementById('userChip');
+  try { var r = await fetchT('api/config', 6000); auth.cfg = r.ok && /json/.test(r.headers.get('content-type') || '') ? await r.json() : null; } catch (e) { auth.cfg = null; }
+  if (!auth.cfg || !auth.cfg.ssoEnabled || !window.supabase) {
+    chip.innerHTML = '<a class="demo-chip" href="./" title="SSO ยังไม่ได้เปิดใช้">โหมดทดลอง · ยังไม่เปิด SSO</a>';
+    return true;
+  }
+  auth.client = window.supabase.createClient(auth.cfg.supabaseUrl, auth.cfg.supabaseAnonKey);
+  var s = (await auth.client.auth.getSession()).data.session;
+  if (!s) { location.replace('./'); return false; }
+  var email = (s.user.email || '').toLowerCase(), dom = email.split('@')[1] || '';
+  if (auth.cfg.allowedDomains && auth.cfg.allowedDomains.length && auth.cfg.allowedDomains.indexOf(dom) < 0) {
+    await auth.client.auth.signOut(); location.replace('./?denied=' + encodeURIComponent(auth.cfg.allowedDomains.join(', '))); return false;
+  }
+  auth.user = s.user;
+  var name = (s.user.user_metadata && (s.user.user_metadata.full_name || s.user.user_metadata.name)) || email;
+  chip.innerHTML = '<span class="user-chip"><span class="av">' + esc(name.trim().charAt(0).toUpperCase()) + '</span><span>' + esc(name) + '</span><button type="button" id="logoutBtn">ออกจากระบบ</button></span>';
+  document.getElementById('logoutBtn').addEventListener('click', async function () { await auth.client.auth.signOut(); location.replace('./'); });
+  return true;
+}
+
 /* ---------- normalise compact data ---------- */
 function normalise(raw) {
   var d = { fetchedAt: raw.fetchedAt };
@@ -568,7 +617,7 @@ function renderTrigCards() {
   TRIGGERS.forEach(function (t) {
     var sm = trigSummary(t.n), tot = SITES.length;
     h += '<button type="button" class="tcard" data-trig="' + t.n + '" aria-pressed="' + (state.trig === t.n) + '">';
-    h += '<span class="tn"><span class="badge ' + sc(sm.worst) + '" style="background:var(--c);color:#fff;border-color:transparent">' + t.n + '</span>' + esc(t.th) + '</span>';
+    h += '<span class="tn"><span class="' + sc(sm.worst) + '" style="display:contents">' + icon(TRIG_ICON[t.n], '', 'background:var(--cb);color:var(--c)') + '</span><span><span class="num muted" style="font-size:11px">TRIGGER ' + t.n + '</span><br>' + esc(t.th) + '</span></span>';
     h += '<span class="dist">' + [0, 1, 2, 3].map(function (l) { return sm.c[l] ? '<span class="s' + l + '" style="width:' + (sm.c[l] / tot * 100) + '%;background:var(--c)"></span>' : ''; }).join('') + (sm.na ? '<span class="sn" style="width:' + (sm.na / tot * 100) + '%;background:var(--na);opacity:.35"></span>' : '') + '</span>';
     h += '<span class="tcounts">' + [0, 1, 2, 3].filter(function (l) { return sm.c[l]; }).map(function (l) { return LV[l].th + ' <b>' + sm.c[l] + '</b>'; }).join(' · ') + (sm.na ? ' · ไม่มีข้อมูล <b>' + sm.na + '</b>' : '') + '</span>';
     h += '<span class="src">' + esc(t.src) + '</span></button>';
@@ -581,7 +630,7 @@ function renderKpis() {
   SITES.forEach(function (s) { var l = state.evals[s.id].overall; if (l == null) na++; else c[l]++; });
   var h = '';
   [3, 2, 1, 0].forEach(function (l) {
-    h += '<button type="button" class="kpi s' + l + '" data-lvl="' + l + '" aria-pressed="' + (state.lvl === l) + '"><span class="sw"></span><span><span class="v">' + c[l] + '</span><br><span class="l">พื้นที่ ' + LV[l].th + '</span></span></button>';
+    h += '<button type="button" class="kpi s' + l + '" data-lvl="' + l + '" aria-pressed="' + (state.lvl === l) + '"><span class="sw"></span>' + icon(LVL_ICON[l], 'kpi-ico', 'background:var(--cb);color:var(--c)') + '<span><span class="v">' + c[l] + '</span><br><span class="l">พื้นที่ ' + LV[l].th + '</span></span></button>';
   });
   document.getElementById('kpis').innerHTML = h;
 }
@@ -620,7 +669,7 @@ function renderDetail() {
     return;
   }
   var e = state.evals[s.id], prim = ZONE_TRIG[s.zone], h = '';
-  h += '<div class="panel-b"><div class="detail-head"><div style="min-width:0"><div class="eyebrow">รายละเอียดพื้นที่ · ' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</div><h2>' + esc(s.name) + '</h2>';
+  h += '<div class="panel-b"><div class="detail-head"><div style="min-width:0"><div class="eyebrow">รายละเอียดพื้นที่ · ' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</div><h2>' + icon('factory') + esc(s.name) + '</h2>';
   h += '<div class="meta"><span>จ.' + esc(s.prov) + ' อ.' + esc(s.amp) + '</span><span class="num">' + f(s.lat, 5) + ', ' + f(s.lng, 5) + '</span>' + (s.coord ? '<span>BCM Coordinator: ' + esc(s.coord) + '</span>' : '') + '</div>';
   h += '<ul class="cos">' + s.cos.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></div>';
   h += '<span class="spill ' + sc(e.overall) + '" style="font-size:14px;padding:6px 14px">ภาพรวม: ' + lname(e.overall) + '</span></div>';
@@ -628,7 +677,7 @@ function renderDetail() {
   TRIGGERS.forEach(function (t) {
     var r = e[t.n], isP = prim.indexOf(t.n) >= 0;
     h += '<div class="tbox ' + sc(r.l) + (isP ? '' : ' irrelevant') + '">';
-    h += '<div class="hd"><span class="tt"><span class="badge">' + t.n + '</span>' + esc(t.th) + '</span><span class="spill ' + sc(r.l) + '">' + lname(r.l) + '</span></div>';
+    h += '<div class="hd"><span class="tt">' + icon(TRIG_ICON[t.n], '', 'background:var(--cb);color:var(--c)') + '<span><span class="num muted" style="font-size:11px">TRIGGER ' + t.n + '</span><br>' + esc(t.th) + '</span></span><span class="spill ' + sc(r.l) + '">' + lname(r.l) + '</span></div>';
     if (r.l == null && r.na) {
       h += '<div class="why muted">' + esc(r.na) + '</div>';
     } else {
@@ -748,6 +797,7 @@ document.addEventListener('keydown', function (ev) {
 });
 document.getElementById('q').addEventListener('input', function (e) { state.q = e.target.value; renderRows(); });
 document.getElementById('refreshBtn').addEventListener('click', function () { load(); });
+paintIcons();
 
 /* ---------- data loading: Vercel API → direct open-data API → saved snapshot ---------- */
 function fetchT(url, ms) {
@@ -785,12 +835,14 @@ function setMode(mode, via) {
 var timer = null;
 async function load() {
   setMode('load');
+  var rb = document.getElementById('refreshBtn'); rb.classList.add('spin');
   var live = await getLive();
   var raw = live ? live.d : window.SNAPSHOT;
   if (live && !raw.egat) { var eg = await getEgatDirect(); raw.egat = eg || window.SNAPSHOT.egat; state.egatFromSnapshot = !eg; } else state.egatFromSnapshot = !live;
   state.data = normalise(raw);
   SITES.forEach(function (s) { state.evals[s.id] = evaluate(s); });
   setMode(live ? 'live' : 'snap', live && live.via);
+  rb.classList.remove('spin');
   if (!state.sel) state.sel = topSite().id;
   if (!map) { initMap(); initTip(); initSchemTip(); }
   rerender(); renderDams(); renderCriteria();
@@ -801,7 +853,8 @@ async function load() {
 }
 
 // Start with the most at-risk site selected so the detail panel opens on something useful.
-load().then(function () {
+authGuard().then(function (ok) { if (!ok) return; return load(); }).then(function () {
+  if (!state.data) return;
   if (!state.sel) {
     var top = SITES.slice().sort(function (a, b) { return (state.evals[b.id].overall || 0) - (state.evals[a.id].overall || 0); })[0];
     if (top) { state.sel = top.id; renderRows(); renderDetail(); if (map) showRefs(top); }
