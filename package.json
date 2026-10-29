@@ -2,5 +2,5 @@
   "name": "scgp-water-management",
   "private": true,
   "description": "SCGP Water Management Dashboard — 7 Risk Trigger Point (BCM)",
-  "engines": { "node": "20.x" }
+  "engines": { "node": "24.x" }
 }
