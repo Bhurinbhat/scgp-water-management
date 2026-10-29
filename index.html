@@ -1,0 +1,1905 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>SCGP Water Management</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="SCGP Water Management Dashboard — ติดตามสถานการณ์น้ำของสถานประกอบการ SCGP ตาม 7 Risk Trigger Point">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<style>
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(images/layers.png);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(images/layers-2x.png);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(images/marker-icon.png);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+</style>
+<style>
+/* Layout: operations console — river profile (7 triggers) on top, map + site register side by side, site detail and dam table below. */
+:root{
+  --bg:#F2F6F6; --surface:#FFFFFF; --sunk:#E8EFEF; --ink:#0F2A2E; --muted:#587076; --line:#D6E1E2;
+  --accent:#16958B; --accent-ink:#FFFFFF; --deep:#103D44; --water:#3AAFA4; --water-2:#2C8F87; --sea:#1F9E55; --land:#C9D7D6;
+  --ok:#2E9B57; --watch:#C99A00; --warn:#E06E21; --crit:#D23434; --na:#9AABAE;
+  --ok-bg:#E3F3E8; --watch-bg:#FBF2CC; --warn-bg:#FDE7D7; --crit-bg:#FBDEDE; --na-bg:#ECF0F1;
+  --f-body:"IBM Plex Sans Thai","Noto Sans Thai","Leelawadee UI",Tahoma,system-ui,sans-serif;
+  --f-data:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0A1618; --surface:#102225; --sunk:#0C1B1E; --ink:#E2EDEE; --muted:#8EA5A9; --line:#22393D;
+  --accent:#3CC4B7; --accent-ink:#04201D; --deep:#071F23; --water:#2C8C84; --water-2:#23736C; --sea:#1B7F47; --land:#24393B;
+  --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
+  --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A1618; --surface:#102225; --sunk:#0C1B1E; --ink:#E2EDEE; --muted:#8EA5A9; --line:#22393D;
+  --accent:#3CC4B7; --accent-ink:#04201D; --deep:#071F23; --water:#2C8C84; --water-2:#23736C; --sea:#1B7F47; --land:#24393B;
+  --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
+  --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:1000;background:var(--deep)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1,h2,h3{text-wrap:balance;margin:0}
+h2{font-size:18px;font-weight:600}
+.muted{color:var(--muted)}
+
+/* Header */
+header.top{background:var(--deep);color:#E6F2F1;position:sticky;top:env(safe-area-inset-top,0px);z-index:900}
+header.top .wrap{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 320px}
+.mark{width:40px;height:40px;border-radius:9px;background:#16958B;display:grid;place-items:center;flex:none}
+.brand h1{font-size:19px;font-weight:700;letter-spacing:.01em;color:#FFFFFF}
+.brand p{margin:0;font-size:12.5px;color:#A9C6C4}
+.status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.live{background:#0E5A3A;color:#BFF5D6}
+.pill.snap{background:#5A4A0E;color:#FBEBB0}
+.pill.load{background:#244B50;color:#CFE6E4}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.live .dot{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.pill.live .dot{animation:none}}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+header .btn{background:transparent;border-color:#3D6268;color:#E6F2F1}
+header .btn:hover{border-color:#7FD3CB}
+.asof{font-size:12px;color:#A9C6C4}
+
+main{display:grid;gap:20px;padding-block:20px 40px}
+main>*{min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 18px 0}
+.panel-b{padding:14px 18px 18px}
+
+/* River profile */
+.profile-wrap{overflow-x:auto}
+.profile{display:block;width:100%;min-width:720px;height:auto}
+.profile text{font-family:var(--f-body)}
+.trig-node{cursor:pointer}
+.trig-node:focus{outline:none}
+.trig-node:focus-visible circle.ring{stroke:var(--accent);stroke-width:3}
+.site-pick{display:flex;align-items:center;gap:8px;font-size:13px}
+.site-pick select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);color:var(--ink);max-width:min(340px,70vw)}
+.flow-legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:12.5px;align-items:center}
+.flow-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.lg-in{background:#FFD25E}.lg-out{background:#FFFFFF;box-shadow:0 0 0 1.5px var(--water-2)}
+.pt-out{fill:#FFFFFF;opacity:.9}.pt-in{fill:#FFD25E;opacity:.95}
+.hov{cursor:pointer}
+.ship{transform-box:fill-box;transform-origin:50% 90%;animation:ship-rock 3.4s ease-in-out infinite}
+@keyframes ship-rock{0%,100%{transform:translateY(0) rotate(-2.5deg)}50%{transform:translateY(-4px) rotate(2.5deg)}}
+.wave-front{animation:wave-move 2.6s linear infinite}
+.wave-back{animation:wave-move 5s linear infinite reverse}
+@keyframes wave-move{from{transform:translateX(0)}to{transform:translateX(-60px)}}
+@media (prefers-reduced-motion:reduce){.ship,.wave-front,.wave-back{animation:none}}
+.factory:hover rect,.factory:focus rect{filter:brightness(1.15)}
+.factory:focus{outline:none}
+.ptip{position:absolute;z-index:5;width:300px;max-width:calc(100% - 16px);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:12.5px;line-height:1.45;pointer-events:none}
+.ptip .tt-h{font-weight:600;font-size:13.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.ptip .tt-sub{color:var(--muted);margin:2px 0}
+.ptip .tt-sub b{color:var(--ink)}
+.ptip .tt-val{font-size:20px;font-weight:600}
+.ptip .tt-val small{font-family:var(--f-body);font-size:12px;color:var(--muted)}
+.ptip .tr{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding:4px 0}
+.ptip .tr b{font-weight:600;text-align:right}
+.ptip .tt-cos{margin:4px 0;padding-left:16px}
+.ptip .tt-cells{display:grid;grid-template-columns:repeat(7,18px);gap:3px;margin:6px 0}
+.ptip .tt-foot{color:var(--muted);font-size:11.5px;margin-top:4px}
+.rc-row{display:flex;gap:8px;flex-wrap:wrap}
+.rc-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12.5px;background:var(--surface)}
+.rc-chip i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.profile.mk{min-width:900px}
+.mk-flow{stroke:#FFFFFF;stroke-dasharray:3 15;opacity:.9;animation:mkflow linear infinite}
+@keyframes mkflow{to{stroke-dashoffset:-36}}
+.mk-fac{cursor:pointer}
+.mk-fac:focus{outline:none}
+.mk-fac:focus-visible rect:first-child,.mk-fac:hover rect:first-child{stroke-width:3}
+@media (prefers-reduced-motion:reduce){.mk-flow{animation:none}}
+.trig-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.tcard{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--surface);text-align:left;cursor:pointer;display:grid;gap:6px;min-width:0}
+.tcard:hover{border-color:var(--accent)}
+.tcard[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.tcard .tn{display:flex;gap:8px;align-items:center;font-weight:600;font-size:13px;line-height:1.3}
+.badge{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none;background:var(--sunk);color:var(--ink);border:1px solid var(--line)}
+.tcard .src{font-size:11.5px;color:var(--muted)}
+.dist{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--sunk)}
+.dist span{display:block;height:100%}
+.tcounts{display:flex;gap:8px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.tcounts b{font-family:var(--f-data);font-weight:600;color:var(--ink)}
+
+/* Summary + filters */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{border-radius:9px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left}
+.kpi[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--accent)}
+.kpi .v{font-family:var(--f-data);font-size:26px;font-weight:600;line-height:1}
+.kpi .l{font-size:12.5px;color:var(--muted);line-height:1.3}
+.kpi .sw{width:10px;align-self:stretch;border-radius:4px;flex:none}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.search{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);min-width:0;flex:1 1 180px;max-width:280px}
+.chip-filter{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 6px 4px 10px;background:var(--sunk);font-size:12.5px}
+.chip-filter button{border:0;background:var(--surface);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1}
+
+/* Map + list */
+.split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px}
+@media (max-width:980px){.split{grid-template-columns:1fr}}
+#map{height:560px;border-radius:0 0 var(--r) var(--r);background:var(--sunk)}
+@media (max-width:640px){#map{height:380px}}
+.leaflet-container{font-family:var(--f-body);background:var(--sunk)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surface);color:var(--ink)}
+.leaflet-popup-content{margin:10px 12px;font-size:13px;line-height:1.45}
+.leaflet-control-zoom a{background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--surface) 85%,transparent)!important;color:var(--muted)!important;font-size:10px}
+.leaflet-control-attribution a{color:var(--accent)!important}
+.map-legend{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11.5px;line-height:1.7}
+.map-legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.tri{width:0;height:0;display:inline-block;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid var(--water-2);margin-right:6px;vertical-align:-1px}
+
+.geo-th{fill:var(--surface);fill-opacity:1;stroke:var(--muted);stroke-opacity:.8}
+.geo-nb{fill:var(--land);fill-opacity:.55;stroke:var(--muted);stroke-opacity:.4}
+.has-tiles .geo-th,.has-tiles .geo-nb{fill-opacity:0}
+.site-mk{fill:var(--c);fill-opacity:.95;stroke:var(--surface)}
+.site-mk.sel{stroke:var(--ink);stroke-width:3}
+.ref-mk{fill:var(--surface);stroke:var(--ink)}
+.ref-line{stroke:var(--ink);stroke-opacity:.5;fill:none}
+.dam-ico{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:14px solid var(--c);filter:drop-shadow(0 0 1px var(--ink))}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) saturate(.6)}}
+:root[data-theme="dark"] .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) saturate(.6)}
+.list{max-height:560px;overflow:auto}
+@media (max-width:980px){.list{max-height:none}}
+table{border-collapse:collapse;width:100%}
+.sites th{font-size:11.5px;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1;white-space:nowrap}
+.sites td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.sites tr.row{cursor:pointer}
+.sites tr.row:hover td{background:var(--sunk)}
+.sites tr.row[aria-selected="true"] td{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.sname{font-weight:600;line-height:1.3}
+.ssub{font-size:12px;color:var(--muted)}
+.stripe{width:4px;padding:0!important}
+.stripe span{display:block;width:4px;height:34px;border-radius:2px}
+.cells{display:grid;grid-template-columns:repeat(7,18px);gap:3px}
+.cell{width:18px;height:18px;border-radius:4px;font-size:10px;font-weight:700;display:grid;place-items:center;font-family:var(--f-data)}
+.zone{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+@media (max-width:640px){.sites th:nth-child(3),.sites td:nth-child(3),.sites th:nth-child(5),.sites td:nth-child(5){display:none}.cells{grid-template-columns:repeat(7,15px);gap:2px}.cell{width:15px;height:15px;font-size:9px}.sites td{padding:8px 6px}}
+.spill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+
+/* Status colors */
+.s0{--c:var(--ok);--cb:var(--ok-bg)} .s1{--c:var(--watch);--cb:var(--watch-bg)} .s2{--c:var(--warn);--cb:var(--warn-bg)} .s3{--c:var(--crit);--cb:var(--crit-bg)} .sn{--c:var(--na);--cb:var(--na-bg)}
+.cell,.spill{background:var(--cb);color:var(--c)}
+.cell{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
+.stripe span,.kpi .sw{background:var(--c)}
+
+/* Detail */
+.detail-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.detail-head h2{font-size:21px}
+.meta{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:4px}
+.cos{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.cos li{font-size:12px;background:var(--sunk);border-radius:6px;padding:2px 8px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:16px}
+.tbox{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:9px;padding:12px 14px;display:grid;gap:6px;align-content:start;min-width:0}
+.tbox .hd{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.tbox .tt{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px;line-height:1.3}
+.tbox .val{font-family:var(--f-data);font-size:26px;font-weight:600;line-height:1.1}
+.tbox .val small{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+.tbox .why{font-size:12.5px}
+.tbox .src{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}
+.tbox.irrelevant{opacity:.62}
+.trend{font-size:12px;font-family:var(--f-data)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+
+/* Dams */
+.dams td,.dams th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.dams th{font-size:11.5px;color:var(--muted);font-weight:600}
+.bar{position:relative;height:10px;width:140px;background:var(--sunk);border-radius:5px;overflow:hidden}
+.bar span{position:absolute;inset:0 auto 0 0;background:var(--c)}
+.bar i{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--muted)}
+.scroll-x{overflow-x:auto}
+
+/* Sources */
+.src-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.src-card{border:1px solid var(--line);border-radius:9px;padding:12px 14px;min-width:0}
+.src-card h3{font-size:14px;margin-bottom:4px}
+.src-card p{margin:4px 0;font-size:12.5px;color:var(--muted)}
+.src-card code{font-family:var(--f-data);font-size:11px;overflow-wrap:anywhere;color:var(--ink)}
+.crit-table td,.crit-table th{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:12.5px;vertical-align:top}
+.crit-table th{color:var(--muted);font-weight:600;font-size:11.5px}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3c3.5 4.4 6 7.7 6 10.6A6 6 0 0 1 6 13.6C6 10.7 8.5 7.4 12 3z" fill="#FFFFFF"/><path d="M8.5 15.2c1.2.9 2.3 1.2 3.5 1.2s2.3-.3 3.5-1.2" stroke="#16958B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div style="min-width:0">
+        <h1>SCGP Water Management</h1>
+        <p>ติดตามสถานการณ์น้ำสถานประกอบการ SCGP ตาม 7 Risk Trigger Point · BCM</p>
+      </div>
+    </div>
+    <div class="status-bar">
+      <span id="modePill" class="pill load"><span class="dot"></span><span id="modeText">กำลังโหลดข้อมูล…</span></span>
+      <span class="asof" id="asof"></span>
+      <button class="btn" id="refreshBtn" type="button">โหลดข้อมูลใหม่</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="panel" aria-labelledby="h-profile">
+    <div class="panel-h">
+      <div>
+        <div class="eyebrow">เส้นทางน้ำ · 7 Risk Trigger Point</div>
+        <h2 id="h-profile">น้ำจากต้นน้ำถึงพื้นที่ SCGP</h2>
+      </div>
+      <label class="site-pick"><span class="muted">พื้นที่</span><select id="profileSite" aria-label="เลือกพื้นที่ที่จะแสดงเส้นทางน้ำ"></select></label>
+    </div>
+    <div class="panel-b" style="position:relative">
+      <div class="flow-legend"><span><i class="lg-in"></i>น้ำไหลเข้าเขื่อน (inflow)</span><span><i class="lg-out"></i>น้ำระบาย/ไหลลงท้ายน้ำ (outflow) · ยิ่งมากยิ่งหนาแน่นและเร็ว</span><span class="muted">T+ = เวลาโดยประมาณที่น้ำจากเขื่อนเดินทางถึงจุดนั้น · ชี้เมาส์ที่โรงงาน เขื่อน หรือจุด 1–7 เพื่อดูรายละเอียด</span></div>
+      <p class="muted" id="profileNote" style="margin:4px 0 8px;font-size:12.5px"></p>
+      <div id="ptip" class="ptip" hidden></div><div class="profile-wrap"><svg class="profile" id="profile" viewBox="0 0 1200 300" role="img" aria-label="แผนภาพเส้นทางน้ำ ต้นน้ำ กลางน้ำ ปลายน้ำ และ 7 จุดเฝ้าระวัง"></svg></div>
+      <div class="eyebrow" style="margin-top:14px">ภาพรวมทุกพื้นที่ · กดการ์ดเพื่อกรองรายชื่อ</div>
+      <div class="trig-grid" id="trigGrid" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-mk">
+    <div class="panel-h">
+      <div>
+        <div class="eyebrow">แผนผังน้ำ · รูปแบบเดียวกับ กฟผ. Water Intelligence Center</div>
+        <h2 id="h-mk">ลุ่มน้ำแม่กลอง: เขื่อน สถานีโทรมาตร และโรงงาน SCGP</h2>
+      </div>
+      <span class="muted num" id="mkAsof" style="font-size:12.5px"></span>
+    </div>
+    <div class="panel-b" style="position:relative;display:grid;gap:10px">
+      <div class="rc-row" id="rcSummary" aria-label="สถานการณ์ระดับน้ำเขื่อน กฟผ. เทียบ Rule Curve"></div>
+      <div class="flow-legend">
+        <span><i style="background:#F1A039"></i>สถานีโทรมาตร กฟผ.</span>
+        <span><i style="background:#3BB217"></i>สถานีโทรมาตร กรมชลประทาน</span>
+        <span><i style="background:var(--accent)"></i>สถานี สสน.</span>
+        <span><i style="background:transparent;box-shadow:0 0 0 2.5px var(--warn)"></i>วงรอบ = % ความจุลำน้ำ (สสน.)</span>
+        <span class="muted">ตัวเลข: ระดับน้ำ ม.รทก. · อัตราการไหล ลบ.ม./วินาที (cms) · เส้นน้ำวิ่งเร็วขึ้นตามอัตราการไหล</span>
+      </div>
+      <div id="mtip" class="ptip" hidden></div>
+      <div class="profile-wrap"><svg class="profile mk" id="mkSchem" viewBox="0 0 1300 870" role="img" aria-label="แผนผังลุ่มน้ำแม่กลอง แสดงเขื่อน สถานีวัดน้ำ และโรงงาน SCGP"></svg></div>
+    </div>
+  </section>
+
+  <section aria-label="สรุปสถานะ" style="display:grid;gap:12px">
+    <div class="kpis" id="kpis"></div>
+    <div class="filters">
+      <div class="seg" role="group" aria-label="กรองตามโซน" id="zoneSeg">
+        <button type="button" data-zone="all" aria-pressed="true">ทุกโซน</button>
+        <button type="button" data-zone="up" aria-pressed="false">ต้นน้ำ</button>
+        <button type="button" data-zone="mid" aria-pressed="false">กลางน้ำ</button>
+        <button type="button" data-zone="down" aria-pressed="false">ปลายน้ำ</button>
+      </div>
+      <input id="q" class="search" type="search" placeholder="ค้นหาบริษัท / จังหวัด" aria-label="ค้นหาบริษัทหรือจังหวัด">
+      <span id="activeFilters" class="filters"></span>
+    </div>
+  </section>
+
+  <section class="split">
+    <div class="panel" style="min-width:0">
+      <div class="panel-h" style="padding-bottom:12px">
+        <div><div class="eyebrow">แผนที่</div><h2>ที่ตั้งสถานประกอบการ SCGP</h2></div>
+        <span class="muted" style="font-size:12px" id="mapNote"></span>
+      </div>
+      <div id="map" role="region" aria-label="แผนที่สถานประกอบการและเขื่อน"></div>
+    </div>
+    <div class="panel" style="min-width:0">
+      <div class="panel-h" style="padding-bottom:10px">
+        <div><div class="eyebrow">ทะเบียนพื้นที่</div><h2>สถานะรายพื้นที่ <span class="muted num" id="countLabel" style="font-size:14px;font-weight:500"></span></h2></div>
+        <span class="muted" style="font-size:12px">ช่อง 1–7 = Trigger Point</span>
+      </div>
+      <div class="list">
+        <table class="sites" aria-label="รายชื่อพื้นที่และสถานะ 7 Trigger Point">
+          <thead><tr><th class="stripe" aria-label="สถานะ"></th><th>พื้นที่</th><th>โซน</th><th>1 2 3 4 5 6 7</th><th>สถานะ</th></tr></thead>
+          <tbody id="siteRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="detail" aria-live="polite"></section>
+
+  <section class="panel" aria-labelledby="h-dams">
+    <div class="panel-h">
+      <div><div class="eyebrow">Trigger 1–2 · กรมชลประทาน</div><h2 id="h-dams">เขื่อนที่ส่งผลต่อพื้นที่ SCGP</h2></div>
+      <span class="muted" style="font-size:12px">เส้นแนวตั้ง = เกณฑ์เฝ้าระวัง 80% ของความจุปกติ</span>
+    </div>
+    <div class="panel-b scroll-x"><table class="dams" id="damTable"></table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-src">
+    <div class="panel-h"><div><div class="eyebrow">ที่มาข้อมูลและเกณฑ์</div><h2 id="h-src">แหล่งข้อมูลเปิดภาครัฐ และเกณฑ์ของแต่ละ Trigger</h2></div></div>
+    <div class="panel-b" style="display:grid;gap:16px">
+      <div class="src-grid">
+        <div class="src-card"><h3>คลังข้อมูลน้ำแห่งชาติ (สสน.)</h3><p>ระดับน้ำโทรมาตร ~800 สถานี, ฝนสะสม 24 ชม. ~4,800 สถานี (อัปเดตทุก 10–15 นาที)</p><p><code>api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load</code><br><code>…/public/rain_24h</code></p><p><a href="https://www.thaiwater.net/" target="_blank" rel="noopener">thaiwater.net</a></p></div>
+        <div class="src-card"><h3>กรมชลประทาน</h3><p>ข้อมูลอ่างเก็บน้ำขนาดใหญ่ 35 แห่ง: ปริมาตรน้ำ % ความจุ น้ำไหลเข้า น้ำระบาย (รายวัน) ผ่านคลังข้อมูลน้ำแห่งชาติ</p><p><code>…/public/thailand_main</code> (dam) · <code>app.rid.go.th/reservoir/api/dam/public</code></p><p><a href="https://app.rid.go.th/reservoir/" target="_blank" rel="noopener">app.rid.go.th/reservoir</a></p></div>
+        <div class="src-card"><h3>กฟผ. ศูนย์บริหารจัดการน้ำอัจฉริยะ (EGAT WIC)</h3><p>โทรมาตรลุ่มแม่กลอง 26 สถานี (ระดับน้ำ/อัตราการไหล รายชั่วโมง), ข้อมูลเขื่อน กฟผ. 13 แห่งพร้อมเกณฑ์ Rule Curve (URC/LRC), ฝนรายวัน</p><p><code>api-egatwater.egat.co.th/api/Telemiter/Maeklong</code><br><code>…/api/DailyInfographic?date=</code></p><p><a href="https://egatwater.egat.co.th/info/infoSchematicMK" target="_blank" rel="noopener">egatwater.egat.co.th</a></p></div>
+        <div class="src-card"><h3>สำนักการระบายน้ำ กทม.</h3><p>เซ็นเซอร์น้ำท่วมขังบนถนน 262 จุด (ใช้กับพื้นที่ในกรุงเทพฯ)</p><p><code>…/public/flood_road</code></p><p><a href="https://weather.bangkok.go.th/" target="_blank" rel="noopener">weather.bangkok.go.th</a></p></div>
+        <div class="src-card"><h3>น้ำทะเลหนุน</h3><p>สถานีป้อมพระจุลจอมเกล้า (ปากแม่น้ำเจ้าพระยา) และปากรอ (ทะเลสาบสงขลา) จากเครือข่าย สสน. ตารางน้ำขึ้นลงพยากรณ์ดูได้จากกรมอุทกศาสตร์</p><p><a href="https://www.hydro.navy.mi.th/" target="_blank" rel="noopener">hydro.navy.mi.th</a></p></div>
+      </div>
+      <div class="scroll-x"><table class="crit-table" id="critTable"></table></div>
+      <p class="note">เกณฑ์ในตารางเป็นค่าตั้งต้นสำหรับเริ่มใช้งาน ทีม BCM ปรับได้ในไฟล์ (ตัวแปร <code>CRITERIA</code>) ให้ตรงกับระดับวิกฤตที่วัดจริงของแต่ละโรงงาน · Trigger 6 (ระดับท่อ/น้ำท่วมขังภายในโรงงานหรือนิคม) ใช้เซ็นเซอร์ถนนของ กทม. ในรัศมี 3 กม. เมื่อมี พื้นที่อื่นรอเชื่อมเซ็นเซอร์ภายใน</p>
+    </div>
+  </section>
+
+  <footer>ข้อมูลตำแหน่งจาก SCG Location (KMZ) กลุ่ม SCGP 27 บริษัท / 24 พื้นที่ · ข้อมูลน้ำจากหน่วยงานรัฐที่เปิดเผยต่อสาธารณะ ใช้ประกอบการตัดสินใจ BCM ควบคู่กับประกาศทางการ</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>/* Shared: turns raw ThaiWater (สสน.) API responses into the compact shape the dashboard reads.
+   Used by the browser (direct mode) and by the Vercel function /api/water. */
+(function (root) {
+  function hv(a, b, c, d) {
+    var R = 6371, t = function (x) { return x * Math.PI / 180; };
+    var dl = t(c - a), dg = t(d - b);
+    var h = Math.sin(dl / 2) * Math.sin(dl / 2) + Math.cos(t(a)) * Math.cos(t(c)) * Math.sin(dg / 2) * Math.sin(dg / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  function num(x) { return x == null || x === '' ? null : +x; }
+  function r5(x) { return x == null ? null : Math.round(x * 1e5) / 1e5; }
+  function r2(x) { return x == null ? null : Math.round(x * 100) / 100; }
+  var TIDE = /^(GLF001|SLA005|MKG006|RAJ001|RAJ002|KRN001|K\.3A|K\.11A|K\.35A|K\.37|K\.12|K\.55A)$/; // tide gauges + Mae Klong schematic stations
+
+  function buildCompact(raw, sites) {
+    var S = sites.map(function (s) { return [s.lat, s.lng]; });
+    function md(la, ln) { var m = 1e9; for (var i = 0; i < S.length; i++) { var d = hv(S[i][0], S[i][1], la, ln); if (d < m) m = d; } return m; }
+
+    var wlRows = ((raw.wl && raw.wl.waterlevel_data && raw.wl.waterlevel_data.data) || []).filter(function (x) {
+      return x.station && x.station.tele_station_lat && x.station.tele_station_long;
+    });
+    var keep = {};
+    S.forEach(function (s) {
+      wlRows.map(function (w) { return [w, hv(s[0], s[1], w.station.tele_station_lat, w.station.tele_station_long)]; })
+        .filter(function (z) { return z[1] <= 30; })
+        .sort(function (a, b) { return a[1] - b[1]; })
+        .slice(0, 4).forEach(function (z) { keep[z[0].station.id] = 1; });
+    });
+    var wl = wlRows.filter(function (x) { return keep[x.station.id] || TIDE.test(x.station.tele_station_oldcode || ''); }).map(function (x) {
+      var st = x.station;
+      return [st.id, st.tele_station_oldcode, (st.tele_station_name && st.tele_station_name.th) || ('สถานี ' + st.id), r5(st.tele_station_lat), r5(st.tele_station_long),
+        x.waterlevel_datetime, num(x.waterlevel_msl), num(x.waterlevel_msl_previous), r2(num(x.storage_percent)), x.situation_level,
+        r2(st.min_bank), st.critical_level_msl, num(x.diff_wl_bank), /^ล้น/.test(x.diff_wl_bank_text || '') ? 1 : 0,
+        x.river_name || '', x.agency && x.agency.agency_shortname ? x.agency.agency_shortname.th : '', x.geocode && x.geocode.province_name ? x.geocode.province_name.th : ''];
+    });
+
+    var rain = ((raw.rain && raw.rain.data) || []).filter(function (x) {
+      return x.station && x.station.tele_station_lat && md(x.station.tele_station_lat, x.station.tele_station_long) <= 10;
+    }).map(function (x) {
+      return [(x.station.tele_station_name && x.station.tele_station_name.th) || '', r5(x.station.tele_station_lat), r5(x.station.tele_station_long), x.rainfall_datetime, x.rain_24h];
+    });
+
+    var fr = ((raw.fr && raw.fr.data) || []).filter(function (x) {
+      return x.station && x.station.floodroad_lat && md(x.station.floodroad_lat, x.station.floodroad_long) <= 3;
+    }).map(function (x) {
+      return [((x.station.floodroad_name && x.station.floodroad_name.th) || '').replace(/\s*\*$/, '').trim(), r5(x.station.floodroad_lat), r5(x.station.floodroad_long), x.floodroad_datetime, x.floodroad_value];
+    });
+
+    var damRows = (raw.main && raw.main.dam && raw.main.dam.data && raw.main.dam.data.data) || [];
+    var dam = damRows.map(function (x) {
+      var d = x.dam || {};
+      return [d.id, d.dam_name && d.dam_name.th, d.dam_lat, d.dam_long, x.dam_storage, x.dam_storage_percent, x.dam_inflow, x.dam_released, x.dam_spilled, d.normal_storage, x.dam_date];
+    });
+
+    var out = { fetchedAt: new Date().toISOString(), wl: wl, rain: rain, fr: fr, dam: dam };
+    if (raw.egat) out.egat = compactEgat(raw.egat);
+    return out;
+  }
+
+  /* กฟผ. (EGAT Water Intelligence Center) — Mae Klong telemetry + daily dam infographic with rule curves */
+  function compactEgat(e) {
+    return {
+      at: e.at || null,
+      tele: (e.tele || []).map(function (t) { return [t.code, t.legendId, t.wl, t.ds]; }),
+      daily: (e.daily || []).map(function (x) { var c = x.cockpitData || {}; return [x.dam, x.eff, x.effPercent, x.inflAll, x.relAll, c.stor, c.percent, c.dead, c.lower, c.upper, c.release]; }),
+      rain: (e.rain || []).map(function (r) { return [r.damId, r.stationCode, r.rainValue]; })
+    };
+  }
+  var api = { buildCompact: buildCompact, compactEgat: compactEgat, haversine: hv };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.WaterTransform = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+window.SITES = [{"id":"HQ-BSU","name":"สำนักงานใหญ่ บางซื่อ","zone":"down","dams":["ภูมิพล","สิริกิติ์","ป่าสักชลสิทธิ์"],"tide":"GLF001","basin":"เจ้าพระยา","lat":13.82875,"lng":100.5352,"type":"Office","prov":"กรุงเทพ","amp":"บางซื่อ","cos":["SCG Paper PLC (Head Office)","Siam Kraft Industry Co., Ltd. (Head Office)","Thai Paper Co., Ltd. (Head Office)","Thai Containers Group Co., Ltd. (Head Office)"]},{"id":"BPG-SCGP","name":"SCGP บ้านโป่ง","zone":"mid","dams":["ศรีนครินทร์","วชิราลงกรณ"],"tide":null,"basin":"แม่กลอง","lat":13.87341,"lng":99.84718,"type":"Factory","prov":"ราชบุรี","amp":"บ้านโป่ง","cos":["SCG Paper Public Company Limited (Factory)"]},{"id":"BPG-TPC","name":"Thai Paper บ้านโป่ง","zone":"mid","dams":["ศรีนครินทร์","วชิราลงกรณ"],"tide":null,"basin":"แม่กลอง","lat":13.84524,"lng":99.86785,"type":"Factory","prov":"ราชบุรี","amp":"บ้านโป่ง","cos":["Thai Paper Co., Ltd. (Factory)"]},{"id":"BPG-SKIC","name":"Siam Kraft บ้านโป่ง","zone":"mid","dams":["ศรีนครินทร์","วชิราลงกรณ"],"tide":null,"basin":"แม่กลอง","lat":13.8169,"lng":99.88659,"type":"Factory","prov":"ราชบุรี","amp":"บ้านโป่ง","cos":["Siam Kraft Industry Co., Ltd. (Factory1 : Banpong)"]},{"id":"WSL-SKIC","name":"Siam Kraft วังศาลา","zone":"up","dams":["ศรีนครินทร์","วชิราลงกรณ"],"tide":null,"basin":"แม่กลอง","lat":13.94869,"lng":99.71028,"type":"Factory","prov":"กาญจนบุรี","amp":"ท่าเรือ","cos":["Siam Kraft Industry Co., Ltd. (Factory2 : Wangsala)"]},{"id":"TRA-SCC","name":"Siam Cellulose ท่าเรือ","zone":"up","dams":["ศรีนครินทร์","วชิราลงกรณ"],"tide":null,"basin":"แม่กลอง","lat":13.97303,"lng":99.63656,"type":"Factory","prov":"กาญจนบุรี","amp":"ท่าเรือ","cos":["Siam Cellulose Co., Ltd. (Factory)"]},{"id":"TRA-SFC","name":"Siam Forestry ท่าเรือ","zone":"up","dams":["ศรีนครินทร์","วชิราลงกรณ"],"tide":null,"basin":"แม่กลอง","lat":14.25729,"lng":99.74884,"type":"Factory","prov":"กาญจนบุรี","amp":"ท่าเรือ","cos":["The Siam Forestry Co., Ltd. (Factory)"]},{"id":"HQ-TCP","name":"Thai Cane Paper สนง.ใหญ่ คลองสาน","zone":"down","dams":["ภูมิพล","สิริกิติ์","ป่าสักชลสิทธิ์"],"tide":"GLF001","basin":"เจ้าพระยา","lat":13.7225,"lng":100.49962,"type":"Office","prov":"กรุงเทพ","amp":"คลองสาน","cos":["Thai Cane Paper Public Company Limited (Head Office)"]},{"id":"TMG-TCP","name":"Thai Cane Paper ท่าม่วง","zone":"up","dams":["ศรีนครินทร์","วชิราลงกรณ"],"tide":null,"basin":"แม่กลอง","lat":13.94771,"lng":99.6714,"type":"Factory","prov":"กาญจนบุรี","amp":"ท่าม่วง","cos":["Thai Cane Paper Public Company Limited (Factory1: Tha Muang)"]},{"id":"KBI-TCP","name":"Thai Cane Paper กบินทร์บุรี","zone":"mid","dams":["นฤบดินทรจินดา"],"tide":null,"basin":"บางปะกง-ปราจีนบุรี","lat":13.93307,"lng":101.83536,"type":"Factory","prov":"ปราจีนบุรี","amp":"บ่อทอง","cos":["Thai Cane Paper Public Company Limited (Factory2: Kabinburi)"]},{"id":"PPD-TUP","name":"Thai Union Paper พระประแดง","zone":"down","dams":["ภูมิพล","สิริกิติ์","ป่าสักชลสิทธิ์"],"tide":"GLF001","basin":"เจ้าพระยา","lat":13.65666,"lng":100.56507,"type":"Factory","prov":"สมุทรปราการ","amp":"พระประแดง","cos":["Thai Union Paper Public Co., Ltd."]},{"id":"NPG-PPPC","name":"Phoenix Pulp & Paper น้ำพอง","zone":"up","dams":["อุบลรัตน์"],"tide":null,"basin":"ชี (ลำน้ำพอง)","lat":16.78614,"lng":102.79358,"type":"Factory","prov":"ขอนแก่น","amp":"น้ำพอง","cos":["Phoenix Pulp & Paper Public Company Limited (Factory)"]},{"id":"NVN-TCG","name":"TCG นวนคร","zone":"mid","dams":["ภูมิพล","สิริกิติ์","ป่าสักชลสิทธิ์"],"tide":null,"basin":"เจ้าพระยา","lat":14.18418,"lng":100.59254,"type":"Factory","prov":"ปทุมธานี","amp":"คลองหลวง","cos":["Thai Containers Group Co., Ltd. (Nvanakorn Plant)"]},{"id":"SPK-TCG","name":"TCG สมุทรปราการ","zone":"down","dams":["ภูมิพล","สิริกิติ์","ป่าสักชลสิทธิ์"],"tide":"GLF001","basin":"เจ้าพระยา","lat":13.5434,"lng":100.66333,"type":"Factory","prov":"สมุทรปราการ","amp":"เมือง","cos":["Thai Containers Group Co., Ltd. (สมุทรปราการ Plant)"]},{"id":"RBR-TCG","name":"TCG ราชบุรี (บางแพ)","zone":"mid","dams":["ศรีนครินทร์","วชิราลงกรณ"],"tide":null,"basin":"แม่กลอง","lat":13.71736,"lng":99.90146,"type":"Factory","prov":"ราชบุรี","amp":"บางแพ","cos":["Thai Containers Group Co., Ltd. (Ratchaburi Plant)"]},{"id":"SKA-TCG","name":"Thai Containers สงขลา","zone":"mid","dams":[],"tide":"SLA005","basin":"ทะเลสาบสงขลา","lat":7.09306,"lng":100.28252,"type":"Factory","prov":"สงขลา","amp":"รัตภูมิ","cos":["Thai Containers สงขลา (1994) Co., Ltd."]},{"id":"CBI-TCG","name":"TCG ชลบุรี (ศรีราชา)","zone":"down","dams":["บางพระ"],"tide":null,"basin":"ชายฝั่งทะเลตะวันออก","lat":13.17811,"lng":100.9441,"type":"Factory","prov":"ชลบุรี","amp":"ศรีราชา","cos":["Thai Containers Group Co., Ltd. (ชลบุรี Factory)"]},{"id":"PRI-TCG","name":"TCG ปราจีนบุรี (ศรีมหาโพธิ)","zone":"mid","dams":["นฤบดินทรจินดา","ขุนด่านปราการชล"],"tide":null,"basin":"บางปะกง-ปราจีนบุรี","lat":13.9434,"lng":101.59195,"type":"Factory","prov":"ปราจีนบุรี","amp":"ศรีมหาโภชน์","cos":["Thai Containers Group Co., Ltd. (ปราจีนบุรี Factory)"]},{"id":"PTT-TCG","name":"TCG ปทุมธานี","zone":"mid","dams":["ภูมิพล","สิริกิติ์","ป่าสักชลสิทธิ์"],"tide":"GLF001","basin":"เจ้าพระยา","lat":13.95822,"lng":100.5025,"type":"Factory","prov":"ปทุมธานี","amp":"เมือง","cos":["Thai Containers Group Co., Ltd. (ปทุมธานี Factory)"]},{"id":"SRI-TCG","name":"Thai Containers สระบุรี (แก่งคอย)","zone":"up","dams":["ป่าสักชลสิทธิ์"],"tide":null,"basin":"ป่าสัก","lat":14.58757,"lng":101.00418,"type":"Factory","prov":"สระบุรี","amp":"แก่งคอย","cos":["Thai Containers Saraburi Co., Ltd."]},{"id":"KKN-TCG","name":"Thai Containers ขอนแก่น","zone":"mid","dams":["อุบลรัตน์"],"tide":null,"basin":"ชี","lat":16.20693,"lng":102.75083,"type":"Factory","prov":"ขอนแก่น","amp":"บ้านแฮด","cos":["Thai Containers ขอนแก่น Co., Ltd."]},{"id":"RYG-TCG","name":"Thai Containers ระยอง (ปลวกแดง)","zone":"mid","dams":["หนองปลาไหล","ประแสร์"],"tide":null,"basin":"ชายฝั่งทะเลตะวันออก","lat":13.01392,"lng":101.12812,"type":"Factory","prov":"ระยอง","amp":"ปลวกแดง","cos":["Thai Containers Rayong Co., Ltd."]},{"id":"PCH-TBSP","name":"TBSP ปู่เจ้า","zone":"down","dams":["ภูมิพล","สิริกิติ์","ป่าสักชลสิทธิ์"],"tide":"GLF001","basin":"เจ้าพระยา","lat":13.6415,"lng":100.57794,"type":"Factory","prov":"สมุทรปราการ","amp":"สำโรงใต้","cos":["Thai British Security Printing Public Company Limited (Factory1:Poochao)"]},{"id":"BPU-TBSP","name":"TBSP บางปู","zone":"down","dams":["ภูมิพล","สิริกิติ์","ป่าสักชลสิทธิ์"],"tide":"GLF001","basin":"เจ้าพระยา","lat":13.57525,"lng":100.66979,"type":"Factory","prov":"สมุทรปราการ","amp":"สำโรงใต้","cos":["Thai British Security Printing Public Company Limited (Factory2; Bangpoo)"]}];
+window.SNAPSHOT = {"fetchedAt":"2026-10-28T08:25:41.835Z","wl":[[575568,"BKC004","ปตร. คลองลัดบางยอ 2",13.66102,100.56727,"2026-10-27 19:40",1.05,1.08,105.72,5,0.91,null,0.15,1,"แม่น้ำเจ้าพระยา","สสน.","สมุทรปราการ"],[471584,"HDA005","วัดขนอนใต้",14.28825,100.61132,"2026-10-28 15:10",2.74,2.74,104.51,5,2.54,null,0.2,1,"คลองโพธิ์","สสน.","พระนครศรีอยุธยา"],[575566,"BKC002","ปตร.วัดบางกระเจ้านอก",13.68961,100.55489,"2026-10-28 15:10",1.35,1.31,103.37,5,1.26,null,0.09,1,"คลองบางกะเจ้า","สสน.","สมุทรปราการ"],[714,"KRN001","เมืองกาญจนบุรี",14.06047,99.48325,"2026-10-28 15:10",25.72,25.73,100.7,5,25.69,null,0.04,1,"แม่น้ำแควใหญ่","สสน.","กาญจนบุรี"],[859,"SLA005","ปากรอ",7.26151,100.42447,"2026-10-28 15:10",0.64,0.63,95.42,4,0.97,null,0.33,0,"คลองปากรอ","สสน.","สงขลา"],[26,"CPY014","สะพานนวลฉวี",13.94749,100.53507,"2026-10-28 15:10",1.77,1.78,95.38,4,2.5,null,0.73,0,"แม่น้ำเจ้าพระยา","สสน.","นนทบุรี"],[49,"CPY012","บางปะอิน",14.30455,100.56645,"2026-10-28 15:10",2.04,2.04,94.81,4,2.62,null,0.58,0,"แม่น้ำเจ้าพระยา","สสน.","พระนครศรีอยุธยา"],[700553,"MKSND03","วัดไชยชุมพลชนะสงคราม (วัดใต้)",14.01615,99.53029,"2026-10-28 15:00",22.85,22.86,94.31,4,23.41,24.19,0.56,0,"แม่น้ำแม่กลอง","กฟผ.","กาญจนบุรี"],[2599,"C.12","กรมชลประทานสามเสน",13.78815,100.50915,"2026-10-28 14:00",1.3,1.42,94.28,4,2.26,null,0.96,0,"แม่น้ำเจ้าพระยา","ชป.","กรุงเทพมหานคร"],[4,"CPY015","สะพานกรุงเทพ",13.7003,100.49277,"2026-10-28 15:10",1,0.94,93.5,4,2.16,null,1.16,0,"แม่น้ำเจ้าพระยา","สสน.","กรุงเทพมหานคร"],[1109526,"ONE037","สะพานข้ามคลองอู่ตะเภา",7.135,100.45321,"2026-10-28 15:10",0.48,0.49,93.35,4,0.84,null,0.36,0,"คลองอู่ตะเภา","สสน.","สงขลา"],[14188529,"KRP901","อุทยานเฉลิมพระเกียรติ ร.9 (ดุสิต)",13.76138,100.52066,"2026-10-28 15:10",29.78,29.78,92.67,4,30,null,0.22,0,"","สสน.","กรุงเทพมหานคร"],[575567,"BKC003","ปตร. คลองลัดบางยอ 1",13.67616,100.55309,"2026-10-28 15:10",1.29,1.26,90.79,4,1.51,null,0.22,0,"แม่น้ำเจ้าพระยา","สสน.","สมุทรปราการ"],[23,"BKK007","คลองอ้อมนนท์ บางใหญ่",13.87089,100.43626,"2026-10-28 15:10",1.38,1.38,89.58,4,1.85,null,0.48,0,"คลองแม่น้ำอ้อม","สสน.","นนทบุรี"],[1106453,"TCP007","ทุ่งโพธิ์พระยา",14.32075,100.0174,"2026-10-28 15:10",0.73,0.73,89.2,4,1,null,0.27,0,"คลองดอนต้นคาง","สสน.","สุพรรณบุรี"],[754,"MKG005","บ้านแพ้ว",13.57563,100.07884,"2026-10-28 15:10",0.5,0.49,85.96,4,0.96,null,0.46,0,"คลองดำเนินสะดวก","สสน.","สมุทรสาคร"],[726673,"X.67A","บ้านนาสีทอง",7.10502,100.19393,"2026-10-28 14:00",33.81,33.77,85.15,4,39.92,null,6.11,0,"คลองรัตภูมิ","ชป.","สงขลา"],[2607,"S.5","สะพานปรีดี-ธำรง",14.35872,100.58045,"2026-10-28 14:00",2.59,2.61,84.12,4,4.7,null,2.11,0,"แม่น้ำป่าสัก","ชป.","พระนครศรีอยุธยา"],[21,"BKK017","คลองจระเข้ใหญ่ บางเสาธง",13.66949,100.80058,"2026-10-28 15:10",-0.01,-0.01,83.08,4,0.43,null,0.44,0,"คลองหัวตะเข้","สสน.","สมุทรปราการ"],[29,"CAN001","คลองระพีพัฒน์แยกตก",14.20612,100.74476,"2026-10-28 15:10",3.56,3.62,80.7,4,4.56,null,1,0,"คลองระพีพัฒน์แยกตก","สสน.","ปทุมธานี"],[17,"GLF001","ป้อมพระจุลจอมเกล้า",13.57378,100.57396,"2026-10-28 15:10",1.15,1.1,79.5,4,1.86,null,0.7,0,"ปากแม่น้ำเจ้าพระยา","สสน.","สมุทรปราการ"],[504990,"Kgt.6","บ้านทาม",13.97341,101.51745,"2026-10-28 14:00",3.56,3.56,77.59,4,6.61,null,3.05,0,"แม่น้ำบางปะกง","ชป.","ปราจีนบุรี"],[2679,"K.11A","บ้านวังขนาย",13.95094,99.64548,"2026-10-28 14:00",14.09,14.03,76.09,4,15.9,null,1.81,0,"แม่น้ำแม่กลอง","ชป.","กาญจนบุรี"],[27,"BKK002","คลองเปรมประชากร หลักหก",13.96562,100.60262,"2026-10-28 15:10",0.65,0.64,75.79,4,1.29,null,0.65,0,"คลองเปรมประชากร","สสน.","ปทุมธานี"],[505025,"K.3A","สะพานแม่น้ำแม่กลอง ศาลากลาง จ.กาญจนบุรี",13.99597,99.53882,"2026-10-28 14:00",22.57,22.57,74.02,4,25.8,24.07,3.23,0,"แม่น้ำแม่กลอง","ชป.","กาญจนบุรี"],[170,"PRC005","ศรีมหาโพธิ (KGT6)",13.97348,101.51751,"2026-10-28 15:10",4.44,4.44,69.03,3,7.58,null,3.14,0,"แม่น้ำบางปะกง","สสน.","ปราจีนบุรี"],[832066,"K.55A","สะพานค่ายหลวง",13.80568,99.87159,"2026-10-28 14:00",5.91,5.9,67.41,3,9,null,3.09,0,"แม่น้ำแม่กลอง","ชป.","ราชบุรี"],[858,"SLA007","บางกล่ำ",7.07942,100.42788,"2026-10-28 15:10",0.48,0.48,66.62,3,1.59,null,1.11,0,"คลองบางกล่ำ","สสน.","สงขลา"],[710,"RAJ001","โพธาราม",13.63308,99.8164,"2026-10-28 15:10",2.91,2.91,66.6,3,5.92,null,3.01,0,"แม่น้ำแม่กลอง","สสน.","ราชบุรี"],[1,"BKK021","คลองลาดพร้าว วัดบางบัว",13.85402,100.58746,"2026-10-28 15:10",1.31,1.31,64.82,3,2.2,null,0.89,0,"คลองบางบัว","สสน.","กรุงเทพมหานคร"],[169,"PRC004","ประจันตคาม (KGT7A)",14.07094,101.51893,"2026-10-28 15:10",4.57,4.57,63.62,3,6.66,null,2.09,0,"คลองอินทร์ไตร","สสน.","ปราจีนบุรี"],[1373278,"HDA012","สะพานแม่น้ำป่าสัก บ้านนาโฉง",14.54698,100.88976,"2026-10-28 15:10",7.83,7.83,61.11,3,11.42,null,3.59,0,"แม่น้ำป่าสัก","สสน.","สระบุรี"],[709,"RAJ002","บ้านโป่ง",13.81866,99.86508,"2026-10-28 15:10",5.8,5.8,60.13,3,9.56,null,3.76,0,"แม่น้ำแม่กลอง","สสน.","ราชบุรี"],[2623,"S.32","สถานีแพดับเพลิง",14.55752,100.92422,"2026-10-28 14:00",8.04,8.04,58.39,3,12.8,null,4.76,0,"แม่น้ำป่าสัก","ชป.","สระบุรี"],[118,"RAY002","หนองบัว",12.8492,101.30135,"2026-10-28 15:10",12.42,12.42,52.05,3,15.97,null,3.55,0,"คลองใหญ่","สสน.","ระยอง"],[1098950,"Kgt.12A","บ้านแก้ง",13.93635,101.97232,"2026-10-28 14:00",16.74,16.74,49.83,3,21,null,4.26,0,"คลองพระปรง","ชป.","สระแก้ว"],[2680,"Kgt.3","สะพานต้นน้ำบางปะกง",13.98666,101.70541,"2026-10-28 14:00",3.79,3.81,49.49,3,8.79,10,5,0,"แม่น้ำบางปะกง","ชป.","ปราจีนบุรี"],[2852,"E.9","บ้านท่านางเลื่อน",16.09694,102.57002,"2026-10-28 14:00",155.5,155.5,48.48,3,162.1,null,6.6,0,"แม่น้ำชี","ชป.","ขอนแก่น"],[852087,"AIT001","อโศก",13.74325,100.56216,"2026-10-28 15:10",1.4,1.4,47.62,3,2.39,null,0.99,0,"คลองแสนแสบ","สสน.","กรุงเทพมหานคร"],[2874,"E.16A","บ้านกุดกว้าง",16.356,102.80429,"2026-10-28 14:00",146.82,146.81,47.24,3,152.3,152.3,5.48,0,"แม่น้ำชี","ชป.","ขอนแก่น"],[333,"CHI006","เมืองขอนแก่น",16.3259,102.78601,"2026-10-28 15:10",146.61,146.61,44.24,3,153.04,null,6.43,0,"แม่น้ำชี","สสน.","ขอนแก่น"],[504999,"Kgt.43A","บ้านนาแขม",14.02174,101.75066,"2026-10-28 14:00",5.12,5.14,34.25,3,12.22,null,7.1,0,"แควหนุมาน","ชป.","ปราจีนบุรี"],[3525,"URTD05","แม่น้ำชี บ้านหินกอง",16.25032,102.74392,"2026-10-27 23:00",147.04,147.04,33.15,3,155.24,154.72,8.2,0,"แม่น้ำชี","กฟผ.","ขอนแก่น"],[2706,"S.7A","วัดท่าระหัด",14.78944,101.1171,"2026-10-28 14:00",44.25,44.25,33.12,3,49.4,null,5.15,0,"ห้วยหมวกเหล็ก","ชป.","สระบุรี"],[504994,"Kgt.13A","บ้านโนนสุขภูมิ",13.91009,101.83821,"2026-10-28 14:00",8.15,8.16,27.22,2,16.17,null,8.02,0,"คลองพระปรง","ชป.","ปราจีนบุรี"],[2632,"S.9","บ้านป่า",14.62918,101.01443,"2026-10-28 14:00",9.3,9.3,26.9,2,19.95,null,10.65,0,"แม่น้ำป่าสัก","ชป.","สระบุรี"],[190,"SKE001","คลองพระปรง",13.93738,101.92204,"2026-10-28 15:10",12.52,12.53,24.69,2,19.61,null,7.09,0,"คลองพระปรง","สสน.","สระแก้ว"],[3524,"URTD02","ลำน้ำพอง โรงเรียนลำน้ำพอง",16.5715,102.88123,"2026-10-28 15:00",147.26,147.25,24.02,2,156.41,155,9.15,0,"ลำน้ำพอง","กฟผ.","ขอนแก่น"],[726680,"X.240","บ้านหูแร่",6.98306,100.32833,"2026-10-28 14:00",17.73,17.68,13.82,2,23.1,null,5.37,0,"คลองวาด","ชป.","สงขลา"],[2924,"E.22B","บ้านท่าเม่า",16.65448,102.82349,"2026-10-28 14:00",151.78,151.79,11.55,2,160.9,null,9.12,0,"ลำน้ำพอง","ชป.","ขอนแก่น"],[2682,"K.35A","บ้านหนองบัว",14.05861,99.44522,"2026-10-28 14:00",27.82,27.82,118.15,5,27.0,null,0.82,1,"แม่น้ำแควใหญ่","ชป.","กาญจนบุรี"],[2571,"K.37","บ้านวังเย็น",13.93906,99.41625,"2026-10-28 14:00",25.08,25.11,51.45,3,31.45,31.45,6.37,0,"แม่น้ำแควน้อย","ชป.","กาญจนบุรี"],[2686,"K.12","บ้านทุ่งนานางหรอก",14.17522,99.43407,"2026-10-28 14:00",41.87,41.87,38.3,3,45.8,null,3.93,0,"ลำตะเพิน","ชป.","กาญจนบุรี"],[755,"MKG006","พระรามสอง",13.38362,99.9836,"2026-10-28 15:10",1.13,1.09,93.79,4,1.99,null,0.86,0,"แม่น้ำแม่กลอง","สสน.","สมุทรสงคราม"]],"rain":[["ชุมชนบ้านท่าหรั่ง",7.10713,100.19801,"2026-10-28 14:00",57.5],["ฝายชะมวง",7.12289,100.22521,"2026-10-28 14:00",55],["ท้ายปตร.พระอินทราชา",14.14378,100.62075,"2026-10-28 15:00",37],["เหนือปตร.พระอินทราชา",14.14407,100.62136,"2026-10-28 15:00",30],["TC.55",14.03556,100.54937,"2026-10-28 14:00",14],["อบต.ดอนตาเพชร",14.18654,99.73169,"2026-10-28 15:00",10.5],["ส.บางนา",13.67493,100.58757,"2026-10-28 15:00",9],["คลองพระปรง",13.93738,101.92204,"2026-10-28 15:00",8.6],["ส.วัดไทร",13.68653,100.51643,"2026-10-28 15:00",8.5],["ปทุมธานี สกษ.",14.1,100.61667,"2026-10-28 13:00",8.4],["สนข.บางขุนเทียน",13.66083,100.43531,"2026-10-28 15:00",8],["สนข.ราษฎร์บูรณะ",13.68207,100.50586,"2026-10-28 15:00",8],["สนข.จอมทอง",13.67744,100.48427,"2026-10-28 15:00",7],["ส.คลองสี่บาท",13.67325,100.44615,"2026-10-28 15:00",6.5],["TC.29",14.19461,100.50253,"2026-10-28 14:00",5],["ส.คลองแจงร้อน",13.67627,100.52097,"2026-10-28 15:00",5],["ส.บางอ้อ",13.68212,100.59254,"2026-10-28 15:00",5],["ตลาดน้ำบางน้ำผึ้ง",13.67866,100.57356,"2026-10-28 10:00",4.8],["ค.ราชมนตรี-ภาษีเจริญ",13.70754,100.42622,"2026-10-28 15:00",4.5],["ส.ดาวคะนอง",13.6949,100.48758,"2026-10-28 15:00",4.5],["ปตร. คลองลัดบางยอ 1",13.67616,100.55309,"2026-10-28 15:00",4.4],["จุดวัด ค.สนามชัย-ค.บางขุนเทียน",13.70123,100.46491,"2026-10-28 15:00",4],["ส.พระโขนง",13.70857,100.59542,"2026-10-28 15:00",4],["ปตร.วัดบางกระเจ้านอก",13.68961,100.55489,"2026-10-28 15:00",3.6],["สะพานปทุมธานี 1",14.02506,100.53942,"2026-10-28 15:00",3.5],["บ้านคลองต่อ",7.01875,100.26077,"2026-10-28 14:00",3.5],["ส.บางจาก",13.6891,100.59068,"2026-10-28 15:00",3.5],["สนข.พระโขนง",13.70233,100.60197,"2026-10-28 15:00",3.5],["ส.คลองเตย",13.70628,100.58752,"2026-10-28 15:00",3],["TC.53",13.70186,100.57978,"2026-10-28 14:00",2.5],["ส.คลองสำเหร่",13.7067,100.49646,"2026-10-28 15:00",2.5],["กรุงเทพฯ บางนา สกษ.",13.66639,100.60611,"2026-10-28 13:00",2.5],["ส.คลองบางซื่อ",13.80023,100.51848,"2026-10-28 15:00",2.5],["สนข.คลองเตย",13.70791,100.58363,"2026-10-28 15:00",2.5],["ส.คลองช่องนนทรี",13.69493,100.54874,"2026-10-28 15:00",2.5],["สนข.ยานนาวา",13.69627,100.54222,"2026-10-28 15:00",2],["สถานีวิจัยประมงศรีราชา",13.18588,100.91692,"2026-10-28 15:00",2],["ปตร.คลองรางจาก-ถ.ประชาอุทิศ",13.63494,100.50218,"2026-10-28 15:00",2],["บ้านกุดบอน",13.90968,101.83829,"2026-10-28 14:00",1.5],["สนข.ห้วยขวาง",13.77678,100.57906,"2026-10-28 15:00",1.5],["ส.คลองเจ็ก",13.69223,100.58991,"2026-10-28 15:00",1.5],["TC.22",13.89639,100.49417,"2026-10-28 14:00",1.5],["ศูนย์ฯ (ดินแดง)",13.76902,100.55452,"2026-10-28 15:00",1.5],["สะพานนวลฉวี",13.94749,100.53507,"2026-10-28 15:00",1.4],["สนข.ป้อมปราบฯ",13.75826,100.51304,"2026-10-28 15:00",1],["สนข.สาทร",13.70821,100.52641,"2026-10-28 15:00",1],["ส.พระราม 4",13.7087,100.55457,"2026-10-28 15:00",1],["สนข.บางซื่อ",13.80973,100.53723,"2026-10-28 15:00",1],["สนข.พญาไท",13.78003,100.54287,"2026-10-28 15:00",1],["ปตร. คลองแพ",13.69497,100.58231,"2026-10-28 15:00",1],["เขื่อนแม่กลอง",13.95678,99.61505,"2026-10-28 14:00",1],["ศรีมหาโพธิ (KGT6)",13.97348,101.51751,"2026-10-28 15:00",0.8],["คลองลาดพร้าว วัดบางบัว",13.85402,100.58746,"2026-10-28 15:00",0.6],["สนข.ภาษีเจริญ",13.71441,100.43696,"2026-10-28 15:00",0.5],["ส.คลองภาษีเจริญ",13.72204,100.46863,"2026-10-28 15:00",0.5],["ปตร.คลองวัดด่าน",13.67071,100.54018,"2026-10-28 15:00",0.5],["สนข.บางพลัด",13.79429,100.50479,"2026-10-28 15:00",0.5],["จุดวัดสวนเบญจสิริ",13.73159,100.56745,"2026-10-28 15:00",0.5],["จุดวัด ค.บางบัว",13.85796,100.58682,"2026-10-28 15:00",0.5],["ปตร.คลองลาดพร้าว",13.79432,100.58933,"2026-10-28 15:00",0.5],["ส.คลองมอญ",13.74714,100.48531,"2026-10-28 15:00",0.5],["กรุงเทพฯ ท่าเรือคลองเตย",13.70694,100.56805,"2026-10-28 13:00",0.3],["กรุงเทพมหานคร",13.72639,100.56,"2026-10-28 13:00",0.2],["สำนักสงฆ์โสธรรมนิมิตร",13.16844,101.03034,"2026-10-28 15:00",0],["อบต.ปลวกแดง",12.97007,101.20457,"2026-10-28 15:00",0],["บ้านหนองไห",16.20808,102.66506,"2026-10-28 14:00",0],["TC.54",13.55381,100.57656,"2026-10-28 14:00",0],["TC.12",13.78817,100.50916,"2026-10-28 14:00",0],["อ.แก่งคอย จ.สระบุรี",14.62817,101.01447,"2026-10-28 14:00",0],["บ้านหัวเกาะ",13.83093,99.86531,"2026-10-28 14:00",0],["ปตร.ปากคลองท่าสาร - บางปลา",13.9703,99.7221,"2026-10-28 14:00",0],["วัดดอนน้ำผึ้ง",16.82748,102.79673,"2026-10-28 14:00",0],["ศาลากลางสมุทรปราการ",13.59801,100.59622,"2026-10-28 15:00",0],["ทม.ทับกวาง",14.60885,101.07645,"2026-10-28 15:00",0],["รพสต.บ่อวิน",13.05505,101.09782,"2026-10-28 15:00",0],["บ้านโป่ง",13.81866,99.86508,"2026-10-28 15:00",0],["บ่อสูบศาลอาญารัชดา",13.80967,100.57498,"2026-10-28 15:00",0],["สนข.หลักสี่",13.88748,100.57893,"2026-10-28 15:00",0],["จุดวัด ถ.เทศบาลสงเคราะห์",13.83978,100.54175,"2026-10-28 15:00",0],["ส.คลองบางเขนใหม่",13.81729,100.5105,"2026-10-28 15:00",0],["ส.คลองสำโรง",13.64819,100.59514,"2026-10-28 15:00",0],["ส.รัชดา-วิภาวดี",13.83022,100.55723,"2026-10-28 15:00",0],["ปตร. คลองบางน้ำผึ้ง",13.67665,100.58207,"2026-10-28 15:00",0]],"fr":[["ถ.เทศบาลสงเคราะห์ ช่วงตลาดประชานิเวศน์",13.84029,100.54611,"2026-10-28 15:15",0],["ถ.จันทน์ ซอย 28/2",13.70745,100.52105,"2026-10-28 15:15",0],["ถ.ประชาราษฏร์ แยกเตาปูน",13.80609,100.53216,"2026-10-28 15:15",0],["ถ.เยาวราช ช่วงแยกราชวงศ์",13.74186,100.50753,"2026-10-28 15:15",0],["ถ.เจริญกรุง ช่วง ซ.เจริญกรุง 82",13.6992,100.49927,"2026-10-28 15:15",0],["ถ.เจริญกรุง ช่วงตรงข้ามเอเชียทีค",13.70408,100.50473,"2026-10-28 15:15",0],["ถ.ลาดหญ้า วงเวียนใหญ่",13.72687,100.49486,"2026-10-28 15:15",0],["ถ.สุรวงศ์ ช่วงทางด่วน",13.7254,100.51689,"2026-10-28 15:15",0],["ถ.เพชรเกษม ช่วง ซ.อุดมศรี",13.72825,100.48203,"2026-10-28 15:15",0],["ถ.ประชาราษฎร์สาย 1 ใต้สะพานพระราม 7",13.81618,100.5146,"2026-10-28 15:15",0],["ถ.กำแพงเพชร 2 ตรงข้ามหมอชิต 2",13.81272,100.55,"2026-10-28 15:15",0],["ถ.กำแพงเพชร 2 หน้านครชัยแอร์ หมอชิต",13.82795,100.55161,"2026-10-28 15:15",0],["ถ.อินทรพิทักษ์ หน้าสถานีดับเพลิงธนบุรี",13.72731,100.48657,"2026-10-28 15:15",0],["อ.ท่าพระ (ขาเข้า)",13.72934,100.47412,"2026-10-28 15:15",0]],"dam":[[39,"ลำปาว",16.60243,103.4385,1137.04,57.43,1.33,4.58,0,1980],[42,"น้ำอูน",17.3,103.75,298.3,57.37,0.78,1.63,0,520],[8,"น้ำพุง",16.971667,103.938048,87.99,53.33,0.07,0,0,165.48],[4,"จุฬาภรณ์",16.533333,101.654593,138.5,84.45,0.12,0,0,163.75],[2,"อุบลรัตน์",16.770278,102.621325,1415.56,58.23,0,4.09,0,2431.32],[6,"ลำนางรอง",14.299444,102.759722,64.17,52.86,0.18,0,0,121.41],[3,"สิรินธร",15.202778,105.42089,1828.53,93.01,0,7.01,0,1966.47],[23,"แม่งัดสมบูรณ์ชล",19.16138,99.04011,256.88,97.05,0.79,0.13,0,265],[38,"แม่กวงอุดมธารา",18.92348,99.121978,179.78,68.36,0.52,0.39,0,263],[1,"ภูมิพล",17.241944,98.971456,9578.44,71.15,16.06,5,0,13462],[35,"กิ่วคอหมา",18.809072,99.642272,162.18,95.4,0.39,0.39,0,170],[34,"กิ่วลม",18.523833,99.624806,94.52,88.99,1.91,1.75,0,106.22],[230,"แม่มอก",17.3201,99.4518,96.84,88.04,0.36,0.5,0,110],[12,"สิริกิติ์",17.768056,100.554936,7760.24,81.6,11.36,12.94,0,9510],[11,"ป่าสักชลสิทธิ์",14.856944,101.076111,813.43,93.34,4.39,0.87,0,872],[17,"กระเสียว",14.830645,99.661749,247,82.61,2.56,0.63,0,299],[14,"ศรีนครินทร์",14.4,99.120667,17498.59,98.61,29.17,39.68,0,17745],[15,"วชิราลงกรณ",14.7975,98.60411,8598.46,97.05,12.28,15.07,0,8860],[37,"นฤบดินทรจินดา",14.080838,102.027308,291.31,98.84,0.7,0.09,0,295],[30,"คลองสียัด",13.431944,101.647778,370.5,88.21,1.15,0.01,0,420],[26,"บางลาง",6.15473,101.273,770.02,52.95,4.9,4.04,0,1454.36],[5,"ห้วยหลวง",17.3604,102.5724,75.51,55.7,0.14,0.51,0,135.57],[7,"มูลบน",14.484167,102.147056,87.91,62.34,0.43,0.69,0,141],[9,"ลำแชะ",14.415833,102.2774,171.49,62.36,0.31,1.24,0,275],[41,"ลำพระเพลิง",14.594286,101.839596,125.27,80.82,0.2,0.5,0,155],[40,"ลำตะคอง",14.865,101.561667,267.58,85.09,1.16,0.35,0,314.49],[36,"แควน้อยบำรุงแดน",17.182222,100.415556,807.55,86,1.92,0.86,0,939],[18,"ทับเสลา",15.534533,99.450405,160.66,100.41,2.27,0.11,0,160],[32,"ขุนด่านปราการชล",14.314722,101.321389,217.66,97.17,0.84,1.27,0,224],[19,"บางพระ",13.221432,100.966202,113.17,96.72,0.62,0.64,0,117],[24,"หนองปลาไหล",12.934647,101.297011,179.03,109.33,1.72,2.44,0,164],[33,"ประแสร์",12.977205,101.558297,267.8,90.78,0.17,0.44,0,295],[13,"แก่งกระจาน",12.917017,99.629886,686.33,96.67,4.23,6.91,0,710],[16,"ปราณบุรี",12.451389,99.816667,325.99,83.37,1.9,0.71,0,391],[25,"รัชชประภา",9.054554,98.670247,4277.88,75.86,6.62,6.24,0,5638.84]],"egat":{"at":"2026-10-29 11:00","tele":[["VKD01",1,77.06,105.36],["VKD02",1,66.85,158.13],["VKD03",1,63.26,188.54],["VKD04",1,42.85,260.28],["VKD05",1,34.56,300.63],["VKD06",1,25.07,418.92],["VKD07",1,57.22,3.88],["VKD08",1,96.24,37.76],["VKD09",1,50.55,47.66],["SND02",1,27.96,601.9],["SND03",1,22.83,0],["SND04",1,22.46,0],["SND05",1,128.43,30.23],["SND06",1,42.31,41.49],["K.10",2,34.53,304.06],["K.11A",2,13.99,0],["K.12",2,41.9,28.8],["K.17",2,0.26,0],["K.31",2,58.04,24.48],["K.32A",2,85.64,4.36],["K.35A",2,27.75,565],["K.37",2,25.07,419.23],["K.3A",2,22.55,0],["K.54",2,63.24,185.2],["K.58",2,42.79,275.33],["K.62",2,50.49,62.1]],"daily":[["BB",5786.24,60,16.43,7.98,9586.24,71.21,28.23,60.66,92.42,92.36],["SK",4907.9,74,15.4,16.98,7757.9,81.58,29.97,69.1,94.45,196.53],["SNR",7208.64,96,19.46,43.41,17473.64,98.47,57.85,75.58,99.67,502.43],["VRK",5578.81,95,8.39,15,8590.81,96.96,34,68.46,99.92,173.61],["RPB",2923.28,68,4.6,7.28,4274.82,75.81,23.97,64.73,99.61,84.26],["BLG",493.36,42,3.76,4.03,769.64,52.92,19,45.11,65.85,46.64],["UR",831.09,45,2.59,4.02,1412.76,58.11,23.92,47.16,89.04,46.53],["SRD",988.89,87,0,6.98,1820.27,92.57,42.28,79.07,99.27,80.79],["CLB",101.28,80,0.03,0,138.5,84.58,22.73,72.56,98.58,0],["NP",79.31,51,0.07,0,87.99,53.17,5.25,51.36,97.29,0],["HK",17.37,93,0.01,0,18.88,93.31,7.46,52.09,99.63,0],["abd",3.62,74,7.98,8.02,3.62,73.58,0,0,0,0],["TN",21.18,81,40.75,39.69,50.13,91.1,52.61,0,0,255.67]],"rain":[["SNR","SND02",0],["SNR","SND03",0],["SNR","SND04",0],["SNR","SND05",0],["SNR","SND06",0],["VRK","VKD01",0],["VRK","VKD02",0],["VRK","VKD03",0],["VRK","VKD04",0],["VRK","VKD05",0],["VRK","VKD06",2],["VRK","VKD07",0],["VRK","VKD08",23],["VRK","VKD09",0]]}};
+window.REGION_GEO = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"th":true},"geometry":{"type":"MultiPolygon","coordinates":[[[[102.61,11.68],[102.59,11.57],[102.53,11.61],[102.55,11.67],[102.57,11.69],[102.61,11.68]]],[[[102.43,11.99],[102.43,11.97],[102.38,11.98],[102.36,11.97],[102.3,11.98],[102.27,12.12],[102.28,12.15],[102.32,12.14],[102.38,12.07],[102.41,12.03],[102.43,11.99]]],[[[98.41,7.9],[98.4,7.83],[98.36,7.83],[98.32,7.78],[98.3,7.78],[98.26,7.93],[98.3,8.14],[98.32,8.17],[98.35,8.11],[98.43,8.09],[98.4,7.97],[98.41,7.9]]],[[[100.12,20.32],[100.12,20.26],[100.14,20.25],[100.17,20.27],[100.22,20.34],[100.27,20.38],[100.32,20.39],[100.37,20.34],[100.43,20.24],[100.49,20.18],[100.52,20.18],[100.54,20.13],[100.54,20.09],[100.51,20],[100.47,19.89],[100.4,19.76],[100.42,19.65],[100.51,19.55],[100.63,19.5],[100.75,19.52],[100.81,19.54],[100.86,19.58],[100.91,19.61],[100.96,19.61],[101.16,19.58],[101.21,19.55],[101.22,19.49],[101.2,19.33],[101.23,19.21],[101.28,19.09],[101.29,18.98],[101.22,18.79],[101.17,18.62],[101.11,18.53],[101.06,18.48],[101.05,18.44],[101.05,18.41],[101.09,18.36],[101.14,18.29],[101.15,18.22],[101.14,18.14],[101.11,18.03],[101,17.8],[100.91,17.58],[100.96,17.54],[101.04,17.51],[101.11,17.48],[101.17,17.5],[101.3,17.62],[101.41,17.72],[101.56,17.81],[101.56,17.82],[101.69,17.89],[101.74,17.95],[101.77,18.03],[101.82,18.07],[101.88,18.05],[101.95,18.08],[102.03,18.17],[102.1,18.21],[102.15,18.2],[102.23,18.15],[102.35,18.05],[102.46,17.98],[102.55,17.96],[102.6,17.93],[102.6,17.87],[102.62,17.83],[102.66,17.82],[102.68,17.82],[102.67,17.85],[102.72,17.89],[102.81,17.95],[102.9,17.98],[102.99,17.99],[103.05,18.03],[103.09,18.14],[103.15,18.22],[103.2,18.26],[103.26,18.28],[103.28,18.31],[103.25,18.34],[103.25,18.37],[103.29,18.41],[103.37,18.42],[103.49,18.42],[103.63,18.38],[103.79,18.32],[103.9,18.29],[103.95,18.32],[104.05,18.22],[104.2,17.99],[104.32,17.82],[104.43,17.7],[104.54,17.61],[104.65,17.55],[104.74,17.46],[104.82,17.3],[104.76,17.08],[104.74,16.88],[104.75,16.65],[104.82,16.47],[104.95,16.34],[105.03,16.24],[105.05,16.16],[105.15,16.09],[105.33,16.04],[105.41,15.99],[105.37,15.94],[105.37,15.89],[105.4,15.83],[105.46,15.78],[105.56,15.74],[105.62,15.7],[105.64,15.66],[105.64,15.59],[105.62,15.49],[105.57,15.41],[105.51,15.36],[105.5,15.32],[105.49,15.26],[105.49,15.13],[105.53,15.04],[105.55,14.93],[105.52,14.84],[105.5,14.66],[105.5,14.59],[105.48,14.53],[105.42,14.47],[105.34,14.42],[105.25,14.37],[105.18,14.35],[105.17,14.34],[105.13,14.28],[105.07,14.23],[105.03,14.23],[105,14.25],[104.98,14.29],[104.97,14.37],[104.88,14.4],[104.78,14.43],[104.58,14.39],[104.41,14.37],[104.23,14.4],[104.05,14.36],[103.98,14.36],[103.9,14.36],[103.82,14.36],[103.74,14.37],[103.6,14.42],[103.55,14.42],[103.43,14.38],[103.31,14.35],[103.2,14.33],[103.03,14.25],[102.91,14.14],[102.87,14.06],[102.81,13.97],[102.73,13.84],[102.62,13.72],[102.55,13.66],[102.57,13.63],[102.55,13.58],[102.43,13.57],[102.34,13.56],[102.32,13.54],[102.33,13.29],[102.36,13.19],[102.42,13.08],[102.46,13.02],[102.49,12.83],[102.5,12.67],[102.63,12.57],[102.7,12.49],[102.75,12.43],[102.74,12.38],[102.71,12.26],[102.74,12.09],[102.92,11.73],[102.93,11.71],[102.91,11.7],[102.88,11.77],[102.79,11.89],[102.76,12.01],[102.65,12.15],[102.6,12.2],[102.57,12.16],[102.54,12.11],[102.43,12.18],[102.34,12.25],[102.26,12.39],[102.25,12.36],[102.23,12.33],[102.13,12.44],[102.03,12.53],[101.94,12.56],[101.89,12.59],[101.84,12.64],[101.72,12.69],[101.44,12.62],[101.09,12.67],[100.95,12.62],[100.9,12.65],[100.86,12.72],[100.9,12.82],[100.9,13.03],[100.95,13.19],[100.93,13.3],[100.95,13.36],[100.96,13.43],[100.91,13.46],[100.66,13.52],[100.6,13.57],[100.54,13.51],[100.23,13.48],[100.12,13.44],[100.02,13.35],[99.99,13.24],[100.05,13.17],[100.09,13.04],[99.98,12.77],[99.96,12.69],[100.01,12.35],[99.99,12.17],[99.93,12.05],[99.84,11.94],[99.8,11.75],[99.73,11.66],[99.63,11.46],[99.56,11.22],[99.51,11.1],[99.49,10.89],[99.28,10.57],[99.24,10.39],[99.16,10.32],[99.19,10.27],[99.19,10.18],[99.17,9.93],[99.16,9.73],[99.19,9.63],[99.29,9.41],[99.27,9.35],[99.25,9.27],[99.33,9.23],[99.4,9.21],[99.72,9.31],[99.83,9.29],[99.88,9.19],[99.91,9.11],[99.96,8.67],[99.99,8.59],[100.06,8.51],[100.13,8.43],[100.15,8.44],[100.16,8.47],[100.16,8.51],[100.23,8.43],[100.28,8.27],[100.45,7.44],[100.5,7.34],[100.54,7.23],[100.44,7.28],[100.41,7.46],[100.38,7.54],[100.34,7.55],[100.28,7.55],[100.28,7.58],[100.32,7.64],[100.32,7.72],[100.26,7.77],[100.16,7.73],[100.16,7.6],[100.21,7.5],[100.37,7.28],[100.42,7.19],[100.49,7.16],[100.59,7.18],[100.7,7.08],[100.79,6.99],[101.02,6.86],[101.16,6.88],[101.3,6.91],[101.4,6.9],[101.5,6.86],[101.61,6.75],[101.8,6.47],[102.1,6.24],[102.07,6.18],[102.06,6.1],[101.94,5.98],[101.92,5.91],[101.87,5.82],[101.79,5.78],[101.72,5.77],[101.68,5.78],[101.65,5.8],[101.6,5.88],[101.58,5.9],[101.56,5.91],[101.4,5.85],[101.26,5.79],[101.23,5.73],[101.19,5.67],[101.15,5.64],[101.11,5.64],[101.08,5.68],[101.03,5.72],[100.98,5.77],[100.99,5.85],[101.08,5.96],[101.09,6.03],[101.08,6.17],[101.05,6.24],[101.03,6.25],[100.99,6.26],[100.87,6.25],[100.82,6.33],[100.79,6.43],[100.76,6.46],[100.72,6.48],[100.63,6.45],[100.57,6.47],[100.35,6.55],[100.26,6.68],[100.22,6.69],[100.18,6.67],[100.16,6.64],[100.14,6.49],[100.12,6.44],[99.87,6.75],[99.7,6.88],[99.72,7.11],[99.67,7.15],[99.6,7.15],[99.55,7.22],[99.6,7.36],[99.53,7.33],[99.43,7.34],[99.36,7.37],[99.3,7.56],[99.26,7.62],[99.18,7.72],[99.08,7.72],[99.04,7.77],[99.05,7.89],[98.97,7.96],[98.87,8.02],[98.79,8.06],[98.7,8.26],[98.64,8.31],[98.58,8.34],[98.5,8.32],[98.47,8.25],[98.42,8.18],[98.36,8.19],[98.3,8.23],[98.24,8.42],[98.23,8.54],[98.24,8.77],[98.33,8.97],[98.37,9.29],[98.44,9.49],[98.49,9.56],[98.56,9.84],[98.7,10.19],[98.72,10.27],[98.75,10.35],[98.77,10.43],[98.78,10.56],[98.76,10.62],[98.76,10.66],[98.79,10.71],[98.89,10.79],[99.02,10.92],[99.19,11.11],[99.36,11.39],[99.44,11.55],[99.48,11.61],[99.51,11.63],[99.57,11.69],[99.61,11.75],[99.61,11.78],[99.52,12.09],[99.46,12.19],[99.43,12.31],[99.42,12.4],[99.4,12.47],[99.41,12.55],[99.37,12.59],[99.3,12.65],[99.22,12.74],[99.17,12.88],[99.17,12.96],[99.13,13.03],[99.11,13.1],[99.14,13.17],[99.18,13.23],[99.17,13.5],[99.16,13.58],[99.14,13.72],[99.09,13.82],[99.01,13.95],[98.93,14.05],[98.72,14.24],[98.57,14.36],[98.5,14.47],[98.4,14.6],[98.33,14.7],[98.25,14.81],[98.2,14.98],[98.18,15.15],[98.19,15.2],[98.23,15.24],[98.29,15.27],[98.33,15.28],[98.45,15.36],[98.54,15.35],[98.56,15.37],[98.56,15.4],[98.55,15.56],[98.56,15.77],[98.57,15.94],[98.59,16.05],[98.82,16.18],[98.87,16.24],[98.89,16.3],[98.89,16.35],[98.87,16.39],[98.84,16.42],[98.69,16.31],[98.66,16.33],[98.59,16.52],[98.56,16.57],[98.52,16.64],[98.48,16.73],[98.47,16.9],[98.44,16.98],[98.26,17.15],[98.17,17.24],[98.06,17.37],[97.93,17.53],[97.79,17.68],[97.73,17.78],[97.71,17.8],[97.7,17.83],[97.74,17.94],[97.72,18.04],[97.65,18.17],[97.62,18.26],[97.63,18.29],[97.6,18.3],[97.52,18.3],[97.45,18.36],[97.38,18.49],[97.38,18.52],[97.4,18.52],[97.48,18.49],[97.52,18.5],[97.58,18.53],[97.67,18.56],[97.73,18.57],[97.75,18.59],[97.75,18.62],[97.71,18.93],[97.71,19],[97.8,19.13],[97.79,19.27],[97.82,19.46],[97.92,19.59],[97.99,19.65],[98.02,19.75],[98.05,19.77],[98.11,19.76],[98.24,19.69],[98.29,19.69],[98.37,19.69],[98.46,19.69],[98.5,19.7],[98.76,19.77],[98.82,19.78],[98.88,19.77],[98.92,19.77],[98.96,19.8],[98.99,19.86],[99.02,20.04],[99.04,20.07],[99.07,20.1],[99.13,20.12],[99.2,20.12],[99.28,20.08],[99.34,20.08],[99.4,20.09],[99.45,20.12],[99.49,20.15],[99.5,20.19],[99.49,20.26],[99.45,20.35],[99.46,20.36],[99.53,20.34],[99.64,20.32],[99.72,20.33],[99.77,20.34],[99.82,20.38],[99.89,20.42],[99.95,20.42],[100,20.38],[100.12,20.32]]],[[[100.08,9.7],[100.06,9.68],[100.03,9.71],[100,9.75],[99.98,9.79],[100.04,9.79],[100.07,9.75],[100.08,9.7]]],[[[100.07,9.59],[100.08,9.53],[100.05,9.46],[99.96,9.42],[99.93,9.48],[99.94,9.56],[99.95,9.58],[100.04,9.58],[100.07,9.59]]],[[[99.66,6.52],[99.64,6.52],[99.61,6.6],[99.65,6.71],[99.7,6.57],[99.66,6.52]]],[[[98.59,7.93],[98.58,7.92],[98.53,8.11],[98.6,8.06],[98.59,7.93]]],[[[98.31,9.05],[98.25,9.04],[98.26,9.1],[98.27,9.13],[98.3,9.14],[98.31,9.08],[98.31,9.05]]],[[[99.08,7.59],[99.1,7.47],[99.07,7.5],[99.04,7.55],[99.04,7.63],[99.05,7.64],[99.08,7.59]]]]}},{"type":"Feature","properties":{"th":false},"geometry":{"type":"MultiPolygon","coordinates":[[[[100.12,6.44],[100.14,6.49],[100.16,6.64],[100.18,6.67],[100.22,6.69],[100.26,6.68],[100.35,6.55],[100.57,6.47],[100.63,6.45],[100.72,6.48],[100.76,6.46],[100.79,6.43],[100.82,6.33],[100.87,6.25],[100.99,6.26],[101.03,6.25],[101.05,6.24],[101.08,6.17],[101.09,6.03],[101.08,5.96],[100.99,5.85],[100.98,5.77],[101.03,5.72],[101.08,5.68],[101.11,5.64],[101.15,5.64],[101.19,5.67],[101.23,5.73],[101.26,5.79],[101.4,5.85],[101.56,5.91],[101.58,5.9],[101.6,5.88],[101.65,5.8],[101.68,5.78],[101.72,5.77],[101.79,5.78],[101.87,5.82],[101.92,5.91],[101.94,5.98],[102.06,6.1],[102.07,6.18],[102.1,6.24],[102.28,6.2],[102.34,6.17],[102.53,5.86],[102.79,5.64],[102.9,5.56],[102.98,5.52],[103.1,5.41],[103.2,5.26],[103.42,4.85],[103.45,4.67],[103.47,4.39],[103.42,3.98],[103.36,3.77],[103.37,3.67],[103.45,3.52],[103.43,3.38],[103.45,3.26],[103.44,2.93],[103.48,2.84],[103.54,2.77],[103.81,2.58],[103.83,2.51],[103.97,2.26],[104.22,1.72],[104.29,1.48],[104.28,1.42],[104.25,1.39],[104.18,1.37],[104.11,1.41],[104.09,1.45],[104.1,1.49],[104.08,1.53],[104.02,1.58],[103.98,1.62],[103.99,1.55],[103.99,1.46],[103.92,1.45],[103.82,1.48],[103.69,1.45],[103.55,1.33],[103.48,1.33],[103.43,1.43],[103.4,1.5],[103.36,1.55],[102.9,1.79],[102.73,1.86],[102.55,2.04],[102.15,2.25],[101.89,2.45],[101.78,2.57],[101.52,2.68],[101.41,2.81],[101.35,2.84],[101.3,2.89],[101.35,3.01],[101.33,3.14],[101.3,3.25],[101.12,3.47],[101.03,3.63],[100.85,3.78],[100.78,3.86],[100.72,3.97],[100.76,4],[100.8,4.02],[100.76,4.1],[100.66,4.23],[100.62,4.37],[100.62,4.65],[100.48,5.04],[100.35,5.59],[100.37,5.78],[100.34,5.98],[100.26,6.18],[100.16,6.32],[100.12,6.44]]],[[[100.29,5.3],[100.26,5.27],[100.19,5.28],[100.21,5.45],[100.24,5.47],[100.31,5.44],[100.34,5.41],[100.29,5.3]]],[[[99.85,6.47],[99.92,6.36],[99.88,6.31],[99.87,6.3],[99.82,6.31],[99.78,6.27],[99.74,6.26],[99.7,6.34],[99.66,6.37],[99.65,6.42],[99.71,6.43],[99.75,6.41],[99.82,6.44],[99.85,6.47]]]]}},{"type":"Feature","properties":{"th":false},"geometry":{"type":"MultiPolygon","coordinates":[[[[102.13,22.38],[102.18,22.28],[102.3,22.18],[102.44,22.03],[102.49,21.96],[102.58,21.9],[102.61,21.85],[102.63,21.77],[102.64,21.71],[102.66,21.68],[102.7,21.66],[102.74,21.68],[102.77,21.71],[102.8,21.8],[102.82,21.81],[102.84,21.74],[102.88,21.72],[102.92,21.71],[102.95,21.68],[102.96,21.63],[102.95,21.57],[102.91,21.51],[102.89,21.44],[102.87,21.34],[102.85,21.27],[102.88,21.2],[103.1,20.89],[103.21,20.84],[103.46,20.78],[103.55,20.74],[103.64,20.7],[103.72,20.72],[103.79,20.81],[103.88,20.86],[104.05,20.94],[104.1,20.95],[104.19,20.91],[104.35,20.82],[104.46,20.73],[104.53,20.69],[104.58,20.65],[104.58,20.6],[104.53,20.55],[104.48,20.53],[104.41,20.49],[104.37,20.44],[104.39,20.42],[104.5,20.41],[104.62,20.37],[104.65,20.33],[104.66,20.29],[104.68,20.23],[104.7,20.21],[104.81,20.22],[104.85,20.2],[104.89,20.17],[104.93,20.08],[104.93,20.02],[104.85,19.95],[104.82,19.9],[104.8,19.84],[104.74,19.75],[104.59,19.62],[104.55,19.61],[104.26,19.69],[104.13,19.68],[104.06,19.68],[104.03,19.67],[104.01,19.65],[104.05,19.56],[104.06,19.48],[104.03,19.42],[103.93,19.37],[103.9,19.34],[103.89,19.3],[103.92,19.27],[104.01,19.23],[104.11,19.2],[104.45,18.98],[104.52,18.93],[104.61,18.86],[104.72,18.8],[104.99,18.73],[105.12,18.68],[105.15,18.65],[105.14,18.62],[105.11,18.57],[105.09,18.5],[105.09,18.45],[105.12,18.41],[105.16,18.34],[105.27,18.24],[105.34,18.19],[105.4,18.18],[105.46,18.15],[105.52,18.08],[105.59,17.98],[105.6,17.92],[105.63,17.83],[105.69,17.74],[105.78,17.64],[105.9,17.53],[105.97,17.45],[106,17.41],[106.27,17.22],[106.33,17.14],[106.43,17],[106.47,16.98],[106.5,16.95],[106.53,16.88],[106.53,16.82],[106.54,16.65],[106.6,16.6],[106.64,16.54],[106.66,16.49],[106.7,16.46],[106.74,16.45],[106.79,16.49],[106.83,16.53],[106.85,16.52],[106.89,16.4],[106.93,16.35],[107,16.31],[107.07,16.28],[107.22,16.14],[107.3,16.08],[107.35,16.07],[107.4,16.04],[107.41,16],[107.39,15.95],[107.36,15.92],[107.19,15.84],[107.17,15.8],[107.19,15.75],[107.23,15.68],[107.28,15.62],[107.34,15.56],[107.46,15.47],[107.56,15.39],[107.62,15.31],[107.65,15.25],[107.63,15.19],[107.59,15.12],[107.56,15.06],[107.5,15.02],[107.48,14.98],[107.51,14.92],[107.52,14.87],[107.51,14.82],[107.52,14.7],[107.47,14.66],[107.42,14.56],[107.38,14.56],[107.29,14.59],[107.26,14.57],[107.21,14.5],[107.11,14.42],[107.06,14.42],[107.03,14.43],[106.99,14.39],[106.94,14.33],[106.91,14.33],[106.82,14.31],[106.78,14.33],[106.74,14.39],[106.66,14.44],[106.6,14.48],[106.56,14.5],[106.53,14.55],[106.5,14.58],[106.45,14.52],[106.35,14.45],[106.27,14.47],[106.22,14.48],[106.19,14.39],[106.17,14.37],[106.01,14.36],[105.98,14.34],[106,14.26],[106.1,14.13],[106.12,14.05],[106.07,13.92],[105.9,13.93],[105.83,13.98],[105.76,14.05],[105.74,14.08],[105.53,14.16],[105.39,14.11],[105.35,14.11],[105.28,14.16],[105.25,14.2],[105.21,14.26],[105.18,14.32],[105.18,14.35],[105.25,14.37],[105.34,14.42],[105.42,14.47],[105.48,14.53],[105.5,14.59],[105.5,14.66],[105.52,14.84],[105.55,14.93],[105.53,15.04],[105.49,15.13],[105.49,15.26],[105.5,15.32],[105.51,15.36],[105.57,15.41],[105.62,15.49],[105.64,15.59],[105.64,15.66],[105.62,15.7],[105.56,15.74],[105.46,15.78],[105.4,15.83],[105.37,15.89],[105.37,15.94],[105.41,15.99],[105.33,16.04],[105.15,16.09],[105.05,16.16],[105.03,16.24],[104.95,16.34],[104.82,16.47],[104.75,16.65],[104.74,16.88],[104.76,17.08],[104.82,17.3],[104.74,17.46],[104.65,17.55],[104.54,17.61],[104.43,17.7],[104.32,17.82],[104.2,17.99],[104.05,18.22],[103.95,18.32],[103.9,18.29],[103.79,18.32],[103.63,18.38],[103.49,18.42],[103.37,18.42],[103.29,18.41],[103.25,18.37],[103.25,18.34],[103.28,18.31],[103.26,18.28],[103.2,18.26],[103.15,18.22],[103.09,18.14],[103.05,18.03],[102.99,17.99],[102.9,17.98],[102.81,17.95],[102.72,17.89],[102.67,17.85],[102.68,17.82],[102.66,17.82],[102.62,17.83],[102.6,17.87],[102.6,17.93],[102.55,17.96],[102.46,17.98],[102.35,18.05],[102.23,18.15],[102.15,18.2],[102.1,18.21],[102.03,18.17],[101.95,18.08],[101.88,18.05],[101.82,18.07],[101.77,18.03],[101.74,17.95],[101.69,17.89],[101.56,17.82],[101.56,17.81],[101.41,17.72],[101.3,17.62],[101.17,17.5],[101.11,17.48],[101.04,17.51],[100.96,17.54],[100.91,17.58],[101,17.8],[101.11,18.03],[101.14,18.14],[101.15,18.22],[101.14,18.29],[101.09,18.36],[101.05,18.41],[101.05,18.44],[101.06,18.48],[101.11,18.53],[101.17,18.62],[101.22,18.79],[101.29,18.98],[101.28,19.09],[101.23,19.21],[101.2,19.33],[101.22,19.49],[101.21,19.55],[101.16,19.58],[100.96,19.61],[100.91,19.61],[100.86,19.58],[100.81,19.54],[100.75,19.52],[100.63,19.5],[100.51,19.55],[100.42,19.65],[100.4,19.76],[100.47,19.89],[100.51,20],[100.54,20.09],[100.54,20.13],[100.52,20.18],[100.49,20.18],[100.43,20.24],[100.37,20.34],[100.32,20.39],[100.27,20.38],[100.22,20.34],[100.17,20.27],[100.14,20.25],[100.12,20.26],[100.12,20.32],[100.13,20.37],[100.18,20.59],[100.25,20.73],[100.33,20.8],[100.41,20.82],[100.49,20.81],[100.57,20.83],[100.62,20.86],[100.62,20.88],[100.55,20.88],[100.52,20.92],[100.54,20.99],[100.57,21.04],[100.61,21.06],[100.66,21.13],[100.7,21.25],[100.76,21.31],[100.82,21.31],[100.93,21.37],[101.08,21.47],[101.14,21.57],[101.2,21.52],[101.17,21.41],[101.21,21.38],[101.22,21.34],[101.21,21.28],[101.22,21.22],[101.25,21.2],[101.28,21.18],[101.44,21.23],[101.54,21.23],[101.58,21.2],[101.62,21.19],[101.67,21.17],[101.71,21.15],[101.73,21.16],[101.78,21.2],[101.8,21.21],[101.8,21.24],[101.76,21.28],[101.72,21.32],[101.72,21.4],[101.74,21.53],[101.75,21.61],[101.74,21.78],[101.74,21.83],[101.7,21.88],[101.6,21.99],[101.58,22.05],[101.56,22.12],[101.56,22.16],[101.54,22.21],[101.52,22.25],[101.57,22.28],[101.62,22.33],[101.65,22.41],[101.67,22.46],[101.71,22.49],[101.74,22.5],[101.76,22.49],[101.84,22.39],[101.94,22.44],[102.02,22.44],[102.09,22.41],[102.13,22.38]]]]}},{"type":"Feature","properties":{"th":false},"geometry":{"type":"MultiPolygon","coordinates":[[[[103.05,11.28],[103.03,11.28],[103.01,11.28],[102.99,11.29],[103,11.35],[103.01,11.38],[103.04,11.39],[103.05,11.28]]],[[[103.32,10.72],[103.28,10.68],[103.22,10.76],[103.22,10.78],[103.32,10.72]]],[[[107.52,14.7],[107.53,14.65],[107.49,14.55],[107.45,14.45],[107.37,14.37],[107.36,14.31],[107.33,14.13],[107.34,14.07],[107.36,14.02],[107.39,13.99],[107.46,13.82],[107.53,13.65],[107.59,13.52],[107.61,13.44],[107.55,13.23],[107.47,13.03],[107.48,12.93],[107.51,12.83],[107.54,12.71],[107.56,12.54],[107.54,12.43],[107.51,12.36],[107.44,12.3],[107.39,12.26],[107.33,12.32],[107.28,12.32],[107.21,12.3],[107.16,12.28],[107.05,12.18],[106.93,12.08],[106.76,12.05],[106.7,11.98],[106.63,11.97],[106.5,11.97],[106.42,11.95],[106.42,11.91],[106.41,11.74],[106.41,11.7],[106.4,11.69],[106.34,11.68],[106.24,11.71],[106.1,11.75],[106,11.76],[105.95,11.68],[105.93,11.65],[105.89,11.65],[105.85,11.64],[105.84,11.6],[105.84,11.56],[105.85,11.49],[105.86,11.37],[105.86,11.3],[105.89,11.24],[106.1,11.08],[106.16,11.04],[106.17,11.01],[106.13,10.92],[106.16,10.8],[106.1,10.8],[105.99,10.85],[105.94,10.89],[105.88,10.86],[105.85,10.86],[105.81,10.93],[105.76,10.99],[105.7,10.99],[105.58,10.97],[105.45,10.95],[105.41,10.95],[105.39,10.94],[105.31,10.85],[105.28,10.86],[105.16,10.9],[105.05,10.91],[105.02,10.89],[105.04,10.81],[105.06,10.73],[105.05,10.7],[104.98,10.66],[104.9,10.59],[104.85,10.53],[104.82,10.52],[104.69,10.52],[104.56,10.52],[104.51,10.46],[104.47,10.42],[104.43,10.41],[104.26,10.54],[103.94,10.59],[103.9,10.64],[103.87,10.65],[103.84,10.58],[103.66,10.51],[103.59,10.55],[103.53,10.6],[103.54,10.67],[103.59,10.72],[103.68,10.76],[103.72,10.89],[103.65,11.06],[103.6,11.11],[103.53,11.15],[103.47,11.08],[103.41,10.98],[103.36,10.92],[103.27,10.91],[103.15,10.91],[103.11,11.07],[103.09,11.21],[103.11,11.37],[103.12,11.46],[103.01,11.59],[103,11.71],[102.95,11.77],[102.93,11.74],[102.93,11.71],[102.92,11.73],[102.74,12.09],[102.71,12.26],[102.74,12.38],[102.75,12.43],[102.7,12.49],[102.63,12.57],[102.5,12.67],[102.49,12.83],[102.46,13.02],[102.42,13.08],[102.36,13.19],[102.33,13.29],[102.32,13.54],[102.34,13.56],[102.43,13.57],[102.55,13.58],[102.57,13.63],[102.55,13.66],[102.62,13.72],[102.73,13.84],[102.81,13.97],[102.87,14.06],[102.91,14.14],[103.03,14.25],[103.2,14.33],[103.31,14.35],[103.43,14.38],[103.55,14.42],[103.6,14.42],[103.74,14.37],[103.82,14.36],[103.9,14.36],[103.98,14.36],[104.05,14.36],[104.23,14.4],[104.41,14.37],[104.58,14.39],[104.78,14.43],[104.88,14.4],[104.97,14.37],[104.98,14.29],[105,14.25],[105.03,14.23],[105.07,14.23],[105.13,14.28],[105.17,14.34],[105.18,14.35],[105.18,14.32],[105.21,14.26],[105.25,14.2],[105.28,14.16],[105.35,14.11],[105.39,14.11],[105.53,14.16],[105.74,14.08],[105.76,14.05],[105.83,13.98],[105.9,13.93],[106.07,13.92],[106.12,14.05],[106.1,14.13],[106,14.26],[105.98,14.34],[106.01,14.36],[106.17,14.37],[106.19,14.39],[106.22,14.48],[106.27,14.47],[106.35,14.45],[106.45,14.52],[106.5,14.58],[106.53,14.55],[106.56,14.5],[106.6,14.48],[106.66,14.44],[106.74,14.39],[106.78,14.33],[106.82,14.31],[106.91,14.33],[106.94,14.33],[106.99,14.39],[107.03,14.43],[107.06,14.42],[107.11,14.42],[107.21,14.5],[107.26,14.57],[107.29,14.59],[107.38,14.56],[107.42,14.56],[107.47,14.66],[107.52,14.7]]]]}},{"type":"Feature","properties":{"th":false},"geometry":{"type":"MultiPolygon","coordinates":[[[[100.12,20.32],[100,20.38],[99.95,20.42],[99.89,20.42],[99.82,20.38],[99.77,20.34],[99.72,20.33],[99.64,20.32],[99.53,20.34],[99.46,20.36],[99.45,20.35],[99.49,20.26],[99.5,20.19],[99.49,20.15],[99.45,20.12],[99.4,20.09],[99.34,20.08],[99.28,20.08],[99.2,20.12],[99.13,20.12],[99.07,20.1],[99.04,20.07],[99.02,20.04],[98.99,19.86],[98.96,19.8],[98.92,19.77],[98.88,19.77],[98.82,19.78],[98.76,19.77],[98.5,19.7],[98.46,19.69],[98.37,19.69],[98.29,19.69],[98.24,19.69],[98.11,19.76],[98.05,19.77],[98.02,19.75],[97.99,19.65],[97.92,19.59],[97.82,19.46],[97.79,19.27],[97.8,19.13],[97.71,19],[97.71,18.93],[97.75,18.62],[97.75,18.59],[97.73,18.57],[97.67,18.56],[97.58,18.53],[97.52,18.5],[97.48,18.49],[97.4,18.52],[97.38,18.52],[97.38,18.49],[97.45,18.36],[97.52,18.3],[97.6,18.3],[97.63,18.29],[97.62,18.26],[97.65,18.17],[97.72,18.04],[97.74,17.94],[97.7,17.83],[97.71,17.8],[97.73,17.78],[97.79,17.68],[97.93,17.53],[98.06,17.37],[98.17,17.24],[98.26,17.15],[98.44,16.98],[98.47,16.9],[98.48,16.73],[98.52,16.64],[98.56,16.57],[98.59,16.52],[98.66,16.33],[98.69,16.31],[98.84,16.42],[98.87,16.39],[98.89,16.35],[98.89,16.3],[98.87,16.24],[98.82,16.18],[98.59,16.05],[98.57,15.94],[98.56,15.77],[98.55,15.56],[98.56,15.4],[98.56,15.37],[98.54,15.35],[98.45,15.36],[98.33,15.28],[98.29,15.27],[98.23,15.24],[98.19,15.2],[98.18,15.15],[98.2,14.98],[98.25,14.81],[98.33,14.7],[98.4,14.6],[98.5,14.47],[98.57,14.36],[98.72,14.24],[98.93,14.05],[99.01,13.95],[99.09,13.82],[99.14,13.72],[99.16,13.58],[99.17,13.5],[99.18,13.23],[99.14,13.17],[99.11,13.1],[99.13,13.03],[99.17,12.96],[99.17,12.88],[99.22,12.74],[99.3,12.65],[99.37,12.59],[99.41,12.55],[99.4,12.47],[99.42,12.4],[99.43,12.31],[99.46,12.19],[99.52,12.09],[99.61,11.78],[99.61,11.75],[99.57,11.69],[99.51,11.63],[99.48,11.61],[99.44,11.55],[99.36,11.39],[99.19,11.11],[99.02,10.92],[98.89,10.79],[98.79,10.71],[98.76,10.66],[98.76,10.62],[98.78,10.56],[98.77,10.43],[98.75,10.35],[98.72,10.27],[98.7,10.19],[98.66,10.18],[98.56,10.03],[98.52,10.11],[98.5,10.18],[98.52,10.35],[98.47,10.68],[98.5,10.72],[98.53,10.74],[98.6,10.86],[98.68,10.99],[98.68,11.13],[98.74,11.24],[98.73,11.33],[98.73,11.44],[98.75,11.52],[98.74,11.59],[98.79,11.66],[98.88,11.72],[98.84,11.74],[98.8,11.78],[98.69,11.72],[98.64,11.74],[98.62,11.8],[98.64,11.87],[98.65,11.91],[98.69,11.96],[98.69,12.05],[98.66,12.13],[98.7,12.23],[98.63,12.23],[98.6,12.24],[98.62,12.3],[98.68,12.35],[98.62,12.44],[98.66,12.54],[98.66,12.66],[98.64,12.77],[98.64,12.85],[98.6,12.99],[98.57,13.16],[98.49,13.29],[98.42,13.48],[98.25,13.73],[98.25,13.84],[98.24,13.93],[98.2,13.98],[98.15,13.65],[98.11,13.71],[98.1,13.9],[98.07,13.99],[98.1,14.16],[98,14.33],[97.98,14.46],[97.91,14.65],[97.93,14.7],[98.02,14.65],[97.94,14.76],[97.87,14.74],[97.81,14.86],[97.8,15.19],[97.74,15.31],[97.78,15.43],[97.71,15.88],[97.58,16.02],[97.61,16.14],[97.64,16.25],[97.63,16.46],[97.66,16.52],[97.72,16.57],[97.67,16.55],[97.62,16.54],[97.51,16.53],[97.38,16.52],[97.33,16.67],[97.27,16.74],[97.21,16.89],[97.18,17.06],[97.2,17.1],[97.1,17.16],[97.07,17.21],[96.97,17.32],[96.85,17.4],[96.88,17.34],[96.91,17.31],[96.85,17.2],[96.91,17.03],[96.86,16.92],[96.81,16.78],[96.77,16.71],[96.62,16.56],[96.51,16.51],[96.43,16.5],[96.36,16.52],[96.28,16.6],[96.26,16.66],[96.25,16.77],[96.22,16.78],[96.19,16.77],[96.24,16.63],[96.24,16.57],[96.32,16.44],[96.29,16.41],[96.13,16.34],[96.08,16.35],[96.04,16.34],[96.03,16.28],[96.01,16.25],[95.76,16.17],[95.71,16.07],[95.68,15.98],[95.55,15.84],[95.39,15.72],[95.35,15.73],[95.3,15.76],[95.31,15.88],[95.36,15.99],[95.35,16.1],[95.33,16.03],[95.23,15.88],[95.18,15.83],[95.08,15.84],[94.94,15.82],[94.89,15.98],[94.89,16.04],[94.88,16.09],[94.9,16.14],[94.89,16.18],[94.86,16.1],[94.85,16.03],[94.8,15.97],[94.66,15.9],[94.66,15.99],[94.65,16.07],[94.68,16.13],[94.68,16.24],[94.72,16.4],[94.72,16.45],[94.7,16.51],[94.68,16.42],[94.66,16.34],[94.64,16.31],[94.59,16.29],[94.5,16.19],[94.44,16.1],[94.3,16.01],[94.23,16.02],[94.21,16.13],[94.27,16.52],[94.33,16.57],[94.36,16.64],[94.4,16.87],[94.45,16.95],[94.47,17.13],[94.5,17.17],[94.56,17.31],[94.59,17.57],[94.56,17.7],[94.5,17.82],[94.43,18.2],[94.27,18.51],[94.25,18.61],[94.17,18.73],[94.25,18.74],[94.09,18.85],[94.07,18.89],[94.04,19.15],[94.05,19.29],[94.02,19.27],[94,19.18],[93.94,19.15],[93.97,18.99],[93.96,18.96],[93.93,18.9],[93.8,18.96],[93.71,19.03],[93.6,19.19],[93.49,19.37],[93.53,19.4],[93.58,19.4],[93.73,19.27],[93.83,19.24],[93.89,19.27],[93.96,19.33],[94,19.44],[93.96,19.48],[93.89,19.5],[93.84,19.53],[93.77,19.61],[93.76,19.65],[93.74,19.7],[93.67,19.73],[93.61,19.78],[93.66,19.85],[93.71,19.91],[93.58,19.91],[93.44,20.01],[93.41,20.04],[93.36,20.06],[93.25,20.07],[93.16,20.04],[93.2,19.9],[93.19,19.85],[93.13,19.86],[93,20.07],[93.04,20.13],[93.1,20.18],[93.07,20.19],[93.02,20.19],[93.07,20.38],[93.03,20.41],[93.02,20.35],[92.99,20.29],[92.88,20.15],[92.83,20.18],[92.79,20.21],[92.84,20.28],[92.87,20.3],[92.89,20.34],[92.85,20.41],[92.79,20.47],[92.74,20.56],[92.71,20.56],[92.73,20.45],[92.72,20.3],[92.61,20.47],[92.38,20.72],[92.32,20.79],[92.31,20.86],[92.29,20.93],[92.27,21],[92.26,21.06],[92.21,21.11],[92.19,21.2],[92.18,21.29],[92.21,21.36],[92.28,21.43],[92.33,21.44],[92.37,21.41],[92.47,21.36],[92.54,21.32],[92.57,21.26],[92.6,21.27],[92.63,21.31],[92.62,21.35],[92.59,21.47],[92.58,21.61],[92.58,21.94],[92.57,21.98],[92.63,22.01],[92.65,22.05],[92.67,22.11],[92.69,22.13],[92.72,22.13],[92.77,22.11],[92.85,22.01],[92.91,21.99],[92.97,22],[93.02,22.15],[93.04,22.18],[93.07,22.21],[93.12,22.21],[93.15,22.23],[93.16,22.29],[93.16,22.36],[93.11,22.55],[93.09,22.63],[93.08,22.72],[93.11,22.81],[93.16,22.91],[93.15,23],[93.16,23.03],[93.2,23.04],[93.25,23.01],[93.31,23.03],[93.35,23.08],[93.37,23.13],[93.39,23.34],[93.41,23.53],[93.42,23.68],[93.37,23.77],[93.31,24.02],[93.33,24.06],[93.35,24.07],[93.45,23.99],[93.49,23.97],[93.56,23.99],[93.63,24.01],[93.68,24.01],[93.76,23.98],[93.85,23.94],[94.01,23.9],[94.07,23.87],[94.13,23.88],[94.17,23.97],[94.22,24.11],[94.29,24.32],[94.38,24.47],[94.4,24.51],[94.49,24.64],[94.59,24.77],[94.66,24.93],[94.71,25.05],[94.7,25.1],[94.68,25.14],[94.61,25.16],[94.57,25.19],[94.55,25.22],[94.55,25.24],[94.58,25.32],[94.62,25.41],[94.67,25.46],[94.79,25.52],[94.86,25.6],[94.95,25.7],[94.99,25.77],[95.01,25.91],[95.04,25.94],[95.09,25.99],[95.13,26.04],[95.13,26.07],[95.11,26.09],[95.07,26.19],[95.05,26.35],[95.06,26.47],[95.09,26.53],[95.13,26.6],[95.2,26.64],[95.31,26.67],[95.46,26.76],[95.74,26.95],[95.84,27.01],[95.91,27.05],[95.97,27.13],[96.06,27.22],[96.19,27.26],[96.27,27.28],[96.67,27.34],[96.73,27.33],[96.8,27.3],[96.88,27.18],[96.95,27.13],[97.04,27.1],[97.1,27.12],[97.1,27.16],[96.9,27.44],[96.88,27.51],[96.88,27.59],[96.9,27.64],[96.96,27.7],[97.05,27.76],[97.16,27.84],[97.22,27.89],[97.31,27.91],[97.34,27.94],[97.34,27.98],[97.34,28.03],[97.3,28.09],[97.31,28.16],[97.32,28.22],[97.36,28.25],[97.43,28.35],[97.48,28.43],[97.5,28.46],[97.54,28.51],[97.6,28.52],[97.66,28.5],[97.7,28.47],[97.73,28.41],[97.77,28.36],[97.81,28.36],[97.87,28.36],[97.89,28.36],[97.93,28.31],[98.02,28.21],[98.06,28.19],[98.1,28.14],[98.12,28.05],[98.13,27.97],[98.24,27.66],[98.28,27.6],[98.3,27.55],[98.35,27.54],[98.39,27.59],[98.41,27.64],[98.45,27.66],[98.51,27.65],[98.6,27.6],[98.65,27.57],[98.68,27.42],[98.68,27.25],[98.68,27.19],[98.71,27.04],[98.73,26.88],[98.74,26.79],[98.74,26.7],[98.73,26.58],[98.71,26.43],[98.67,26.3],[98.69,26.19],[98.66,26.14],[98.57,26.11],[98.56,26.07],[98.59,26],[98.65,25.92],[98.66,25.86],[98.62,25.83],[98.56,25.82],[98.47,25.79],[98.4,25.68],[98.33,25.59],[98.3,25.57],[98.17,25.59],[98.14,25.57],[98.1,25.42],[98.06,25.35],[98.01,25.29],[97.96,25.26],[97.92,25.24],[97.82,25.25],[97.77,25.16],[97.71,25.03],[97.71,24.97],[97.74,24.87],[97.72,24.84],[97.67,24.82],[97.58,24.78],[97.53,24.63],[97.53,24.49],[97.56,24.44],[97.62,24.42],[97.67,24.38],[97.67,24.31],[97.71,24.23],[97.69,24.13],[97.57,23.99],[97.56,23.91],[97.63,23.89],[97.69,23.9],[97.76,23.93],[97.84,23.99],[98.02,24.07],[98.21,24.11],[98.37,24.12],[98.5,24.12],[98.56,24.1],[98.59,24.07],[98.77,24.12],[98.8,24.12],[98.83,24.12],[98.83,24.09],[98.7,23.96],[98.68,23.91],[98.68,23.84],[98.74,23.78],[98.79,23.74],[98.83,23.62],[98.8,23.52],[98.82,23.48],[98.86,23.44],[98.88,23.38],[98.88,23.31],[98.86,23.19],[99.06,23.13],[99.22,23.1],[99.34,23.1],[99.42,23.07],[99.46,23.05],[99.5,23],[99.51,22.96],[99.47,22.93],[99.38,22.83],[99.34,22.69],[99.34,22.59],[99.34,22.5],[99.24,22.37],[99.2,22.28],[99.17,22.19],[99.17,22.15],[99.19,22.13],[99.23,22.11],[99.3,22.1],[99.39,22.11],[99.59,22.09],[99.82,22.05],[99.92,22.03],[99.95,21.99],[99.94,21.9],[99.92,21.82],[99.94,21.76],[99.98,21.7],[100.04,21.68],[100.1,21.66],[100.1,21.62],[100.09,21.56],[100.12,21.51],[100.15,21.48],[100.22,21.46],[100.35,21.5],[100.45,21.48],[100.53,21.46],[100.6,21.47],[100.68,21.5],[100.84,21.66],[101.02,21.74],[101.08,21.76],[101.12,21.75],[101.13,21.74],[101.13,21.71],[101.15,21.58],[101.14,21.57],[101.08,21.47],[100.93,21.37],[100.82,21.31],[100.76,21.31],[100.7,21.25],[100.66,21.13],[100.61,21.06],[100.57,21.04],[100.54,20.99],[100.52,20.92],[100.55,20.88],[100.62,20.88],[100.62,20.86],[100.57,20.83],[100.49,20.81],[100.41,20.82],[100.33,20.8],[100.25,20.73],[100.18,20.59],[100.13,20.37],[100.12,20.32]]],[[[98.21,10.95],[98.29,10.78],[98.28,10.75],[98.27,10.74],[98.25,10.74],[98.22,10.84],[98.16,10.9],[98.08,10.89],[98.14,10.96],[98.17,10.98],[98.21,10.95]]],[[[98.18,9.93],[98.14,9.88],[98.12,9.88],[98.14,9.97],[98.22,10.05],[98.29,10.05],[98.28,10.01],[98.23,9.95],[98.18,9.93]]],[[[98.22,11.48],[98.22,11.46],[98.21,11.46],[98.19,11.47],[98.2,11.57],[98.24,11.64],[98.28,11.76],[98.3,11.78],[98.31,11.72],[98.28,11.59],[98.26,11.52],[98.22,11.48]]],[[[98.52,11.9],[98.47,11.9],[98.46,12.06],[98.47,12.08],[98.52,12.01],[98.61,11.96],[98.58,11.93],[98.52,11.9]]],[[[98.55,11.74],[98.53,11.54],[98.47,11.57],[98.43,11.57],[98.4,11.68],[98.4,11.72],[98.38,11.79],[98.52,11.81],[98.55,11.74]]],[[[98.41,12.6],[98.44,12.57],[98.47,12.57],[98.46,12.47],[98.38,12.35],[98.33,12.34],[98.32,12.34],[98.33,12.51],[98.3,12.61],[98.31,12.68],[98.4,12.65],[98.41,12.6]]],[[[98.14,12.15],[98.12,12.15],[98.11,12.15],[98.07,12.16],[98.04,12.23],[98.06,12.28],[98.07,12.29],[98.11,12.29],[98.12,12.28],[98.13,12.26],[98.12,12.22],[98.12,12.19],[98.14,12.15]]],[[[97.57,16.25],[97.54,16.24],[97.48,16.31],[97.47,16.46],[97.52,16.5],[97.54,16.5],[97.58,16.49],[97.59,16.46],[97.6,16.43],[97.59,16.4],[97.57,16.25]]],[[[98.54,10.96],[98.52,10.96],[98.5,10.96],[98.48,10.98],[98.53,11.09],[98.54,10.96]]],[[[98.07,11.69],[98.08,11.64],[98.02,11.7],[98.01,11.86],[98.06,11.76],[98.08,11.73],[98.07,11.69]]],[[[98.07,12.39],[98.06,12.35],[98,12.28],[97.95,12.32],[97.94,12.35],[97.99,12.39],[98.05,12.39],[98.06,12.4],[98.07,12.39]]],[[[98.32,13.1],[98.31,12.93],[98.26,13.01],[98.25,13.1],[98.25,13.19],[98.26,13.2],[98.27,13.19],[98.3,13.15],[98.32,13.1]]]]}}]};
+</script>
+<script>(function () {
+'use strict';
+
+/* ---------- Criteria (ค่าตั้งต้น — ทีม BCM ปรับได้) ---------- */
+var CRITERIA = {
+  dam:     { bands: [80, 90, 100], urcMargin: 5, unit: '% ความจุปกติ' },   // with กฟผ. rule curve: ≥URC−5% watch, >URC warning, ≥100% critical
+  release: { bands: [0.2, 0.5, 1.0], unit: '% ของความจุปกติ/วัน' },     // released ÷ normal storage
+  river:   { bands: [1.0, 0.5, 0.0], unit: 'ม. ต่ำกว่าตลิ่ง/ระดับวิกฤต' }, // freeboard (lower = worse)
+  bank:    { bands: [70, 85, 100], unit: '% ความจุลำน้ำ' },
+  rain:    { bands: [35.1, 90.1, 150], unit: 'มม./24 ชม.' },
+  drain:   { bands: [5, 10, 20], unit: 'ซม.' },
+  tide:    { GLF001: [1.6, 1.9, 2.1], pct: [70, 85, 100] },
+  flow:    { velocity: 1.0, sinuosity: 1.3 },   // m/s and river-length ÷ straight-line distance, for travel-time estimates
+  staleHours: 24,
+  radius: { river: 20, bank: 15, bankFallback: 30, rain: 10, drain: 3 }
+};
+
+var LV = [
+  { k: 0, th: 'ปกติ' }, { k: 1, th: 'เฝ้าระวัง' }, { k: 2, th: 'เตือนภัย' }, { k: 3, th: 'วิกฤต' }
+];
+var ZONES = { up: 'ต้นน้ำ', mid: 'กลางน้ำ', down: 'ปลายน้ำ' };
+var ZONE_TRIG = { up: [1, 2, 3], mid: [3, 4, 5], down: [5, 6, 7] };
+var TRIGGERS = [
+  { n: 1, key: 'dam', th: 'ระดับน้ำเขื่อน', src: 'กรมชลประทาน' },
+  { n: 2, key: 'release', th: 'น้ำไหลออก (ฝาย/ระบายเขื่อน)', src: 'กรมชลประทาน' },
+  { n: 3, key: 'river', th: 'ระดับท่าน้ำ (ม.รทก.)', src: 'สสน. / ชป. / กฟผ.' },
+  { n: 4, key: 'bank', th: 'ระดับตลิ่ง (วัดจากบ้าน)', src: 'สสน. / ชป.' },
+  { n: 5, key: 'rain', th: 'ปริมาณน้ำฝน', src: 'สสน. / กรมอุตุฯ / ทน.' },
+  { n: 6, key: 'drain', th: 'ระดับท่อน้ำทิ้ง (ภายใน/นิคม)', src: 'สนน. กทม. / เซ็นเซอร์โรงงาน' },
+  { n: 7, key: 'tide', th: 'น้ำทะเลหนุน', src: 'สสน. / กรมอุทกศาสตร์' }
+];
+
+var SITES = window.SITES, hv = window.WaterTransform.haversine;
+var state = { zone: 'all', q: '', lvl: null, trig: null, sel: null, mode: 'load', data: null, evals: {} };
+
+/* ---------- helpers ---------- */
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function f(x, d) { return x == null || isNaN(x) ? '–' : (+x).toLocaleString('en-US', { minimumFractionDigits: d == null ? 2 : d, maximumFractionDigits: d == null ? 2 : d }); }
+function lvlBy(v, bands) { if (v == null || isNaN(v)) return null; var l = 0; for (var i = 0; i < bands.length; i++) if (v >= bands[i]) l = i + 1; return l; }
+function lvlLow(v, bands) { if (v == null || isNaN(v)) return null; var l = 0; for (var i = 0; i < bands.length; i++) if (v <= bands[i]) l = i + 1; return l; }
+function sc(l) { return l == null ? 'sn' : 's' + l; }
+function lname(l) { return l == null ? 'ไม่มีข้อมูล' : LV[l].th; }
+function parseT(t, ref) {
+  if (!t) return null;
+  var m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(t);
+  if (!m) return null;
+  return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], (+m[4] || 0) - 7, +m[5] || 0));
+}
+function fmtT(d, withDate) {
+  if (!d) return '–';
+  var o = { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' };
+  if (withDate !== false) { o.day = 'numeric'; o.month = 'short'; }
+  return d.toLocaleString('th-TH', o) + ' น.';
+}
+function fresh(d) { return d && (refTime() - d) <= CRITERIA.staleHours * 3600e3; }
+function refTime() { return new Date(state.data.fetchedAt).getTime(); }
+function km(x) { return x < 1 ? '<1 กม.' : f(x, 1) + ' กม.'; }
+
+/* ---------- normalise compact data ---------- */
+function normalise(raw) {
+  var d = { fetchedAt: raw.fetchedAt };
+  d.wl = raw.wl.map(function (a) { return { id: a[0], code: a[1], name: a[2], lat: a[3], lng: a[4], t: parseT(a[5]), msl: a[6], prev: a[7], pct: a[8], sit: a[9], minBank: a[10], crit: a[11], diff: a[12], over: a[13], river: a[14], ag: a[15], prov: a[16] }; });
+  d.rain = raw.rain.map(function (a) { return { name: a[0], lat: a[1], lng: a[2], t: parseT(a[3]), v: a[4] }; });
+  d.fr = raw.fr.map(function (a) { return { name: a[0], lat: a[1], lng: a[2], t: parseT(a[3]), v: a[4] }; });
+  d.dam = raw.dam.map(function (a) { return { id: a[0], name: a[1], lat: a[2], lng: a[3], st: a[4], pct: a[5], inf: a[6], rel: a[7], spill: a[8], norm: a[9], t: a[10] ? parseT(a[10]) : null }; });
+  d.damByName = {}; d.dam.forEach(function (x) { d.damByName[x.name] = x; });
+  d.egat = normEgat(raw.egat);
+  return d;
+}
+
+/* ---------- 7-trigger evaluation per site ---------- */
+function near(list, s, r) {
+  return list.map(function (x) { return { x: x, d: hv(s.lat, s.lng, x.lat, x.lng) }; })
+    .filter(function (z) { return z.d <= r; }).sort(function (a, b) { return a.d - b.d; });
+}
+/* Trigger 1: use กฟผ. Rule Curve (URC) where published, otherwise % of normal storage */
+function damLevel(x) {
+  var g = state.data.egat && state.data.egat.byName[x.name];
+  if (g && g.upper) {
+    if (x.pct >= CRITERIA.dam.bands[2]) return 3;
+    if (x.pct > g.upper) return 2;
+    if (x.pct >= g.upper - CRITERIA.dam.urcMargin) return 1;
+    return 0;
+  }
+  return lvlBy(x.pct, CRITERIA.dam.bands);
+}
+function evaluate(s) {
+  var D = state.data, out = {};
+  // 1 + 2 dams
+  var dams = s.dams.map(function (n) { return D.damByName[n]; }).filter(Boolean);
+  if (!dams.length) {
+    out[1] = { l: null, na: s.dams.length ? 'ไม่พบข้อมูลเขื่อนในรอบนี้' : 'ไม่มีเขื่อนขนาดใหญ่เหนือพื้นที่' };
+    out[2] = { l: null, na: out[1].na };
+  } else {
+    var r1 = dams.map(function (x) { return { x: x, l: damLevel(x) }; }).sort(function (a, b) { return (b.l - a.l) || (b.x.pct - a.x.pct); });
+    var w1 = r1[0].x, rc1 = D.egat && D.egat.byName[w1.name];
+    out[1] = { l: r1[0].l, v: f(w1.pct, 1), u: '%', title: 'เขื่อน' + w1.name + (rc1 && rc1.rc ? ' · ' + RC[rc1.rc].th + ' (กฟผ.)' : ''),
+      why: dams.map(function (x) { var g = D.egat && D.egat.byName[x.name]; return x.name + ' ' + f(x.pct, 1) + '%' + (g && g.upper ? ' (URC ' + f(g.upper, 1) + '%)' : ''); }).join(' · '),
+      src: 'กรมชลประทาน · ปริมาตร ' + f(w1.st, 0) + ' / ' + f(w1.norm, 0) + ' ล้าน ลบ.ม.', geo: dams.map(function (x) { return { lat: x.lat, lng: x.lng, n: 'เขื่อน' + x.name }; }) };
+    var rel = dams.map(function (x) { var p = x.norm ? x.rel / x.norm * 100 : null; var l = lvlBy(p, CRITERIA.release.bands); if (x.spill > 0) l = Math.max(l || 0, 2); return { x: x, p: p, l: l }; })
+      .sort(function (a, b) { return (b.l - a.l) || (b.p - a.p); });
+    var w2 = rel[0];
+    out[2] = { l: w2.l, v: f(w2.x.rel, 2), u: 'ล้าน ลบ.ม./วัน', title: 'ระบายจากเขื่อน' + w2.x.name,
+      why: 'เท่ากับ ' + f(w2.p, 2) + '% ของความจุปกติต่อวัน · น้ำไหลเข้า ' + f(w2.x.inf, 2) + ' ล้าน ลบ.ม.' + (w2.x.spill > 0 ? ' · มีน้ำล้นทางระบายน้ำล้น' : ''),
+      src: 'กรมชลประทาน · รายงานประจำวัน', dam: w2.x };
+  }
+  // 3 river stage at nearest main-river station
+  var fw = D.wl.filter(function (x) { return fresh(x.t); });
+  var cand = near(fw, s, CRITERIA.radius.river);
+  var main = cand.filter(function (z) { return /แม่น้ำ|ลำน้ำ/.test(z.x.river); });
+  var r3 = (main[0] || cand[0]);
+  if (r3) {
+    var x = r3.x, fb = x.diff == null ? null : (x.over ? -x.diff : x.diff), basis = 'ตลิ่งต่ำสุด ' + f(x.minBank) + ' ม.รทก.';
+    if (x.crit != null && x.msl != null) { fb = x.crit - x.msl; basis = 'ระดับวิกฤต ' + f(x.crit) + ' ม.รทก.'; }
+    var tr = x.prev == null || x.msl == null ? null : x.msl - x.prev;
+    out[3] = { l: lvlLow(fb, CRITERIA.river.bands), v: f(x.msl), u: 'ม.รทก.', title: x.name + (x.river ? ' · ' + x.river : ''),
+      why: (fb == null ? '' : (fb < 0 ? 'สูงกว่า' : 'ต่ำกว่า') + basis.replace(/ .*/, '') + ' ' + f(Math.abs(fb)) + ' ม. (' + basis + ')'), trend: tr,
+      src: x.ag + ' ' + x.code + ' · ห่าง ' + km(r3.d) + ' · ' + fmtT(x.t), geo: [{ lat: x.lat, lng: x.lng, n: x.name }] };
+  } else out[3] = { l: null, na: 'ไม่มีสถานีวัดระดับน้ำในรัศมี ' + CRITERIA.radius.river + ' กม.' };
+  // 4 bank-full % (worst nearby)
+  var c4 = near(fw, s, CRITERIA.radius.bank); if (!c4.length) c4 = near(fw, s, CRITERIA.radius.bankFallback).slice(0, 1);
+  if (c4.length) {
+    var w4 = c4.slice().sort(function (a, b) { return b.x.pct - a.x.pct; })[0];
+    out[4] = { l: lvlBy(w4.x.pct, CRITERIA.bank.bands), v: f(w4.x.pct, 1), u: '%', title: w4.x.name + (w4.x.river ? ' · ' + w4.x.river : ''),
+      why: (w4.x.over ? 'ล้นตลิ่ง ' : 'ต่ำกว่าตลิ่ง ') + f(w4.x.diff) + ' ม. · พิจารณา ' + c4.length + ' สถานีใกล้พื้นที่',
+      src: w4.x.ag + ' ' + w4.x.code + ' · ห่าง ' + km(w4.d) + ' · ' + fmtT(w4.x.t), geo: c4.map(function (z) { return { lat: z.x.lat, lng: z.x.lng, n: z.x.name }; }) };
+  } else out[4] = { l: null, na: 'ไม่มีสถานีวัดระดับน้ำในรัศมี ' + CRITERIA.radius.bankFallback + ' กม.' };
+  // 5 rain 24h
+  var c5 = near(D.rain.filter(function (x) { return fresh(x.t); }), s, CRITERIA.radius.rain);
+  if (c5.length) {
+    var w5 = c5.slice().sort(function (a, b) { return b.x.v - a.x.v; })[0];
+    out[5] = { l: lvlBy(w5.x.v, CRITERIA.rain.bands), v: f(w5.x.v, 1), u: 'มม./24 ชม.', title: 'สูงสุดในรัศมี ' + CRITERIA.radius.rain + ' กม.: ' + w5.x.name,
+      why: c5.length + ' สถานีฝน · ' + (w5.x.v > 90 ? 'ฝนตกหนักมาก' : w5.x.v > 35 ? 'ฝนตกหนัก' : w5.x.v > 10 ? 'ฝนปานกลาง' : 'ฝนเล็กน้อย/ไม่มีฝน'),
+      src: 'คลังข้อมูลน้ำแห่งชาติ · ห่าง ' + km(w5.d) + ' · ' + fmtT(w5.x.t), geo: [{ lat: w5.x.lat, lng: w5.x.lng, n: w5.x.name }] };
+  } else out[5] = { l: null, na: 'ไม่มีสถานีวัดฝนในรัศมี ' + CRITERIA.radius.rain + ' กม.' };
+  // 6 drain / ponding
+  var c6 = near(D.fr.filter(function (x) { return fresh(x.t); }), s, CRITERIA.radius.drain);
+  if (c6.length) {
+    var w6 = c6.slice().sort(function (a, b) { return b.x.v - a.x.v; })[0];
+    out[6] = { l: lvlBy(w6.x.v, CRITERIA.drain.bands), v: f(w6.x.v, 1), u: 'ซม.', title: 'น้ำท่วมขังถนนรอบพื้นที่: ' + w6.x.name,
+      why: c6.length + ' จุดวัดในรัศมี ' + CRITERIA.radius.drain + ' กม. · ใช้แทนข้อมูลท่อภายในจนกว่าจะเชื่อมเซ็นเซอร์โรงงาน',
+      src: 'สำนักการระบายน้ำ กทม. · ห่าง ' + km(w6.d) + ' · ' + fmtT(w6.x.t), geo: c6.map(function (z) { return { lat: z.x.lat, lng: z.x.lng, n: z.x.name }; }) };
+  } else out[6] = { l: null, na: 'รอเชื่อมเซ็นเซอร์ระดับท่อ/บ่อพักภายในโรงงานหรือนิคม' };
+  // 7 tide
+  if (s.tide) {
+    var ts = D.wl.filter(function (x) { return x.code === s.tide; })[0];
+    if (ts && fresh(ts.t)) {
+      var l7 = s.tide === 'GLF001' ? lvlBy(ts.msl, CRITERIA.tide.GLF001) : lvlBy(ts.pct, CRITERIA.tide.pct);
+      out[7] = { l: l7, v: f(ts.msl), u: 'ม.รทก.', title: 'สถานี' + ts.name, trend: ts.prev == null ? null : ts.msl - ts.prev,
+        why: s.tide === 'GLF001' ? 'เกณฑ์ปากแม่น้ำเจ้าพระยา: เฝ้าระวัง ' + CRITERIA.tide.GLF001[0] + ' / เตือนภัย ' + CRITERIA.tide.GLF001[1] + ' / วิกฤต ' + CRITERIA.tide.GLF001[2] + ' ม.รทก.' : f(ts.pct, 1) + '% ของตลิ่ง',
+        src: ts.ag + ' ' + ts.code + ' · ห่าง ' + km(hv(s.lat, s.lng, ts.lat, ts.lng)) + ' · ' + fmtT(ts.t), geo: [{ lat: ts.lat, lng: ts.lng, n: ts.name }] };
+    } else out[7] = { l: null, na: 'สถานีวัดน้ำทะเลไม่ส่งข้อมูลใน 24 ชม.' };
+  } else out[7] = { l: null, na: s.zone === 'down' ? 'ไม่มีสถานีโทรมาตรในระบบ · ดูตารางน้ำขึ้นลง กรมอุทกศาสตร์' : 'อยู่นอกพื้นที่อิทธิพลน้ำทะเลหนุน' };
+
+  var ls = [1, 2, 3, 4, 5, 6, 7].map(function (n) { return out[n].l; }).filter(function (l) { return l != null; });
+  out.overall = ls.length ? Math.max.apply(null, ls) : null;
+  return out;
+}
+
+/* ---------- rendering ---------- */
+function visibleSites() {
+  var q = state.q.trim().toLowerCase();
+  var list = SITES.filter(function (s) {
+    var e = state.evals[s.id];
+    if (state.zone !== 'all' && s.zone !== state.zone) return false;
+    if (state.lvl != null && e.overall !== state.lvl) return false;
+    if (state.trig != null && e[state.trig].l == null) return false;
+    if (q && (s.name + ' ' + s.prov + ' ' + s.amp + ' ' + s.cos.join(' ')).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+  return list.sort(function (a, b) {
+    var ea = state.evals[a.id], eb = state.evals[b.id];
+    var ka = state.trig != null ? ea[state.trig].l : ea.overall, kb = state.trig != null ? eb[state.trig].l : eb.overall;
+    return ((kb == null ? -1 : kb) - (ka == null ? -1 : ka)) || a.name.localeCompare(b.name, 'th');
+  });
+}
+
+function trigSummary(n) {
+  var c = [0, 0, 0, 0], na = 0, worst = null;
+  SITES.forEach(function (s) { var l = state.evals[s.id][n].l; if (l == null) na++; else { c[l]++; worst = Math.max(worst == null ? -1 : worst, l); } });
+  return { c: c, na: na, worst: worst };
+}
+
+/* ---------- River profile: one site's water path, factory icon, animated inflow/outflow, travel-time estimates ---------- */
+var flowAnim = null;
+function topSite() { return SITES.slice().sort(function (a, b) { return ((state.evals[b.id].overall || 0) - (state.evals[a.id].overall || 0)) || ((state.evals[b.id][1].l || 0) - (state.evals[a.id][1].l || 0)); })[0]; }
+function profileSite() { return SITES.filter(function (x) { return x.id === state.sel; })[0] || topSite(); }
+function eta(h) { if (h == null) return null; return h < 1 ? '< 1 ชม.' : h < 36 ? '≈ ' + Math.round(h) + ' ชม.' : '≈ ' + f(h / 24, 1) + ' วัน'; }
+function travelHours(a, b) { return hv(a.lat, a.lng, b.lat, b.lng) * CRITERIA.flow.sinuosity / (CRITERIA.flow.velocity * 3.6); }
+
+function renderProfile() {
+  var svg = document.getElementById('profile');
+  var s = profileSite(); if (!s) return;
+  var e = state.evals[s.id];
+  var dam = e[2] && e[2].dam;
+  // travel-time estimates from the releasing dam to each point downstream
+  var T = {};
+  if (dam) {
+    T[1] = 0; T[2] = 0;
+    T.f = travelHours(dam, s);
+    [3, 4, 7].forEach(function (n) { var g = e[n].geo && e[n].geo[0]; if (g) T[n] = Math.max(travelHours(dam, g), n === 7 ? T.f : 0); });
+    T[5] = T.f; T[6] = T.f;
+  }
+  var sel = document.getElementById('profileSite');
+  if (sel && sel.value !== s.id) sel.value = s.id;
+  document.getElementById('profileNote').textContent = dam
+    ? 'น้ำระบายจากเขื่อน' + dam.name + ' ถึงโรงงานโดยประมาณ ' + eta(T.f) + ' (ความเร็วน้ำ ' + CRITERIA.flow.velocity + ' ม./วินาที, ระยะทางลำน้ำ ≈ ' + CRITERIA.flow.sinuosity + ' เท่าระยะตรง)'
+    : 'พื้นที่นี้ไม่มีเขื่อนขนาดใหญ่ต้นน้ำ · ภาพแสดงน้ำท่าจากฝนในลุ่มน้ำ' + s.basin;
+
+  var P = [[0, 118], [95, 118], [215, 168], [470, 178], [560, 192], [800, 198], [890, 206], [905, 206]];
+  function yAt(x) { for (var i = 1; i < P.length; i++) if (x <= P[i][0]) { var a = P[i - 1], b = P[i]; return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } return 214; }
+  var land = 'M0,300 L' + P.map(function (p) { return p.join(','); }).join(' L') + ' L905,300 Z';
+  var X = { 1: 60, 2: 190, 3: 400, 4: 535, 5: 675, 6: 830, 7: 1030 }, FX = 295;
+  var h = '';
+  h += '<rect x="905" y="214" width="295" height="86" fill="var(--sea)"/>';
+  h += '<path d="' + land + '" fill="var(--water)"/>';
+  // river ribbon along the surface (dam outlet → sea)
+  var river = 'M56,113 ' + P.slice(1).map(function (p) { return 'L' + p[0] + ',' + (p[1] - 4); }).join(' ') + ' L930,212 L1200,212';
+  h += '<path id="riverPath" d="' + river + '" fill="none" stroke="var(--water-2)" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>';
+  h += '<path id="inflowPath" d="M-10,30 C 10,60 14,80 22,104" fill="none" stroke="var(--water-2)" stroke-width="5" stroke-linecap="round" opacity=".7"/>';
+  h += '<clipPath id="seaClip"><rect x="905" y="190" width="295" height="110"/></clipPath>';
+  h += '<g clip-path="url(#seaClip)"><path class="wave wave-back" d="M905 214 Q 935 208 965 214 T 1025 214 T 1085 214 T 1145 214 T 1205 214 T 1265 214 T 1325 214" fill="none" stroke="var(--surface)" stroke-width="2" opacity=".45"/></g>';
+  // dam
+  h += '<g class="hov" data-tip="dam" transform="translate(18,78)"><rect x="0" y="0" width="34" height="40" rx="3" fill="var(--deep)"/><path d="M34 6 Q 52 18 46 40 L34 40 Z" fill="var(--water-2)"/><rect x="5" y="6" width="5" height="28" fill="var(--surface)" opacity=".7"/><rect x="14" y="6" width="5" height="28" fill="var(--surface)" opacity=".7"/></g>';
+  [[40, 'เขื่อน'], [470, 'แม่น้ำ'], [740, 'คลอง'], [1060, 'ทะเล']].forEach(function (t) {
+    var y = t[0] > 900 ? 266 : yAt(t[0]) + 52;
+    h += '<text x="' + t[0] + '" y="' + y + '" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF" opacity=".9">' + t[1] + '</text>';
+  });
+  [[18, 440, 'ต้นน้ำ', '1–3', 'up', 0], [330, 780, 'กลางน้ำ', '3–5', 'mid', -14], [640, 1182, 'ปลายน้ำ', '5–7', 'down', 0]].forEach(function (z) {
+    var y = 288 + z[5], active = state.zone === z[4] || s.zone === z[4];
+    h += '<g class="zone-band" data-zone="' + z[4] + '" style="cursor:pointer"><path d="M' + z[0] + ',' + (y - 8) + ' L' + z[0] + ',' + y + ' L' + z[1] + ',' + y + ' L' + z[1] + ',' + (y - 8) + '" fill="none" stroke="#FFFFFF" stroke-opacity="' + (active ? 1 : .55) + '" stroke-width="' + (active ? 2.5 : 1.5) + '"/>';
+    h += '<text x="' + ((z[0] + z[1]) / 2) + '" y="' + (y - 4) + '" text-anchor="middle" font-size="12.5" font-weight="700" fill="#FFFFFF" opacity="' + (active ? 1 : .8) + '">' + z[2] + ' · Trigger ' + z[3] + (s.zone === z[4] ? ' · โซนของพื้นที่นี้' : '') + '</text></g>';
+  });
+  h += '<g transform="translate(1168,236)" fill="#FFFFFF" opacity=".85"><path d="M0 0 L8 -11 L16 0 Z"/><path d="M0 6 L8 17 L16 6 Z"/></g>';
+  // cargo ship riding the waves at the river mouth
+  h += '<g class="hov" data-tip="ship" transform="translate(1062,170)"><g class="ship">';
+  h += '<rect x="58" y="10" width="14" height="22" rx="1.5" fill="#F4F7F7"/><rect x="60" y="13" width="10" height="3" fill="var(--deep)"/><rect x="66" y="4" width="4" height="7" fill="#C7452F"/>';
+  [[8, '#D9822B'], [20, '#2F6FB0'], [32, '#D9822B'], [44, '#2E9B57']].forEach(function (c, i) { h += '<rect x="' + c[0] + '" y="22" width="11" height="10" rx="1" fill="' + c[1] + '"/>'; if (i % 2 === 0) h += '<rect x="' + c[0] + '" y="13" width="11" height="9" rx="1" fill="' + (i ? '#2F6FB0' : '#C7452F') + '"/>'; });
+  h += '<path d="M0 32 L84 32 L78 46 L8 46 Z" fill="#B23A2A"/><path d="M2 32 L82 32 L81 35 L3 35 Z" fill="#F4F7F7"/>';
+  h += '</g></g>';
+  h += '<g clip-path="url(#seaClip)"><path class="wave wave-front" d="M905 217 Q 920 212 935 217 T 965 217 T 995 217 T 1025 217 T 1055 217 T 1085 217 T 1115 217 T 1145 217 T 1175 217 T 1205 217 T 1235 217 T 1265 217" fill="none" stroke="#FFFFFF" stroke-width="2.5" opacity=".75"/></g>';
+
+  // factory between trigger 2 and 3
+  var fy = yAt(FX);
+  h += '<g class="hov factory ' + sc(e.overall) + '" data-tip="factory" tabindex="0" role="button" aria-label="โรงงาน ' + esc(s.name) + ' สถานะ ' + lname(e.overall) + '" transform="translate(' + (FX - 34) + ',' + (fy - 50) + ')">';
+  h += '<rect x="-6" y="-8" width="80" height="62" rx="8" fill="var(--surface)" opacity=".001"/>';
+  h += '<rect x="44" y="0" width="7" height="22" fill="var(--deep)"/>';
+  h += '<path d="M0 46 L0 22 L14 14 L14 22 L28 14 L28 22 L42 14 L42 22 L64 22 L64 46 Z" fill="var(--deep)"/>';
+  [6, 20, 34, 50].forEach(function (x) { h += '<rect x="' + x + '" y="30" width="7" height="7" rx="1" fill="#FFFFFF" opacity=".8"/>'; });
+  h += '<rect x="-2" y="44" width="68" height="6" rx="3" fill="var(--c)"/>';
+  h += '<circle cx="62" cy="10" r="9" fill="var(--c)" stroke="var(--surface)" stroke-width="2"/>';
+  h += '<path d="M58 10 l3 3 l5 -6" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="' + (e.overall === 0 ? 1 : 0) + '"/>';
+  h += '<text x="62" y="14" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF" opacity="' + (e.overall > 0 ? 1 : 0) + '">!</text>';
+  h += '</g>';
+  h += '<text x="' + FX + '" y="' + (fy + 22) + '" text-anchor="middle" font-size="12" font-weight="600" fill="#FFFFFF">SCGP' + (T.f != null ? ' · น้ำถึง ' + eta(T.f) : '') + '</text>';
+
+  // trigger nodes (selected site's status)
+  TRIGGERS.forEach(function (t) {
+    var x = X[t.n], ys = t.n === 7 ? 214 : yAt(x), yn = Math.min(ys - 48, 120), r = e[t.n], on = state.trig === t.n;
+    h += '<g class="trig-node hov ' + sc(r.l) + '" data-trig="' + t.n + '" data-tip="t' + t.n + '" tabindex="0" role="button" aria-pressed="' + on + '" aria-label="Trigger ' + t.n + ' ' + esc(t.th) + ' ' + lname(r.l) + '">';
+    h += '<line x1="' + x + '" y1="' + (yn + 18) + '" x2="' + x + '" y2="' + ys + '" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="3 3"/>';
+    h += '<circle cx="' + x + '" cy="' + ys + '" r="3.5" fill="var(--ink)" opacity=".6"/>';
+    h += '<circle class="ring" cx="' + x + '" cy="' + yn + '" r="' + (on ? 24 : 21) + '" fill="var(--c)" stroke="var(--surface)" stroke-width="3"/>';
+    h += '<text x="' + x + '" y="' + (yn + 6) + '" text-anchor="middle" font-size="17" font-weight="700" fill="#FFFFFF" font-family="var(--f-data)">' + t.n + '</text>';
+    h += '<text x="' + x + '" y="' + (yn - 46) + '" text-anchor="middle" font-size="13.5" font-weight="600" fill="var(--ink)">' + esc(t.th.replace(/ \(.*\)/, '')) + '</text>';
+    h += '<text x="' + x + '" y="' + (yn - 29) + '" text-anchor="middle" font-size="12.5" fill="var(--muted)" font-family="var(--f-data)">' + (r.l == null ? 'ไม่มีข้อมูล' : esc(r.v + ' ' + r.u.replace('ล้าน ลบ.ม./วัน', 'ลลบ.ม./วัน'))) + '</text>';
+    if (T[t.n] != null && t.n !== 5 && t.n !== 6) h += '<text x="' + x + '" y="' + (ys + 20) + '" text-anchor="middle" font-size="11.5" font-weight="600" fill="#FFFFFF" font-family="var(--f-data)">' + (t.n <= 2 ? 'T+0' : 'T' + esc(eta(T[t.n]).replace('≈ ', '+'))) + '</text>';
+    h += '</g>';
+  });
+  h += '<g id="particles"></g>';
+  h = h.replace(/<(\w+)([^<>]*?)(\/?)>/g, function (m, tag, attrs, slash) {
+    var st = [];
+    attrs = attrs.replace(/\s(fill|stroke|font-family)="(var\([^)]*\))"/g, function (mm, k, v) { st.push(k + ':' + v); return ''; });
+    return '<' + tag + attrs + (st.length ? ' style="' + st.join(';') + '"' : '') + slash + '>';
+  });
+  svg.innerHTML = h;
+  startFlow(s, e, dam);
+}
+
+/* animated inflow (into dam) and outflow (dam → sea); density and speed scale with the reported volumes */
+function startFlow(s, e, dam) {
+  if (flowAnim) cancelAnimationFrame(flowAnim);
+  var g = document.getElementById('particles'), rp = document.getElementById('riverPath'), ip = document.getElementById('inflowPath');
+  if (!g || !rp) return;
+  var RL = rp.getTotalLength(), IL = ip.getTotalLength();
+  var relPct = dam && dam.norm ? dam.rel / dam.norm * 100 : 0.05, infPct = dam && dam.norm ? dam.inf / dam.norm * 100 : 0;
+  var k = function (p) { return Math.min(1, p / CRITERIA.release.bands[2]); };
+  var out = { n: Math.round(10 + 34 * k(relPct)), v: 35 + 120 * k(relPct) }, inn = { n: dam ? Math.round(3 + 12 * k(infPct)) : 0, v: 25 + 70 * k(infPct) };
+  var NS = 'http://www.w3.org/2000/svg', parts = [];
+  function mk(path, L, cfg, cls) { for (var i = 0; i < cfg.n; i++) { var c = document.createElementNS(NS, 'circle'); c.setAttribute('r', cls === 'in' ? 2.6 : 2.8); c.setAttribute('class', 'pt-' + cls); g.appendChild(c); parts.push({ el: c, path: path, L: L, v: cfg.v * (0.85 + Math.random() * 0.3), d: (i / cfg.n) * L }); } }
+  mk(rp, RL, out, 'out'); mk(ip, IL, inn, 'in');
+  function place(p) { var pt = p.path.getPointAtLength(p.d); p.el.setAttribute('cx', pt.x.toFixed(1)); p.el.setAttribute('cy', pt.y.toFixed(1)); }
+  parts.forEach(place);
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var last = performance.now();
+  function step(now) {
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    parts.forEach(function (p) { p.d += p.v * dt; if (p.d > p.L) p.d -= p.L; place(p); });
+    flowAnim = requestAnimationFrame(step);
+  }
+  flowAnim = requestAnimationFrame(step);
+}
+
+/* hover / tap tooltip for the profile */
+function tipHtml(key, site) {
+  var s = site || profileSite(), e = state.evals[s.id], dam = e[2] && e[2].dam;
+  function row(k, v) { return '<div class="tr"><span>' + k + '</span><b>' + v + '</b></div>'; }
+  if (key === 'factory') {
+    var h = '<div class="tt-h"><span class="spill ' + sc(e.overall) + '">' + lname(e.overall) + '</span> ' + esc(s.name) + '</div>';
+    h += '<div class="tt-sub">จ.' + esc(s.prov) + ' อ.' + esc(s.amp) + ' · ' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</div>';
+    h += '<ul class="tt-cos">' + s.cos.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>';
+    if (dam) h += row('เขื่อนต้นน้ำ', 'เขื่อน' + esc(dam.name) + ' ' + f(dam.pct, 1) + '%') + row('น้ำระบายจากเขื่อน', f(dam.rel) + ' ล้าน ลบ.ม./วัน (' + f(dam.rel * 11.574, 0) + ' ลบ.ม./วิ)') + row('น้ำเดินทางถึงโรงงาน', eta(travelHours(dam, s)) + ' · ' + f(hv(dam.lat, dam.lng, s.lat, s.lng), 0) + ' กม.');
+    if (e[3].l != null) h += row('ระดับน้ำแม่น้ำใกล้โรงงาน', e[3].v + ' ม.รทก.');
+    if (e[5].l != null) h += row('ฝน 24 ชม. สูงสุด', e[5].v + ' มม.');
+    h += '<div class="tt-cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) { return '<span class="cell ' + sc(e[n].l) + '">' + (e[n].l == null ? '·' : n) + '</span>'; }).join('') + '</div>';
+    if (s.coord) h += '<div class="tt-sub">BCM Coordinator: ' + esc(s.coord) + '</div>';
+    return h + '<div class="tt-foot">กดที่โรงงานเพื่อดูรายละเอียดทั้ง 7 จุด</div>';
+  }
+  if (key === 'ship') {
+    var td = state.data.wl.filter(function (x) { return x.code === (s.tide || 'GLF001'); })[0];
+    var h3 = '<div class="tt-h">ท้ายน้ำ · การขนส่งทางทะเล</div><div class="tt-sub">เส้นทางขนส่งสินค้าออกทางท่าเรือปลายน้ำ</div>';
+    if (td) h3 += row('ระดับน้ำทะเลหนุน (' + esc(td.name) + ')', f(td.msl) + ' ม.รทก.') + row('เวลาวัด', fmtT(td.t));
+    if (e[7].l != null) h3 += row('สถานะ Trigger 7', '<span class="spill ' + sc(e[7].l) + '">' + lname(e[7].l) + '</span>');
+    return h3 + '<div class="tt-foot">น้ำทะเลหนุนสูงทำให้น้ำจากต้นน้ำระบายออกทะเลได้ช้าลง</div>';
+  }
+  if (key === 'dam') {
+    if (!dam) return '<div class="tt-h">ไม่มีเขื่อนขนาดใหญ่ต้นน้ำ</div><div class="tt-sub">' + esc(s.name) + '</div>';
+    return '<div class="tt-h">เขื่อน' + esc(dam.name) + '</div>' + row('ปริมาตรน้ำ', f(dam.st, 0) + ' / ' + f(dam.norm, 0) + ' ล้าน ลบ.ม. (' + f(dam.pct, 1) + '%)') + row('น้ำไหลเข้า (inflow)', f(dam.inf) + ' ล้าน ลบ.ม./วัน') + row('น้ำระบาย (outflow)', f(dam.rel) + ' ล้าน ลบ.ม./วัน') + row('สุทธิ', (dam.inf - dam.rel >= 0 ? '+' : '') + f(dam.inf - dam.rel) + ' ล้าน ลบ.ม./วัน') + '<div class="tt-foot">กรมชลประทาน · รายงานประจำวัน</div>';
+  }
+  var n = +key.slice(1), t = TRIGGERS[n - 1], r = e[n];
+  var h2 = '<div class="tt-h"><span class="spill ' + sc(r.l) + '">' + lname(r.l) + '</span> ' + n + '. ' + esc(t.th) + '</div>';
+  if (r.l == null) return h2 + '<div class="tt-sub">' + esc(r.na || '') + '</div>';
+  h2 += '<div class="tt-val num">' + r.v + ' <small>' + esc(r.u) + '</small></div><div class="tt-sub"><b>' + esc(r.title) + '</b></div><div class="tt-sub">' + esc(r.why) + '</div><div class="tt-foot">' + esc(r.src) + '</div>';
+  if (dam && (n === 3 || n === 4 || n === 7) && r.geo && r.geo[0]) h2 += row('น้ำจากเขื่อนถึงจุดนี้', eta(travelHours(dam, r.geo[0])));
+  return h2;
+}
+function initTip() {
+  var tip = document.getElementById('ptip'), box = tip.parentElement;
+  function show(el, x, y) {
+    tip.innerHTML = tipHtml(el.getAttribute('data-tip')); tip.hidden = false;
+    var bw = box.getBoundingClientRect(), w = tip.offsetWidth, hgt = tip.offsetHeight;
+    var left = Math.min(Math.max(8, x - bw.left + 14), bw.width - w - 8), top = y - bw.top + 16;
+    if (top + hgt > bw.height) top = y - bw.top - hgt - 12;
+    tip.style.left = left + 'px'; tip.style.top = Math.max(4, top) + 'px';
+  }
+  var svg = document.getElementById('profile');
+  svg.addEventListener('pointermove', function (ev) { var el = ev.target.closest('.hov'); if (el) show(el, ev.clientX, ev.clientY); else tip.hidden = true; });
+  svg.addEventListener('pointerleave', function () { tip.hidden = true; });
+  svg.addEventListener('focusin', function (ev) { var el = ev.target.closest('.hov'); if (el) { var b = el.getBoundingClientRect(); show(el, b.left + b.width / 2, b.bottom); } });
+  svg.addEventListener('focusout', function () { tip.hidden = true; });
+  svg.addEventListener('click', function (ev) { if (ev.target.closest('.factory')) { var s = profileSite(); select(s.id, false); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+  var sel = document.getElementById('profileSite');
+  sel.innerHTML = ['up', 'mid', 'down'].map(function (z) { return '<optgroup label="' + ZONES[z] + '">' + SITES.filter(function (s) { return s.zone === z; }).map(function (s) { return '<option value="' + s.id + '">' + esc(s.name) + '</option>'; }).join('') + '</optgroup>'; }).join('');
+  sel.addEventListener('change', function () { select(sel.value, false); });
+}
+
+/* ---------- กฟผ. (EGAT) data: rule curves + Mae Klong telemetry ---------- */
+var EGAT_NAMES = { BB: 'ภูมิพล', SK: 'สิริกิติ์', SNR: 'ศรีนครินทร์', VRK: 'วชิราลงกรณ', RPB: 'รัชชประภา', BLG: 'บางลาง', UR: 'อุบลรัตน์', SRD: 'สิรินธร', CLB: 'จุฬาภรณ์', NP: 'น้ำพุง', HK: 'ห้วยกุ่ม', abd: 'แม่กลอง', TN: 'ท่าทุ่งนา' };
+var RC = { high: { th: 'น้ำมาก', note: 'สูงกว่า URC', c: 'var(--crit)' }, normal: { th: 'น้ำปกติ', note: 'ระหว่าง URC–LRC', c: 'var(--ok)' }, low: { th: 'น้ำน้อย', note: 'ต่ำกว่า LRC', c: 'var(--watch)' }, dead: { th: 'น้ำก้นอ่าง', note: 'Dead storage', c: 'var(--na)' } };
+function rcStatus(x) {
+  if (!x || !x.upper) return null;           // no rule curve published (e.g. เขื่อนแม่กลอง, ท่าทุ่งนา)
+  if (x.pct <= x.dead) return 'dead';
+  if (x.pct <= x.lower) return 'low';
+  if (x.pct <= x.upper) return 'normal';
+  return 'high';
+}
+function normEgat(e) {
+  if (!e) return null;
+  var o = { at: e.at ? parseT(e.at) : null, tele: {}, daily: {}, byName: {}, rain: {} };
+  (e.tele || []).forEach(function (t) { o.tele[t[0]] = { code: t[0], ag: t[1] === 1 ? 'กฟผ.' : 'ชป.', wl: t[2], ds: t[3] }; });
+  (e.daily || []).forEach(function (a) {
+    var x = { code: a[0], name: EGAT_NAMES[a[0]] || a[0], eff: a[1], effPct: a[2], inf: a[3], rel: a[4], stor: a[5], pct: a[6], dead: a[7], lower: a[8], upper: a[9], relCms: a[10] };
+    x.rc = rcStatus(x); o.daily[x.code] = x; o.byName[x.name] = x;
+  });
+  (e.rain || []).forEach(function (r) { o.rain[r[1]] = r[2]; });
+  return o;
+}
+
+/* ---------- Mae Klong schematic (layout follows กฟผ. Schematic ลุ่มน้ำแม่กลอง) ---------- */
+var MK = {
+  rivers: [
+    { id: 'kn', name: 'แม่น้ำแควน้อย', d: 'M250,118 L250,540 Q250,592 302,596 L560,606', q: ['VKD06', 'K.37', 'VKD05'] },
+    { id: 'ky', name: 'แม่น้ำแควใหญ่', d: 'M900,118 L900,470 Q900,560 840,574 L640,606', q: ['SND02', 'K.35A'] },
+    { id: 'mk', name: 'แม่น้ำแม่กลอง', d: 'M600,612 L600,660 Q600,705 652,705 L1255,705', q: ['__sum'] },
+    { id: 't1', name: 'ห้วยแม่น้ำน้อย', d: 'M40,265 L250,265', q: ['K.31', 'VKD07'] },
+    { id: 't2', name: 'ห้วยบ้องตี้', d: 'M40,335 L250,335', q: ['K.32A'] },
+    { id: 't3', name: 'ลำภาชี', d: 'M40,495 L250,495', q: ['K.62', 'VKD09', 'VKD08'] },
+    { id: 't4', name: 'ลำตะเพิน', d: 'M1160,400 L900,400', q: ['SND06', 'K.12', 'SND05'] }
+  ],
+  // [code, x, y, label side: r|l|a(above)|b(below)]
+  st: [
+    ['VKD01', 250, 150, 'r'], ['VKD02', 250, 195, 'r'], ['VKD03', 250, 232, 'r'], ['K.54', 250, 298, 'r'], ['VKD04', 250, 368, 'r'],
+    ['K.58', 250, 404, 'r'], ['VKD05', 250, 438, 'r'], ['K.10', 250, 470, 'r'], ['VKD06', 250, 530, 'r'], ['K.37', 410, 600, 'b'],
+    ['K.31', 85, 265, 'a'], ['VKD07', 175, 265, 'a'], ['K.32A', 130, 335, 'a'],
+    ['VKD08', 62, 495, 'a'], ['K.62', 112, 495, 'b'], ['K.17', 162, 495, 'a'], ['VKD09', 212, 495, 'b'],
+    ['SND02', 900, 300, 'l'], ['K.35A', 900, 450, 'l'], ['SND05', 1120, 400, 'a'], ['SND06', 1045, 400, 'a'], ['K.12', 970, 400, 'b'],
+    ['K.3A', 600, 630, 'l'], ['SND03', 600, 660, 'l'], ['SND04', 690, 705, 'a'],
+    ['K.11A', 840, 705, 'a'], ['RAJ002', 1040, 705, 'a'], ['K.55A', 1095, 705, 'a2'], ['RAJ001', 1170, 705, 'a'], ['MKG006', 1232, 705, 'a2']
+  ],
+  dams: [
+    { code: 'VRK', x: 250, y: 88, card: [282, 14] },
+    { code: 'SNR', x: 900, y: 88, card: [932, 14] },
+    { code: 'TN', x: 900, y: 228, card: [932, 168] },
+    { code: 'abd', x: 765, y: 705, card: [300, 722] }
+  ],
+  // SCGP sites in the Mae Klong basin, in downstream order
+  fac: [['TRA-SCC', 800], ['TMG-TCP', 880], ['WSL-SKIC', 930], ['TRA-SFC', 980, 1], ['BPG-SCGP', 1020], ['BPG-TPC', 1065], ['BPG-SKIC', 1110], ['RBR-TCG', 1170]]
+};
+var MK_DAM_FOR = { kn: 'VRK', ky: 'SNR', mk: 'SNR' };
+
+function mkStation(code) {
+  var E = state.data.egat, t = E && E.tele[code];
+  var tw = state.data.wl.filter(function (x) { return x.code === code; })[0];
+  var o = { code: code, wl: t ? t.wl : (tw ? tw.msl : null), ds: t ? t.ds : null, ag: t ? t.ag : (tw ? tw.ag : ''), tw: tw, rain: E ? E.rain[code] : null };
+  if (o.wl === 0) o.wl = null;
+  o.lvl = tw && fresh(tw.t) ? lvlBy(tw.pct, CRITERIA.bank.bands) : null;
+  return o;
+}
+function riverQ(r) {
+  if (r.q[0] === '__sum') return (riverQ(MK.rivers[0]) || 0) + (riverQ(MK.rivers[1]) || 0);
+  var E = state.data.egat; if (!E) return null;
+  for (var i = 0; i < r.q.length; i++) { var t = E.tele[r.q[i]]; if (t && t.ds > 0) return t.ds; }
+  return null;
+}
+
+function renderSchematic() {
+  var svg = document.getElementById('mkSchem'); if (!svg) return;
+  var E = state.data.egat, h = '';
+  document.getElementById('mkAsof').textContent = E && E.at ? 'โทรมาตร กฟผ./ชป. ณ ' + fmtT(E.at) + (state.egatFromSnapshot ? ' (snapshot)' : '') : 'ยังไม่มีข้อมูลโทรมาตร กฟผ.';
+  // dam rule-curve summary (all EGAT dams, like the กฟผ. page)
+  var cnt = { high: 0, normal: 0, low: 0, dead: 0 };
+  if (E) Object.keys(E.daily).forEach(function (k) { var r = E.daily[k].rc; if (r) cnt[r]++; });
+  document.getElementById('rcSummary').innerHTML = ['high', 'normal', 'low', 'dead'].map(function (k) {
+    return '<span class="rc-chip"><i style="background:' + RC[k].c + '"></i>' + RC[k].th + ' <b class="num">' + cnt[k] + '</b> เขื่อน <span class="muted">(' + RC[k].note + ')</span></span>';
+  }).join('');
+
+  // sea + land bands
+  h += '<rect x="1255" y="640" width="45" height="130" fill="var(--sea)" rx="4"/><text x="1277" y="790" text-anchor="middle" font-size="12" font-weight="600" fill="var(--muted)">ทะเล</text>';
+  // rivers with flow animation
+  MK.rivers.forEach(function (r) {
+    var q = riverQ(r), w = r.id.charAt(0) === 't' ? 7 : 16, dur = q ? Math.max(0.6, Math.min(6, 160 / Math.sqrt(q + 4))) : 5;
+    h += '<path d="' + r.d + '" fill="none" stroke="var(--water)" stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>';
+    h += '<path d="' + r.d + '" fill="none" class="mk-flow" stroke-width="' + (w * 0.42) + '" style="animation-duration:' + dur.toFixed(2) + 's" stroke-linecap="round"/>';
+  });
+  // river name labels
+  [[236, 585, 'แควน้อย', 'end', 0], [888, 520, 'แควใหญ่', 'end', 0], [40, 282, 'ห้วยแม่น้ำน้อย', 'start', 0], [40, 356, 'ห้วยบ้องตี้', 'start', 0], [40, 560, 'ลำภาชี', 'start', 0], [1165, 430, 'ลำตะเพิน', 'end', 0], [636, 742, 'แม่น้ำแม่กลอง', 'start', 0]].forEach(function (l) {
+    h += '<text x="' + l[0] + '" y="' + l[1] + '" text-anchor="' + l[3] + '" font-size="12.5" font-weight="700" fill="var(--water-2)">' + l[2] + '</text>';
+  });
+  h += '<g transform="translate(600,610)"><circle r="9" fill="var(--surface)" stroke="var(--water-2)" stroke-width="3"/></g><text x="600" y="584" text-anchor="middle" font-size="11.5" fill="var(--muted)">บรรจบ · เมืองกาญจนบุรี</text>';
+
+  // dams + cards
+  MK.dams.forEach(function (dm) {
+    var x = E && E.daily[dm.code], st = x ? x.rc : null, col = st ? RC[st].c : 'var(--accent)';
+    h += '<g class="hov" data-tip="mkdam:' + dm.code + '" transform="translate(' + (dm.x - 20) + ',' + (dm.y - 18) + ')"><rect width="40" height="30" rx="4" fill="var(--ink)"/><rect x="5" y="5" width="5" height="20" fill="var(--surface)" opacity=".7"/><rect x="14" y="5" width="5" height="20" fill="var(--surface)" opacity=".7"/><rect x="23" y="5" width="5" height="20" fill="var(--surface)" opacity=".7"/><circle cx="36" cy="4" r="6" fill="' + col + '" stroke="var(--surface)" stroke-width="2"/></g>';
+    var cx = dm.card[0], cy = dm.card[1], W = 262, H = 118;
+    if (dm.code === 'abd') h += '<path d="M' + (dm.x - 20) + ',' + (dm.y + 4) + ' L' + (cx + W) + ',' + (cy + 12) + '" stroke="var(--muted)" stroke-dasharray="3 3" fill="none"/>';
+    h += '<g class="hov" data-tip="mkdam:' + dm.code + '" transform="translate(' + cx + ',' + cy + ')">';
+    h += '<rect width="' + W + '" height="' + H + '" rx="10" fill="var(--surface)" stroke="var(--line)"/>';
+    h += '<rect width="' + W + '" height="26" rx="10" fill="#F2C94C"/><rect y="16" width="' + W + '" height="10" fill="#F2C94C"/>';
+    h += '<text x="' + (W / 2) + '" y="18" text-anchor="middle" font-size="13" font-weight="700" fill="#2A2A12">เขื่อน' + esc(EGAT_NAMES[dm.code]) + '</text>';
+    if (x) {
+      h += '<circle cx="12" cy="40" r="4.5" fill="#2C63AD"/><text x="22" y="44" font-size="11.5" fill="var(--ink)">ใช้งานได้ <tspan font-family="var(--f-data)">' + f(x.eff, 0) + '</tspan> ล้าน ลบ.ม. (' + Math.round(x.effPct) + '%)</text>';
+      h += '<circle cx="12" cy="58" r="4.5" fill="#68A6D7"/><text x="22" y="62" font-size="11.5" fill="var(--ink)">ไหลเข้า <tspan font-family="var(--f-data)">' + f(x.inf) + '</tspan> · ระบาย <tspan font-family="var(--f-data)">' + f(x.rel) + '</tspan> ล้าน ลบ.ม.</text>';
+      var bw = W - 24, pw = Math.max(0, Math.min(100, x.pct)) / 100 * bw;
+      h += '<rect x="12" y="70" width="' + bw + '" height="10" rx="5" fill="var(--sunk)"/><rect x="12" y="70" width="' + pw + '" height="10" rx="5" fill="' + col + '"/>';
+      if (x.upper) h += '<rect x="' + (12 + x.upper / 100 * bw - 1) + '" y="66" width="2" height="18" fill="var(--crit)"/><rect x="' + (12 + x.lower / 100 * bw - 1) + '" y="66" width="2" height="18" fill="var(--watch)"/>';
+      h += '<text x="12" y="98" font-size="11.5" fill="var(--ink)">ปริมาณน้ำ <tspan font-family="var(--f-data)" font-weight="600">' + f(x.stor, 0) + '</tspan> ล้าน ลบ.ม. <tspan font-weight="700">' + f(x.pct, 1) + '%</tspan></text>';
+      h += '<text x="12" y="112" font-size="11" fill="var(--muted)">' + (st ? RC[st].th + ' · URC ' + f(x.upper, 1) + '% · LRC ' + f(x.lower, 1) + '%' : 'ไม่มีเกณฑ์ Rule Curve (กฟผ.)') + '</text>';
+    } else h += '<text x="12" y="50" font-size="12" fill="var(--muted)">ไม่มีข้อมูล</text>';
+    h += '</g>';
+  });
+
+  // stations
+  MK.st.forEach(function (s) {
+    var o = mkStation(s[0]), x = s[1], y = s[2], side = s[3];
+    var fill = o.ag === 'กฟผ.' ? '#F1A039' : o.ag === 'ชป.' ? '#3BB217' : 'var(--accent)';
+    h += '<g class="hov mk-st" data-tip="mkst:' + s[0] + '">';
+    if (o.lvl != null) h += '<circle cx="' + x + '" cy="' + y + '" r="10" fill="none" stroke="var(--c)" stroke-width="3" class="' + sc(o.lvl) + '"/>';
+    h += '<circle cx="' + x + '" cy="' + y + '" r="6.5" fill="' + fill + '" stroke="var(--surface)" stroke-width="2"/>';
+    var v1 = o.wl == null ? '–' : f(o.wl) + ' ม.', v2 = o.ds ? f(o.ds, o.ds >= 100 ? 0 : 1) + ' cms' : '';
+    var name = o.tw && !/^K\.|^VKD|^SND/.test(s[0]) ? o.tw.name : s[0];
+    var lines = [[name, 'b'], [v1, 'v']];
+    if (v2) lines.push([v2, 'q']);
+    if (o.rain > 0) lines.push(['ฝน ' + f(o.rain, 0) + ' มม.', 'r']);
+    var tx = x, ty, anc = 'middle', lh = 13;
+    if (side === 'r') { tx = x + 16; anc = 'start'; ty = y - 4; if (side === 'r' && lines.length > 2) { lines[1][0] = v1 + (v2 ? ' · ' + v2 : ''); lines.splice(2, v2 ? 1 : 0); } }
+    else if (side === 'l') { tx = x - 16; anc = 'end'; ty = y - 4; if (v2) { lines[1][0] = v1 + ' · ' + v2; lines.splice(2, 1); } }
+    else if (side === 'a') { ty = y - 14 - (lines.length - 1) * lh; }
+    else if (side === 'a2') { ty = y - 40 - (lines.length - 1) * lh; }
+    else { ty = y + 22; }
+    lines.forEach(function (ln, i) {
+      var st2 = ln[1] === 'b' ? 'font-size="11.5" font-weight="700" fill="var(--ink)"' : ln[1] === 'r' ? 'font-size="10.5" font-weight="600" fill="#3B82C4"' : 'font-size="10.5" fill="var(--muted)" font-family="var(--f-data)"';
+      h += '<text x="' + tx + '" y="' + (ty + i * lh) + '" text-anchor="' + anc + '" ' + st2 + '>' + esc(ln[0]) + '</text>';
+    });
+    if (side === 'a2') h += '<line x1="' + x + '" y1="' + (y - 10) + '" x2="' + x + '" y2="' + (ty + (lines.length - 1) * lh + 4) + '" stroke="var(--muted)" stroke-dasharray="2 3"/>';
+    h += '</g>';
+  });
+
+  // SCGP factories
+  MK.fac.forEach(function (fa, i) {
+    var s = SITES.filter(function (x) { return x.id === fa[0]; })[0]; if (!s) return;
+    var e = state.evals[s.id], x = fa[1], y = 742, ly = i % 2 ? 806 : 786;
+    h += '<line x1="' + x + '" y1="712" x2="' + x + '" y2="' + (y - 12) + '" stroke="var(--muted)" stroke-dasharray="' + (fa[2] ? '2 4' : '0') + '" stroke-width="1.2"/>';
+    h += '<g class="hov mk-fac ' + sc(e.overall) + (state.sel === s.id ? ' on' : '') + '" data-tip="fac:' + s.id + '" tabindex="0" role="button" aria-label="' + esc(s.name) + ' ' + lname(e.overall) + '" transform="translate(' + (x - 17) + ',' + (y - 14) + ')">';
+    h += '<rect x="-4" y="-6" width="42" height="40" rx="7" fill="var(--surface)" stroke="var(--c)" stroke-width="' + (state.sel === s.id ? 3 : 1.5) + '"/>';
+    h += '<path d="M2 28 L2 14 L10 9 L10 14 L18 9 L18 14 L26 9 L26 14 L32 14 L32 28 Z" fill="var(--ink)"/><rect x="25" y="2" width="4" height="12" fill="var(--ink)"/>';
+    h += '<rect x="0" y="28" width="34" height="4" rx="2" fill="var(--c)"/></g>';
+    var nm = s.name.replace('Thai Containers ', 'TC ').replace('Thai Cane Paper ', 'TCP ').replace('Siam Kraft ', 'SKIC ').replace('Siam Cellulose ', 'SCC ').replace('Siam Forestry ', 'SFC ').replace('Thai Paper ', 'TPC ');
+    h += '<text x="' + x + '" y="' + ly + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">' + esc(nm.split(' ')[0]) + '</text>';
+    h += '<text x="' + x + '" y="' + (ly + 13) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' + esc(nm.split(' ').slice(1).join(' ').replace(/[()]/g, '')) + '</text>';
+  });
+  h += '<text x="800" y="850" font-size="11.5" fill="var(--muted)">SCGP ในลุ่มแม่กลอง · กรอบสีตามสถานะ 7 Trigger · เส้นประ = ตั้งอยู่ห่างลำน้ำหลัก</text>';
+
+  h = h.replace(/<(\w+)([^<>]*?)(\/?)>/g, function (m, tag, attrs, slash) {
+    var st = [];
+    attrs = attrs.replace(/\s(fill|stroke|font-family)="(var\([^)]*\))"/g, function (mm, k, v) { st.push(k + ':' + v); return ''; });
+    return '<' + tag + attrs + (st.length ? ' style="' + st.join(';') + '"' : '') + slash + '>';
+  });
+  svg.innerHTML = h;
+}
+
+function mkTip(key) {
+  var E = state.data.egat;
+  function row(k, v) { return '<div class="tr"><span>' + k + '</span><b>' + v + '</b></div>'; }
+  var kind = key.split(':')[0], id = key.split(':')[1];
+  if (kind === 'fac') return tipHtml('factory', SITES.filter(function (x) { return x.id === id; })[0]);
+  if (kind === 'mkdam') {
+    var x = E && E.daily[id];
+    if (!x) return '<div class="tt-h">เขื่อน' + esc(EGAT_NAMES[id]) + '</div><div class="tt-sub">ไม่มีข้อมูล</div>';
+    var h = '<div class="tt-h">' + (x.rc ? '<span class="spill" style="background:' + RC[x.rc].c + ';color:#fff">' + RC[x.rc].th + '</span> ' : '') + 'เขื่อน' + esc(x.name) + '</div>';
+    h += row('น้ำใช้งานได้', f(x.eff, 0) + ' ล้าน ลบ.ม. (' + Math.round(x.effPct) + '%)') + row('ปริมาณน้ำทั้งหมด', f(x.stor, 0) + ' ล้าน ลบ.ม. (' + f(x.pct, 1) + '%)');
+    h += row('น้ำไหลเข้า (inflow)', f(x.inf) + ' ล้าน ลบ.ม./วัน') + row('น้ำระบาย (outflow)', f(x.rel) + ' ล้าน ลบ.ม./วัน' + (x.relCms ? ' · ' + f(x.relCms, 0) + ' cms' : ''));
+    if (x.upper) h += row('Rule Curve', 'URC ' + f(x.upper, 1) + '% · LRC ' + f(x.lower, 1) + '% · ก้นอ่าง ' + f(x.dead, 1) + '%') + row('ห่างจาก URC', f(x.upper - x.pct, 2) + '%');
+    var sitesHit = SITES.filter(function (s) { return s.dams.indexOf(x.name) >= 0; });
+    if (sitesHit.length) h += '<div class="tt-sub">พื้นที่ SCGP ที่รับน้ำจากเขื่อนนี้: ' + sitesHit.map(function (s) { return esc(s.name); }).join(', ') + '</div>';
+    return h + '<div class="tt-foot">กฟผ. · DailyInfographic</div>';
+  }
+  var o = mkStation(id), tw = o.tw;
+  var h2 = '<div class="tt-h">' + (o.lvl != null ? '<span class="spill ' + sc(o.lvl) + '">' + lname(o.lvl) + '</span> ' : '') + 'สถานี ' + esc(id) + (tw ? ' ' + esc(tw.name) : '') + '</div>';
+  h2 += '<div class="tt-sub">' + esc(o.ag ? 'สถานีโทรมาตร ' + o.ag : '') + (tw && tw.river ? ' · ' + esc(tw.river) : '') + '</div>';
+  h2 += row('ระดับน้ำ', o.wl == null ? '–' : f(o.wl) + ' ม.รทก.') + (o.ds ? row('อัตราการไหล', f(o.ds) + ' ลบ.ม./วินาที (' + f(o.ds * 0.0864, 1) + ' ล้าน ลบ.ม./วัน)') : '');
+  if (tw) h2 += row('ความจุลำน้ำ (สสน.)', f(tw.pct, 1) + '% · ' + (tw.over ? 'ล้นตลิ่ง ' : 'ต่ำกว่าตลิ่ง ') + f(tw.diff) + ' ม.') + row('เวลาวัด สสน.', fmtT(tw.t));
+  if (o.rain != null) h2 += row('ฝนรายวัน (กฟผ.)', f(o.rain, 1) + ' มม.');
+  if (tw) {
+    var dk = /แควน้อย|ลำภาชี/.test(tw.river) ? 'VRK' : 'SNR', dn = EGAT_NAMES[dk], dd = state.data.damByName[dn];
+    if (dd) h2 += row('น้ำจากเขื่อน' + dn + ' ถึงจุดนี้', eta(travelHours(dd, tw)));
+  }
+  return h2 + '<div class="tt-foot">' + (E && E.at ? 'กฟผ./ชป. ' + fmtT(E.at) : '') + '</div>';
+}
+function initSchemTip() {
+  var svg = document.getElementById('mkSchem'), tip = document.getElementById('mtip'), box = tip.parentElement;
+  function show(el, x, y) {
+    tip.innerHTML = mkTip(el.getAttribute('data-tip')); tip.hidden = false;
+    var bw = box.getBoundingClientRect(), w = tip.offsetWidth, hgt = tip.offsetHeight;
+    var left = Math.min(Math.max(8, x - bw.left + 14), bw.width - w - 8), top = y - bw.top + 16;
+    if (top + hgt > bw.height) top = y - bw.top - hgt - 12;
+    tip.style.left = left + 'px'; tip.style.top = Math.max(4, top) + 'px';
+  }
+  svg.addEventListener('pointermove', function (ev) { var el = ev.target.closest('.hov'); if (el) show(el, ev.clientX, ev.clientY); else tip.hidden = true; });
+  svg.addEventListener('pointerleave', function () { tip.hidden = true; });
+  svg.addEventListener('focusin', function (ev) { var el = ev.target.closest('.hov'); if (el) { var b = el.getBoundingClientRect(); show(el, b.left + b.width / 2, b.bottom); } });
+  svg.addEventListener('focusout', function () { tip.hidden = true; });
+  svg.addEventListener('click', function (ev) { var el = ev.target.closest('.mk-fac'); if (el) { select(el.getAttribute('data-tip').split(':')[1], false); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+}
+
+function renderTrigCards() {
+  var g = document.getElementById('trigGrid'), h = '';
+  TRIGGERS.forEach(function (t) {
+    var sm = trigSummary(t.n), tot = SITES.length;
+    h += '<button type="button" class="tcard" data-trig="' + t.n + '" aria-pressed="' + (state.trig === t.n) + '">';
+    h += '<span class="tn"><span class="badge ' + sc(sm.worst) + '" style="background:var(--c);color:#fff;border-color:transparent">' + t.n + '</span>' + esc(t.th) + '</span>';
+    h += '<span class="dist">' + [0, 1, 2, 3].map(function (l) { return sm.c[l] ? '<span class="s' + l + '" style="width:' + (sm.c[l] / tot * 100) + '%;background:var(--c)"></span>' : ''; }).join('') + (sm.na ? '<span class="sn" style="width:' + (sm.na / tot * 100) + '%;background:var(--na);opacity:.35"></span>' : '') + '</span>';
+    h += '<span class="tcounts">' + [0, 1, 2, 3].filter(function (l) { return sm.c[l]; }).map(function (l) { return LV[l].th + ' <b>' + sm.c[l] + '</b>'; }).join(' · ') + (sm.na ? ' · ไม่มีข้อมูล <b>' + sm.na + '</b>' : '') + '</span>';
+    h += '<span class="src">' + esc(t.src) + '</span></button>';
+  });
+  g.innerHTML = h;
+}
+
+function renderKpis() {
+  var c = [0, 0, 0, 0], na = 0;
+  SITES.forEach(function (s) { var l = state.evals[s.id].overall; if (l == null) na++; else c[l]++; });
+  var h = '';
+  [3, 2, 1, 0].forEach(function (l) {
+    h += '<button type="button" class="kpi s' + l + '" data-lvl="' + l + '" aria-pressed="' + (state.lvl === l) + '"><span class="sw"></span><span><span class="v">' + c[l] + '</span><br><span class="l">พื้นที่ ' + LV[l].th + '</span></span></button>';
+  });
+  document.getElementById('kpis').innerHTML = h;
+}
+
+function renderFilters() {
+  var h = '';
+  if (state.trig != null) h += '<span class="chip-filter">Trigger ' + state.trig + ': ' + esc(TRIGGERS[state.trig - 1].th) + ' <button type="button" data-clear="trig" aria-label="ล้างตัวกรอง Trigger">×</button></span>';
+  if (state.lvl != null) h += '<span class="chip-filter">สถานะ: ' + LV[state.lvl].th + ' <button type="button" data-clear="lvl" aria-label="ล้างตัวกรองสถานะ">×</button></span>';
+  document.getElementById('activeFilters').innerHTML = h;
+  Array.prototype.forEach.call(document.querySelectorAll('#zoneSeg button'), function (b) { b.setAttribute('aria-pressed', b.dataset.zone === state.zone); });
+}
+
+function renderRows() {
+  var list = visibleSites(), h = '';
+  list.forEach(function (s) {
+    var e = state.evals[s.id];
+    h += '<tr class="row" data-id="' + s.id + '" tabindex="0" aria-selected="' + (state.sel === s.id) + '">';
+    h += '<td class="stripe ' + sc(e.overall) + '"><span></span></td>';
+    h += '<td><div class="sname">' + esc(s.name) + '</div><div class="ssub">' + esc(s.prov + ' · ' + s.amp) + (s.cos.length > 1 ? ' · ' + s.cos.length + ' บริษัท' : '') + '</div></td>';
+    h += '<td><span class="zone">' + ZONES[s.zone] + '</span></td>';
+    h += '<td><div class="cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) {
+      var l = e[n].l; return '<span class="cell ' + sc(l) + '" title="' + n + ' ' + esc(TRIGGERS[n - 1].th) + ': ' + lname(l) + '"' + (state.trig === n ? ' style="outline:2px solid var(--ink);outline-offset:1px"' : '') + '>' + (l == null ? '·' : n) + '</span>';
+    }).join('') + '</div></td>';
+    h += '<td><span class="spill ' + sc(e.overall) + '">' + lname(e.overall) + '</span></td></tr>';
+  });
+  document.getElementById('siteRows').innerHTML = h || '<tr><td colspan="5" class="empty">ไม่มีพื้นที่ตรงกับตัวกรอง</td></tr>';
+  document.getElementById('countLabel').textContent = list.length + '/' + SITES.length;
+  if (map) updateMarkers(list);
+}
+
+function renderDetail() {
+  var el = document.getElementById('detail');
+  var s = SITES.filter(function (x) { return x.id === state.sel; })[0];
+  if (!s) {
+    el.innerHTML = '<div class="empty">เลือกพื้นที่จากรายชื่อหรือแผนที่ เพื่อดูค่าวัดของทั้ง 7 Trigger Point พร้อมสถานีอ้างอิง</div>';
+    return;
+  }
+  var e = state.evals[s.id], prim = ZONE_TRIG[s.zone], h = '';
+  h += '<div class="panel-b"><div class="detail-head"><div style="min-width:0"><div class="eyebrow">รายละเอียดพื้นที่ · ' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</div><h2>' + esc(s.name) + '</h2>';
+  h += '<div class="meta"><span>จ.' + esc(s.prov) + ' อ.' + esc(s.amp) + '</span><span class="num">' + f(s.lat, 5) + ', ' + f(s.lng, 5) + '</span>' + (s.coord ? '<span>BCM Coordinator: ' + esc(s.coord) + '</span>' : '') + '</div>';
+  h += '<ul class="cos">' + s.cos.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></div>';
+  h += '<span class="spill ' + sc(e.overall) + '" style="font-size:14px;padding:6px 14px">ภาพรวม: ' + lname(e.overall) + '</span></div>';
+  h += '<div class="tgrid">';
+  TRIGGERS.forEach(function (t) {
+    var r = e[t.n], isP = prim.indexOf(t.n) >= 0;
+    h += '<div class="tbox ' + sc(r.l) + (isP ? '' : ' irrelevant') + '">';
+    h += '<div class="hd"><span class="tt"><span class="badge">' + t.n + '</span>' + esc(t.th) + '</span><span class="spill ' + sc(r.l) + '">' + lname(r.l) + '</span></div>';
+    if (r.l == null && r.na) {
+      h += '<div class="why muted">' + esc(r.na) + '</div>';
+    } else {
+      h += '<div class="val">' + r.v + '<small>' + esc(r.u) + '</small>' + (r.trend != null ? ' <span class="trend" style="color:' + (r.trend > 0.005 ? 'var(--warn)' : r.trend < -0.005 ? 'var(--ok)' : 'var(--muted)') + '">' + (r.trend > 0.005 ? '▲' : r.trend < -0.005 ? '▼' : '■') + ' ' + f(Math.abs(r.trend)) + '</span>' : '') + '</div>';
+      h += '<div class="why"><b>' + esc(r.title) + '</b></div><div class="why muted">' + esc(r.why) + '</div><div class="src">' + esc(r.src) + '</div>';
+    }
+    h += '<div class="src">' + (isP ? 'จุดหลักของโซน' + ZONES[s.zone] : 'ข้อมูลประกอบ') + '</div></div>';
+  });
+  h += '</div></div>';
+  el.innerHTML = h;
+}
+
+function renderDams() {
+  var used = {}; SITES.forEach(function (s) { s.dams.forEach(function (d) { (used[d] = used[d] || []).push(s); }); });
+  var rows = Object.keys(used).map(function (n) { return state.data.damByName[n]; }).filter(Boolean).sort(function (a, b) { return b.pct - a.pct; });
+  var h = '<thead><tr><th>เขื่อน</th><th>ปริมาตรน้ำ (% ความจุปกติ)</th><th>ปริมาตร (ล้าน ลบ.ม.)</th><th>ไหลเข้า</th><th>ระบาย</th><th>ระบาย/ความจุ</th><th>Rule Curve (กฟผ.)</th><th>พื้นที่ SCGP ที่รับผล</th></tr></thead><tbody>';
+  rows.forEach(function (d) {
+    var g = state.data.egat && state.data.egat.byName[d.name], mark = g && g.upper ? g.upper : 80;
+    var l1 = damLevel(d), p2 = d.norm ? d.rel / d.norm * 100 : null, l2 = lvlBy(p2, CRITERIA.release.bands);
+    h += '<tr><td><b>' + esc(d.name) + '</b></td>';
+    h += '<td><div style="display:flex;align-items:center;gap:10px"><div class="bar ' + sc(l1) + '"><span style="width:' + Math.min(100, d.pct / 1.1) + '%"></span><i style="left:' + (mark / 1.1) + '%"></i></div><span class="num">' + f(d.pct, 1) + '%</span><span class="spill ' + sc(l1) + '">' + lname(l1) + '</span></div></td>';
+    h += '<td class="num">' + f(d.st, 0) + ' / ' + f(d.norm, 0) + '</td><td class="num">' + f(d.inf) + '</td><td class="num">' + f(d.rel) + '</td>';
+    h += '<td><span class="spill ' + sc(l2) + '">' + f(p2, 2) + '%</span></td>';
+    h += '<td>' + (g && g.rc ? '<span class="spill" style="background:' + RC[g.rc].c + ';color:#fff">' + RC[g.rc].th + '</span> <span class="num muted" style="font-size:12px">URC ' + f(g.upper, 1) + '% · LRC ' + f(g.lower, 1) + '%</span>' : '<span class="muted" style="font-size:12px">–</span>') + '</td>';
+    h += '<td style="white-space:normal;min-width:220px;font-size:12.5px">' + used[d.name].map(function (s) { return esc(s.name); }).join(', ') + '</td></tr>';
+  });
+  h += '</tbody>';
+  document.getElementById('damTable').innerHTML = h;
+}
+
+function renderCriteria() {
+  var C = CRITERIA, rows = [
+    [1, 'ระดับน้ำเขื่อน', 'เขื่อน กฟผ.: เทียบเกณฑ์ควบคุม Rule Curve (URC) · เขื่อนอื่น: % ความจุปกติ', 'URC−' + C.dam.urcMargin + '% / ≥ ' + C.dam.bands[0] + '%', 'เกิน URC / ≥ ' + C.dam.bands[1] + '%', '≥ ' + C.dam.bands[2] + '%'],
+    [2, 'น้ำไหลออก', 'น้ำระบาย ÷ ความจุปกติ ต่อวัน (มีน้ำล้นทางระบาย = เตือนภัยขึ้นไป)', '≥ ' + C.release.bands[0] + '%', '≥ ' + C.release.bands[1] + '%', '≥ ' + C.release.bands[2] + '%'],
+    [3, 'ระดับท่าน้ำ (ม.รทก.)', 'ระยะจากระดับน้ำถึงระดับวิกฤตของสถานี (หรือตลิ่งต่ำสุด) สถานีแม่น้ำใกล้สุดในรัศมี ' + C.radius.river + ' กม.', '≤ ' + C.river.bands[0] + ' ม.', '≤ ' + C.river.bands[1] + ' ม.', 'ถึง/ล้น'],
+    [4, 'ระดับตลิ่ง', '% ความจุลำน้ำ สูงสุดของสถานีในรัศมี ' + C.radius.bank + ' กม.', '≥ ' + C.bank.bands[0] + '%', '≥ ' + C.bank.bands[1] + '%', '≥ ' + C.bank.bands[2] + '% (ล้นตลิ่ง)'],
+    [5, 'ปริมาณน้ำฝน', 'ฝนสะสม 24 ชม. สูงสุดในรัศมี ' + C.radius.rain + ' กม. (เกณฑ์กรมอุตุนิยมวิทยา)', '≥ 35.1 มม. (หนัก)', '≥ 90.1 มม. (หนักมาก)', '≥ ' + C.rain.bands[2] + ' มม.'],
+    [6, 'ระดับท่อ/น้ำท่วมขัง', 'น้ำท่วมขังสูงสุดในรัศมี ' + C.radius.drain + ' กม. (กทม.) / เซ็นเซอร์ภายในเมื่อเชื่อมต่อ', '≥ ' + C.drain.bands[0] + ' ซม.', '≥ ' + C.drain.bands[1] + ' ซม.', '≥ ' + C.drain.bands[2] + ' ซม.'],
+    [7, 'น้ำทะเลหนุน', 'ป้อมพระจุลจอมเกล้า (ม.รทก.) / สถานีอื่นใช้ % ตลิ่ง', '≥ ' + C.tide.GLF001[0] + ' ม.', '≥ ' + C.tide.GLF001[1] + ' ม.', '≥ ' + C.tide.GLF001[2] + ' ม.']
+  ];
+  var h = '<thead><tr><th>#</th><th>Trigger</th><th>วิธีวัด</th><th><span class="spill s1">เฝ้าระวัง</span></th><th><span class="spill s2">เตือนภัย</span></th><th><span class="spill s3">วิกฤต</span></th></tr></thead><tbody>';
+  rows.forEach(function (r) { h += '<tr><td class="num">' + r[0] + '</td><td><b>' + r[1] + '</b></td><td>' + r[2] + '</td><td class="num">' + r[3] + '</td><td class="num">' + r[4] + '</td><td class="num">' + r[5] + '</td></tr>'; });
+  document.getElementById('critTable').innerHTML = h + '</tbody>';
+}
+
+/* ---------- map ---------- */
+var map = null, siteLayer, refLayer, markers = {};
+function initMap() {
+  if (!window.L) { document.getElementById('map').innerHTML = '<div class="empty">โหลดแผนที่ไม่สำเร็จ</div>'; return; }
+  map = L.map('map', { zoomControl: true, attributionControl: true, scrollWheelZoom: false }).setView([13.9, 100.6], 6);
+  var geo = L.geoJSON(window.REGION_GEO, { style: function (ft) { return { className: ft.properties.th ? 'geo-th' : 'geo-nb', weight: ft.properties.th ? 1.2 : .6 }; }, interactive: false }).addTo(map);
+  // Use OpenStreetMap tiles where the host allows them; otherwise the outline map above stays as the base.
+  var probe = new Image();
+  probe.onload = function () {
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+    document.documentElement.classList.add('has-tiles');
+  };
+  probe.src = 'https://tile.openstreetmap.org/6/50/29.png';
+  map.attributionControl.addAttribution('ข้อมูลน้ำ: สสน. · กรมชลประทาน');
+  refLayer = L.layerGroup().addTo(map);
+  var damLayer = L.layerGroup().addTo(map);
+  var used = {}; SITES.forEach(function (s) { s.dams.forEach(function (d) { used[d] = 1; }); });
+  state.data.dam.filter(function (d) { return used[d.name]; }).forEach(function (d) {
+    var l = lvlBy(d.pct, CRITERIA.dam.bands);
+    L.marker([d.lat, d.lng], { icon: L.divIcon({ className: '', html: '<div class="dam-ico ' + sc(l) + '"></div>', iconSize: [16, 14], iconAnchor: [8, 7] }), keyboard: false })
+      .bindTooltip('เขื่อน' + esc(d.name) + ' ' + f(d.pct, 1) + '% · ระบาย ' + f(d.rel) + ' ล้าน ลบ.ม./วัน').addTo(damLayer);
+  });
+  siteLayer = L.layerGroup().addTo(map);
+  var leg = L.control({ position: 'bottomleft' });
+  leg.onAdd = function () { var d = L.DomUtil.create('div', 'map-legend'); d.innerHTML = '<div><i style="background:var(--ok)"></i>ปกติ</div><div><i style="background:var(--watch)"></i>เฝ้าระวัง</div><div><i style="background:var(--warn)"></i>เตือนภัย</div><div><i style="background:var(--crit)"></i>วิกฤต</div><div><span class="tri"></span>เขื่อน</div><div><i style="background:transparent;border:2px solid var(--ink)"></i>สถานีอ้างอิง</div>'; return d; };
+  leg.addTo(map);
+  map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15));
+}
+function updateMarkers(list) {
+  siteLayer.clearLayers(); markers = {};
+  list.forEach(function (s) {
+    var e = state.evals[s.id];
+    var m = L.circleMarker([s.lat, s.lng], { radius: state.sel === s.id ? 11 : 8, className: 'site-mk ' + sc(e.overall) + (state.sel === s.id ? ' sel' : ''), weight: 2 })
+      .bindTooltip(esc(s.name) + ' · ' + lname(e.overall))
+      .on('click', function () { select(s.id, false); });
+    m.addTo(siteLayer); markers[s.id] = m;
+  });
+}
+function showRefs(s) {
+  refLayer.clearLayers();
+  var e = state.evals[s.id];
+  [3, 4, 5, 6, 7].forEach(function (n) { (e[n].geo || []).forEach(function (g) {
+    L.circleMarker([g.lat, g.lng], { radius: 5, className: 'ref-mk', weight: 2 }).bindTooltip('T' + n + ' · ' + esc(g.n)).addTo(refLayer);
+    L.polyline([[s.lat, s.lng], [g.lat, g.lng]], { className: 'ref-line', weight: 1, dashArray: '3 4' }).addTo(refLayer);
+  }); });
+}
+
+/* ---------- interactions ---------- */
+function select(id, fromList) {
+  state.sel = id;
+  renderProfile(); renderSchematic(); renderRows(); renderDetail();
+  var s = SITES.filter(function (x) { return x.id === id; })[0];
+  if (map && s) { showRefs(s); map.setView([s.lat, s.lng], Math.max(map.getZoom(), 10)); }
+  if (fromList !== false) {} else { var r = document.querySelector('tr.row[data-id="' + id + '"]'); if (r) r.scrollIntoView({ block: 'nearest' }); }
+}
+function rerender() { renderProfile(); renderSchematic(); renderTrigCards(); renderKpis(); renderFilters(); renderRows(); renderDetail(); }
+
+document.addEventListener('click', function (ev) {
+  var t = ev.target.closest('[data-trig],[data-lvl],[data-zone],[data-clear],tr.row');
+  if (!t || !state.data) return;
+  if (t.matches('tr.row')) { select(t.dataset.id, true); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (t.dataset.trig) { var n = +t.dataset.trig; state.trig = state.trig === n ? null : n; }
+  else if (t.dataset.lvl) { var l = +t.dataset.lvl; state.lvl = state.lvl === l ? null : l; }
+  else if (t.dataset.zone) { state.zone = state.zone === t.dataset.zone && t.dataset.zone !== 'all' ? 'all' : t.dataset.zone; }
+  else if (t.dataset.clear) { state[t.dataset.clear] = null; }
+  rerender();
+});
+document.addEventListener('keydown', function (ev) {
+  if (ev.key !== 'Enter' && ev.key !== ' ') return;
+  var t = ev.target.closest && ev.target.closest('.trig-node,tr.row');
+  if (t) { ev.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+});
+document.getElementById('q').addEventListener('input', function (e) { state.q = e.target.value; renderRows(); });
+document.getElementById('refreshBtn').addEventListener('click', function () { load(); });
+
+/* ---------- data loading: Vercel API → direct open-data API → saved snapshot ---------- */
+function fetchT(url, ms) {
+  var c = new AbortController(); var id = setTimeout(function () { c.abort(); }, ms);
+  return fetch(url, { signal: c.signal, cache: 'no-store' }).finally(function () { clearTimeout(id); });
+}
+async function getLive() {
+  try {
+    var r = await fetchT('api/water', 15000);
+    if (r.ok && /json/.test(r.headers.get('content-type') || '')) { var j = await r.json(); if (j.wl && j.wl.length) return { d: j, via: 'Vercel API' }; }
+  } catch (e) {}
+  try {
+    var B = 'https://api-v3.thaiwater.net/api/v1/thaiwater30/public/';
+    var res = await Promise.all(['waterlevel_load', 'rain_24h', 'flood_road', 'thailand_main'].map(function (p) { return fetchT(B + p, 20000).then(function (r) { if (!r.ok) throw new Error(p); return r.json(); }); }));
+    var c = window.WaterTransform.buildCompact({ wl: res[0], rain: res[1], fr: res[2], main: res[3] }, SITES);
+    if (c.wl.length) return { d: c, via: 'ThaiWater API' };
+  } catch (e) {}
+  return null;
+}
+async function getEgatDirect() {
+  try {
+    var A = 'https://api-egatwater.egat.co.th/api', d = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
+    var g = function (u) { return fetchT(A + u, 15000).then(function (r) { if (!r.ok) throw new Error(u); return r.json(); }); };
+    var r = await Promise.all([g('/Telemiter/Maeklong'), g('/DailyInfographic?date=' + d), g('/Telemiter/Maeklong/DailyRain?dam=SNR&date=' + d).catch(function () { return []; }), g('/Telemiter/Maeklong/DailyRain?dam=VRK&date=' + d).catch(function () { return []; }), g('/Telemiter/Maeklong/Hourly/DropdownList?date=' + d).catch(function () { return []; })]);
+    return window.WaterTransform.compactEgat({ at: r[4][0] ? d + ' ' + r[4][0].text : null, tele: r[0], daily: r[1], rain: r[2].concat(r[3]) });
+  } catch (e) { return null; }
+}
+function setMode(mode, via) {
+  state.mode = mode;
+  var p = document.getElementById('modePill'), t = document.getElementById('modeText');
+  p.className = 'pill ' + (mode === 'live' ? 'live' : mode === 'snap' ? 'snap' : 'load');
+  t.textContent = mode === 'live' ? 'LIVE · ' + via : mode === 'snap' ? 'ข้อมูลที่บันทึกไว้ (snapshot)' : 'กำลังโหลดข้อมูล…';
+  document.getElementById('asof').textContent = state.data ? 'ข้อมูล ณ ' + fmtT(new Date(state.data.fetchedAt)) : '';
+}
+var timer = null;
+async function load() {
+  setMode('load');
+  var live = await getLive();
+  var raw = live ? live.d : window.SNAPSHOT;
+  if (live && !raw.egat) { var eg = await getEgatDirect(); raw.egat = eg || window.SNAPSHOT.egat; state.egatFromSnapshot = !eg; } else state.egatFromSnapshot = !live;
+  state.data = normalise(raw);
+  SITES.forEach(function (s) { state.evals[s.id] = evaluate(s); });
+  setMode(live ? 'live' : 'snap', live && live.via);
+  if (!state.sel) state.sel = topSite().id;
+  if (!map) { initMap(); initTip(); initSchemTip(); }
+  rerender(); renderDams(); renderCriteria();
+  if (state.sel) { var s = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (s && map) showRefs(s); }
+  document.getElementById('mapNote').textContent = SITES.length + ' พื้นที่ · ' + SITES.reduce(function (a, s) { return a + s.cos.length; }, 0) + ' บริษัท';
+  clearTimeout(timer);
+  if (live) timer = setTimeout(load, 10 * 60 * 1000);
+}
+
+// Start with the most at-risk site selected so the detail panel opens on something useful.
+load().then(function () {
+  if (!state.sel) {
+    var top = SITES.slice().sort(function (a, b) { return (state.evals[b.id].overall || 0) - (state.evals[a.id].overall || 0); })[0];
+    if (top) { state.sel = top.id; renderRows(); renderDetail(); if (map) showRefs(top); }
+  }
+});
+})();
+</script>
+</body></html>

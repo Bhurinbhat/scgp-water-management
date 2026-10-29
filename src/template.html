@@ -1,0 +1,361 @@
+<title>SCGP Water Management</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="SCGP Water Management Dashboard — ติดตามสถานการณ์น้ำของสถานประกอบการ SCGP ตาม 7 Risk Trigger Point">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<style>
+/*LEAFLET_CSS*/
+</style>
+<style>
+/* Layout: operations console — river profile (7 triggers) on top, map + site register side by side, site detail and dam table below. */
+:root{
+  --bg:#F2F6F6; --surface:#FFFFFF; --sunk:#E8EFEF; --ink:#0F2A2E; --muted:#587076; --line:#D6E1E2;
+  --accent:#16958B; --accent-ink:#FFFFFF; --deep:#103D44; --water:#3AAFA4; --water-2:#2C8F87; --sea:#1F9E55; --land:#C9D7D6;
+  --ok:#2E9B57; --watch:#C99A00; --warn:#E06E21; --crit:#D23434; --na:#9AABAE;
+  --ok-bg:#E3F3E8; --watch-bg:#FBF2CC; --warn-bg:#FDE7D7; --crit-bg:#FBDEDE; --na-bg:#ECF0F1;
+  --f-body:"IBM Plex Sans Thai","Noto Sans Thai","Leelawadee UI",Tahoma,system-ui,sans-serif;
+  --f-data:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0A1618; --surface:#102225; --sunk:#0C1B1E; --ink:#E2EDEE; --muted:#8EA5A9; --line:#22393D;
+  --accent:#3CC4B7; --accent-ink:#04201D; --deep:#071F23; --water:#2C8C84; --water-2:#23736C; --sea:#1B7F47; --land:#24393B;
+  --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
+  --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A1618; --surface:#102225; --sunk:#0C1B1E; --ink:#E2EDEE; --muted:#8EA5A9; --line:#22393D;
+  --accent:#3CC4B7; --accent-ink:#04201D; --deep:#071F23; --water:#2C8C84; --water-2:#23736C; --sea:#1B7F47; --land:#24393B;
+  --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
+  --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:1000;background:var(--deep)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1,h2,h3{text-wrap:balance;margin:0}
+h2{font-size:18px;font-weight:600}
+.muted{color:var(--muted)}
+
+/* Header */
+header.top{background:var(--deep);color:#E6F2F1;position:sticky;top:env(safe-area-inset-top,0px);z-index:900}
+header.top .wrap{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 320px}
+.mark{width:40px;height:40px;border-radius:9px;background:#16958B;display:grid;place-items:center;flex:none}
+.brand h1{font-size:19px;font-weight:700;letter-spacing:.01em;color:#FFFFFF}
+.brand p{margin:0;font-size:12.5px;color:#A9C6C4}
+.status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.live{background:#0E5A3A;color:#BFF5D6}
+.pill.snap{background:#5A4A0E;color:#FBEBB0}
+.pill.load{background:#244B50;color:#CFE6E4}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.live .dot{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.pill.live .dot{animation:none}}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+header .btn{background:transparent;border-color:#3D6268;color:#E6F2F1}
+header .btn:hover{border-color:#7FD3CB}
+.asof{font-size:12px;color:#A9C6C4}
+
+main{display:grid;gap:20px;padding-block:20px 40px}
+main>*{min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 18px 0}
+.panel-b{padding:14px 18px 18px}
+
+/* River profile */
+.profile-wrap{overflow-x:auto}
+.profile{display:block;width:100%;min-width:720px;height:auto}
+.profile text{font-family:var(--f-body)}
+.trig-node{cursor:pointer}
+.trig-node:focus{outline:none}
+.trig-node:focus-visible circle.ring{stroke:var(--accent);stroke-width:3}
+.site-pick{display:flex;align-items:center;gap:8px;font-size:13px}
+.site-pick select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);color:var(--ink);max-width:min(340px,70vw)}
+.flow-legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:12.5px;align-items:center}
+.flow-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.lg-in{background:#FFD25E}.lg-out{background:#FFFFFF;box-shadow:0 0 0 1.5px var(--water-2)}
+.pt-out{fill:#FFFFFF;opacity:.9}.pt-in{fill:#FFD25E;opacity:.95}
+.hov{cursor:pointer}
+.ship{transform-box:fill-box;transform-origin:50% 90%;animation:ship-rock 3.4s ease-in-out infinite}
+@keyframes ship-rock{0%,100%{transform:translateY(0) rotate(-2.5deg)}50%{transform:translateY(-4px) rotate(2.5deg)}}
+.wave-front{animation:wave-move 2.6s linear infinite}
+.wave-back{animation:wave-move 5s linear infinite reverse}
+@keyframes wave-move{from{transform:translateX(0)}to{transform:translateX(-60px)}}
+@media (prefers-reduced-motion:reduce){.ship,.wave-front,.wave-back{animation:none}}
+.factory:hover rect,.factory:focus rect{filter:brightness(1.15)}
+.factory:focus{outline:none}
+.ptip{position:absolute;z-index:5;width:300px;max-width:calc(100% - 16px);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:12.5px;line-height:1.45;pointer-events:none}
+.ptip .tt-h{font-weight:600;font-size:13.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.ptip .tt-sub{color:var(--muted);margin:2px 0}
+.ptip .tt-sub b{color:var(--ink)}
+.ptip .tt-val{font-size:20px;font-weight:600}
+.ptip .tt-val small{font-family:var(--f-body);font-size:12px;color:var(--muted)}
+.ptip .tr{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding:4px 0}
+.ptip .tr b{font-weight:600;text-align:right}
+.ptip .tt-cos{margin:4px 0;padding-left:16px}
+.ptip .tt-cells{display:grid;grid-template-columns:repeat(7,18px);gap:3px;margin:6px 0}
+.ptip .tt-foot{color:var(--muted);font-size:11.5px;margin-top:4px}
+.rc-row{display:flex;gap:8px;flex-wrap:wrap}
+.rc-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12.5px;background:var(--surface)}
+.rc-chip i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.profile.mk{min-width:900px}
+.mk-flow{stroke:#FFFFFF;stroke-dasharray:3 15;opacity:.9;animation:mkflow linear infinite}
+@keyframes mkflow{to{stroke-dashoffset:-36}}
+.mk-fac{cursor:pointer}
+.mk-fac:focus{outline:none}
+.mk-fac:focus-visible rect:first-child,.mk-fac:hover rect:first-child{stroke-width:3}
+@media (prefers-reduced-motion:reduce){.mk-flow{animation:none}}
+.trig-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.tcard{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--surface);text-align:left;cursor:pointer;display:grid;gap:6px;min-width:0}
+.tcard:hover{border-color:var(--accent)}
+.tcard[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.tcard .tn{display:flex;gap:8px;align-items:center;font-weight:600;font-size:13px;line-height:1.3}
+.badge{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none;background:var(--sunk);color:var(--ink);border:1px solid var(--line)}
+.tcard .src{font-size:11.5px;color:var(--muted)}
+.dist{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--sunk)}
+.dist span{display:block;height:100%}
+.tcounts{display:flex;gap:8px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.tcounts b{font-family:var(--f-data);font-weight:600;color:var(--ink)}
+
+/* Summary + filters */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{border-radius:9px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left}
+.kpi[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--accent)}
+.kpi .v{font-family:var(--f-data);font-size:26px;font-weight:600;line-height:1}
+.kpi .l{font-size:12.5px;color:var(--muted);line-height:1.3}
+.kpi .sw{width:10px;align-self:stretch;border-radius:4px;flex:none}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.search{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);min-width:0;flex:1 1 180px;max-width:280px}
+.chip-filter{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 6px 4px 10px;background:var(--sunk);font-size:12.5px}
+.chip-filter button{border:0;background:var(--surface);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1}
+
+/* Map + list */
+.split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px}
+@media (max-width:980px){.split{grid-template-columns:1fr}}
+#map{height:560px;border-radius:0 0 var(--r) var(--r);background:var(--sunk)}
+@media (max-width:640px){#map{height:380px}}
+.leaflet-container{font-family:var(--f-body);background:var(--sunk)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surface);color:var(--ink)}
+.leaflet-popup-content{margin:10px 12px;font-size:13px;line-height:1.45}
+.leaflet-control-zoom a{background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--surface) 85%,transparent)!important;color:var(--muted)!important;font-size:10px}
+.leaflet-control-attribution a{color:var(--accent)!important}
+.map-legend{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11.5px;line-height:1.7}
+.map-legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.tri{width:0;height:0;display:inline-block;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid var(--water-2);margin-right:6px;vertical-align:-1px}
+
+.geo-th{fill:var(--surface);fill-opacity:1;stroke:var(--muted);stroke-opacity:.8}
+.geo-nb{fill:var(--land);fill-opacity:.55;stroke:var(--muted);stroke-opacity:.4}
+.has-tiles .geo-th,.has-tiles .geo-nb{fill-opacity:0}
+.site-mk{fill:var(--c);fill-opacity:.95;stroke:var(--surface)}
+.site-mk.sel{stroke:var(--ink);stroke-width:3}
+.ref-mk{fill:var(--surface);stroke:var(--ink)}
+.ref-line{stroke:var(--ink);stroke-opacity:.5;fill:none}
+.dam-ico{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:14px solid var(--c);filter:drop-shadow(0 0 1px var(--ink))}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) saturate(.6)}}
+:root[data-theme="dark"] .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) saturate(.6)}
+.list{max-height:560px;overflow:auto}
+@media (max-width:980px){.list{max-height:none}}
+table{border-collapse:collapse;width:100%}
+.sites th{font-size:11.5px;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1;white-space:nowrap}
+.sites td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.sites tr.row{cursor:pointer}
+.sites tr.row:hover td{background:var(--sunk)}
+.sites tr.row[aria-selected="true"] td{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.sname{font-weight:600;line-height:1.3}
+.ssub{font-size:12px;color:var(--muted)}
+.stripe{width:4px;padding:0!important}
+.stripe span{display:block;width:4px;height:34px;border-radius:2px}
+.cells{display:grid;grid-template-columns:repeat(7,18px);gap:3px}
+.cell{width:18px;height:18px;border-radius:4px;font-size:10px;font-weight:700;display:grid;place-items:center;font-family:var(--f-data)}
+.zone{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+@media (max-width:640px){.sites th:nth-child(3),.sites td:nth-child(3),.sites th:nth-child(5),.sites td:nth-child(5){display:none}.cells{grid-template-columns:repeat(7,15px);gap:2px}.cell{width:15px;height:15px;font-size:9px}.sites td{padding:8px 6px}}
+.spill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+
+/* Status colors */
+.s0{--c:var(--ok);--cb:var(--ok-bg)} .s1{--c:var(--watch);--cb:var(--watch-bg)} .s2{--c:var(--warn);--cb:var(--warn-bg)} .s3{--c:var(--crit);--cb:var(--crit-bg)} .sn{--c:var(--na);--cb:var(--na-bg)}
+.cell,.spill{background:var(--cb);color:var(--c)}
+.cell{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
+.stripe span,.kpi .sw{background:var(--c)}
+
+/* Detail */
+.detail-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.detail-head h2{font-size:21px}
+.meta{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:4px}
+.cos{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.cos li{font-size:12px;background:var(--sunk);border-radius:6px;padding:2px 8px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:16px}
+.tbox{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:9px;padding:12px 14px;display:grid;gap:6px;align-content:start;min-width:0}
+.tbox .hd{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.tbox .tt{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px;line-height:1.3}
+.tbox .val{font-family:var(--f-data);font-size:26px;font-weight:600;line-height:1.1}
+.tbox .val small{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+.tbox .why{font-size:12.5px}
+.tbox .src{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}
+.tbox.irrelevant{opacity:.62}
+.trend{font-size:12px;font-family:var(--f-data)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+
+/* Dams */
+.dams td,.dams th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.dams th{font-size:11.5px;color:var(--muted);font-weight:600}
+.bar{position:relative;height:10px;width:140px;background:var(--sunk);border-radius:5px;overflow:hidden}
+.bar span{position:absolute;inset:0 auto 0 0;background:var(--c)}
+.bar i{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--muted)}
+.scroll-x{overflow-x:auto}
+
+/* Sources */
+.src-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.src-card{border:1px solid var(--line);border-radius:9px;padding:12px 14px;min-width:0}
+.src-card h3{font-size:14px;margin-bottom:4px}
+.src-card p{margin:4px 0;font-size:12.5px;color:var(--muted)}
+.src-card code{font-family:var(--f-data);font-size:11px;overflow-wrap:anywhere;color:var(--ink)}
+.crit-table td,.crit-table th{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:12.5px;vertical-align:top}
+.crit-table th{color:var(--muted);font-weight:600;font-size:11.5px}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3c3.5 4.4 6 7.7 6 10.6A6 6 0 0 1 6 13.6C6 10.7 8.5 7.4 12 3z" fill="#FFFFFF"/><path d="M8.5 15.2c1.2.9 2.3 1.2 3.5 1.2s2.3-.3 3.5-1.2" stroke="#16958B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div style="min-width:0">
+        <h1>SCGP Water Management</h1>
+        <p>ติดตามสถานการณ์น้ำสถานประกอบการ SCGP ตาม 7 Risk Trigger Point · BCM</p>
+      </div>
+    </div>
+    <div class="status-bar">
+      <span id="modePill" class="pill load"><span class="dot"></span><span id="modeText">กำลังโหลดข้อมูล…</span></span>
+      <span class="asof" id="asof"></span>
+      <button class="btn" id="refreshBtn" type="button">โหลดข้อมูลใหม่</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="panel" aria-labelledby="h-profile">
+    <div class="panel-h">
+      <div>
+        <div class="eyebrow">เส้นทางน้ำ · 7 Risk Trigger Point</div>
+        <h2 id="h-profile">น้ำจากต้นน้ำถึงพื้นที่ SCGP</h2>
+      </div>
+      <label class="site-pick"><span class="muted">พื้นที่</span><select id="profileSite" aria-label="เลือกพื้นที่ที่จะแสดงเส้นทางน้ำ"></select></label>
+    </div>
+    <div class="panel-b" style="position:relative">
+      <div class="flow-legend"><span><i class="lg-in"></i>น้ำไหลเข้าเขื่อน (inflow)</span><span><i class="lg-out"></i>น้ำระบาย/ไหลลงท้ายน้ำ (outflow) · ยิ่งมากยิ่งหนาแน่นและเร็ว</span><span class="muted">T+ = เวลาโดยประมาณที่น้ำจากเขื่อนเดินทางถึงจุดนั้น · ชี้เมาส์ที่โรงงาน เขื่อน หรือจุด 1–7 เพื่อดูรายละเอียด</span></div>
+      <p class="muted" id="profileNote" style="margin:4px 0 8px;font-size:12.5px"></p>
+      <div id="ptip" class="ptip" hidden></div><div class="profile-wrap"><svg class="profile" id="profile" viewBox="0 0 1200 300" role="img" aria-label="แผนภาพเส้นทางน้ำ ต้นน้ำ กลางน้ำ ปลายน้ำ และ 7 จุดเฝ้าระวัง"></svg></div>
+      <div class="eyebrow" style="margin-top:14px">ภาพรวมทุกพื้นที่ · กดการ์ดเพื่อกรองรายชื่อ</div>
+      <div class="trig-grid" id="trigGrid" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-mk">
+    <div class="panel-h">
+      <div>
+        <div class="eyebrow">แผนผังน้ำ · รูปแบบเดียวกับ กฟผ. Water Intelligence Center</div>
+        <h2 id="h-mk">ลุ่มน้ำแม่กลอง: เขื่อน สถานีโทรมาตร และโรงงาน SCGP</h2>
+      </div>
+      <span class="muted num" id="mkAsof" style="font-size:12.5px"></span>
+    </div>
+    <div class="panel-b" style="position:relative;display:grid;gap:10px">
+      <div class="rc-row" id="rcSummary" aria-label="สถานการณ์ระดับน้ำเขื่อน กฟผ. เทียบ Rule Curve"></div>
+      <div class="flow-legend">
+        <span><i style="background:#F1A039"></i>สถานีโทรมาตร กฟผ.</span>
+        <span><i style="background:#3BB217"></i>สถานีโทรมาตร กรมชลประทาน</span>
+        <span><i style="background:var(--accent)"></i>สถานี สสน.</span>
+        <span><i style="background:transparent;box-shadow:0 0 0 2.5px var(--warn)"></i>วงรอบ = % ความจุลำน้ำ (สสน.)</span>
+        <span class="muted">ตัวเลข: ระดับน้ำ ม.รทก. · อัตราการไหล ลบ.ม./วินาที (cms) · เส้นน้ำวิ่งเร็วขึ้นตามอัตราการไหล</span>
+      </div>
+      <div id="mtip" class="ptip" hidden></div>
+      <div class="profile-wrap"><svg class="profile mk" id="mkSchem" viewBox="0 0 1300 870" role="img" aria-label="แผนผังลุ่มน้ำแม่กลอง แสดงเขื่อน สถานีวัดน้ำ และโรงงาน SCGP"></svg></div>
+    </div>
+  </section>
+
+  <section aria-label="สรุปสถานะ" style="display:grid;gap:12px">
+    <div class="kpis" id="kpis"></div>
+    <div class="filters">
+      <div class="seg" role="group" aria-label="กรองตามโซน" id="zoneSeg">
+        <button type="button" data-zone="all" aria-pressed="true">ทุกโซน</button>
+        <button type="button" data-zone="up" aria-pressed="false">ต้นน้ำ</button>
+        <button type="button" data-zone="mid" aria-pressed="false">กลางน้ำ</button>
+        <button type="button" data-zone="down" aria-pressed="false">ปลายน้ำ</button>
+      </div>
+      <input id="q" class="search" type="search" placeholder="ค้นหาบริษัท / จังหวัด" aria-label="ค้นหาบริษัทหรือจังหวัด">
+      <span id="activeFilters" class="filters"></span>
+    </div>
+  </section>
+
+  <section class="split">
+    <div class="panel" style="min-width:0">
+      <div class="panel-h" style="padding-bottom:12px">
+        <div><div class="eyebrow">แผนที่</div><h2>ที่ตั้งสถานประกอบการ SCGP</h2></div>
+        <span class="muted" style="font-size:12px" id="mapNote"></span>
+      </div>
+      <div id="map" role="region" aria-label="แผนที่สถานประกอบการและเขื่อน"></div>
+    </div>
+    <div class="panel" style="min-width:0">
+      <div class="panel-h" style="padding-bottom:10px">
+        <div><div class="eyebrow">ทะเบียนพื้นที่</div><h2>สถานะรายพื้นที่ <span class="muted num" id="countLabel" style="font-size:14px;font-weight:500"></span></h2></div>
+        <span class="muted" style="font-size:12px">ช่อง 1–7 = Trigger Point</span>
+      </div>
+      <div class="list">
+        <table class="sites" aria-label="รายชื่อพื้นที่และสถานะ 7 Trigger Point">
+          <thead><tr><th class="stripe" aria-label="สถานะ"></th><th>พื้นที่</th><th>โซน</th><th>1 2 3 4 5 6 7</th><th>สถานะ</th></tr></thead>
+          <tbody id="siteRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="detail" aria-live="polite"></section>
+
+  <section class="panel" aria-labelledby="h-dams">
+    <div class="panel-h">
+      <div><div class="eyebrow">Trigger 1–2 · กรมชลประทาน</div><h2 id="h-dams">เขื่อนที่ส่งผลต่อพื้นที่ SCGP</h2></div>
+      <span class="muted" style="font-size:12px">เส้นแนวตั้ง = เกณฑ์เฝ้าระวัง 80% ของความจุปกติ</span>
+    </div>
+    <div class="panel-b scroll-x"><table class="dams" id="damTable"></table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-src">
+    <div class="panel-h"><div><div class="eyebrow">ที่มาข้อมูลและเกณฑ์</div><h2 id="h-src">แหล่งข้อมูลเปิดภาครัฐ และเกณฑ์ของแต่ละ Trigger</h2></div></div>
+    <div class="panel-b" style="display:grid;gap:16px">
+      <div class="src-grid">
+        <div class="src-card"><h3>คลังข้อมูลน้ำแห่งชาติ (สสน.)</h3><p>ระดับน้ำโทรมาตร ~800 สถานี, ฝนสะสม 24 ชม. ~4,800 สถานี (อัปเดตทุก 10–15 นาที)</p><p><code>api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load</code><br><code>…/public/rain_24h</code></p><p><a href="https://www.thaiwater.net/" target="_blank" rel="noopener">thaiwater.net</a></p></div>
+        <div class="src-card"><h3>กรมชลประทาน</h3><p>ข้อมูลอ่างเก็บน้ำขนาดใหญ่ 35 แห่ง: ปริมาตรน้ำ % ความจุ น้ำไหลเข้า น้ำระบาย (รายวัน) ผ่านคลังข้อมูลน้ำแห่งชาติ</p><p><code>…/public/thailand_main</code> (dam) · <code>app.rid.go.th/reservoir/api/dam/public</code></p><p><a href="https://app.rid.go.th/reservoir/" target="_blank" rel="noopener">app.rid.go.th/reservoir</a></p></div>
+        <div class="src-card"><h3>กฟผ. ศูนย์บริหารจัดการน้ำอัจฉริยะ (EGAT WIC)</h3><p>โทรมาตรลุ่มแม่กลอง 26 สถานี (ระดับน้ำ/อัตราการไหล รายชั่วโมง), ข้อมูลเขื่อน กฟผ. 13 แห่งพร้อมเกณฑ์ Rule Curve (URC/LRC), ฝนรายวัน</p><p><code>api-egatwater.egat.co.th/api/Telemiter/Maeklong</code><br><code>…/api/DailyInfographic?date=</code></p><p><a href="https://egatwater.egat.co.th/info/infoSchematicMK" target="_blank" rel="noopener">egatwater.egat.co.th</a></p></div>
+        <div class="src-card"><h3>สำนักการระบายน้ำ กทม.</h3><p>เซ็นเซอร์น้ำท่วมขังบนถนน 262 จุด (ใช้กับพื้นที่ในกรุงเทพฯ)</p><p><code>…/public/flood_road</code></p><p><a href="https://weather.bangkok.go.th/" target="_blank" rel="noopener">weather.bangkok.go.th</a></p></div>
+        <div class="src-card"><h3>น้ำทะเลหนุน</h3><p>สถานีป้อมพระจุลจอมเกล้า (ปากแม่น้ำเจ้าพระยา) และปากรอ (ทะเลสาบสงขลา) จากเครือข่าย สสน. ตารางน้ำขึ้นลงพยากรณ์ดูได้จากกรมอุทกศาสตร์</p><p><a href="https://www.hydro.navy.mi.th/" target="_blank" rel="noopener">hydro.navy.mi.th</a></p></div>
+      </div>
+      <div class="scroll-x"><table class="crit-table" id="critTable"></table></div>
+      <p class="note">เกณฑ์ในตารางเป็นค่าตั้งต้นสำหรับเริ่มใช้งาน ทีม BCM ปรับได้ในไฟล์ (ตัวแปร <code>CRITERIA</code>) ให้ตรงกับระดับวิกฤตที่วัดจริงของแต่ละโรงงาน · Trigger 6 (ระดับท่อ/น้ำท่วมขังภายในโรงงานหรือนิคม) ใช้เซ็นเซอร์ถนนของ กทม. ในรัศมี 3 กม. เมื่อมี พื้นที่อื่นรอเชื่อมเซ็นเซอร์ภายใน</p>
+    </div>
+  </section>
+
+  <footer>ข้อมูลตำแหน่งจาก SCG Location (KMZ) กลุ่ม SCGP 27 บริษัท / 24 พื้นที่ · ข้อมูลน้ำจากหน่วยงานรัฐที่เปิดเผยต่อสาธารณะ ใช้ประกอบการตัดสินใจ BCM ควบคู่กับประกาศทางการ</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>/*TRANSFORM*/</script>
+<script>
+window.SITES = /*SITES*/;
+window.SNAPSHOT = /*SNAPSHOT*/;
+window.REGION_GEO = /*GEO*/;
+</script>
+<script>/*APP*/</script>

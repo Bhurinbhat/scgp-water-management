@@ -1,0 +1,461 @@
+[
+ {
+  "id": "HQ-BSU",
+  "name": "สำนักงานใหญ่ บางซื่อ",
+  "zone": "down",
+  "dams": [
+   "ภูมิพล",
+   "สิริกิติ์",
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": "GLF001",
+  "basin": "เจ้าพระยา",
+  "lat": 13.82875,
+  "lng": 100.5352,
+  "type": "Office",
+  "prov": "กรุงเทพ",
+  "amp": "บางซื่อ",
+  "cos": [
+   "SCG Paper PLC (Head Office)",
+   "Siam Kraft Industry Co., Ltd. (Head Office)",
+   "Thai Paper Co., Ltd. (Head Office)",
+   "Thai Containers Group Co., Ltd. (Head Office)"
+  ]
+ },
+ {
+  "id": "BPG-SCGP",
+  "name": "SCGP บ้านโป่ง",
+  "zone": "mid",
+  "dams": [
+   "ศรีนครินทร์",
+   "วชิราลงกรณ"
+  ],
+  "tide": null,
+  "basin": "แม่กลอง",
+  "lat": 13.87341,
+  "lng": 99.84718,
+  "type": "Factory",
+  "prov": "ราชบุรี",
+  "amp": "บ้านโป่ง",
+  "cos": [
+   "SCG Paper Public Company Limited (Factory)"
+  ]
+ },
+ {
+  "id": "BPG-TPC",
+  "name": "Thai Paper บ้านโป่ง",
+  "zone": "mid",
+  "dams": [
+   "ศรีนครินทร์",
+   "วชิราลงกรณ"
+  ],
+  "tide": null,
+  "basin": "แม่กลอง",
+  "lat": 13.84524,
+  "lng": 99.86785,
+  "type": "Factory",
+  "prov": "ราชบุรี",
+  "amp": "บ้านโป่ง",
+  "cos": [
+   "Thai Paper Co., Ltd. (Factory)"
+  ]
+ },
+ {
+  "id": "BPG-SKIC",
+  "name": "Siam Kraft บ้านโป่ง",
+  "zone": "mid",
+  "dams": [
+   "ศรีนครินทร์",
+   "วชิราลงกรณ"
+  ],
+  "tide": null,
+  "basin": "แม่กลอง",
+  "lat": 13.8169,
+  "lng": 99.88659,
+  "type": "Factory",
+  "prov": "ราชบุรี",
+  "amp": "บ้านโป่ง",
+  "cos": [
+   "Siam Kraft Industry Co., Ltd. (Factory1 : Banpong)"
+  ]
+ },
+ {
+  "id": "WSL-SKIC",
+  "name": "Siam Kraft วังศาลา",
+  "zone": "up",
+  "dams": [
+   "ศรีนครินทร์",
+   "วชิราลงกรณ"
+  ],
+  "tide": null,
+  "basin": "แม่กลอง",
+  "lat": 13.94869,
+  "lng": 99.71028,
+  "type": "Factory",
+  "prov": "กาญจนบุรี",
+  "amp": "ท่าเรือ",
+  "cos": [
+   "Siam Kraft Industry Co., Ltd. (Factory2 : Wangsala)"
+  ]
+ },
+ {
+  "id": "TRA-SCC",
+  "name": "Siam Cellulose ท่าเรือ",
+  "zone": "up",
+  "dams": [
+   "ศรีนครินทร์",
+   "วชิราลงกรณ"
+  ],
+  "tide": null,
+  "basin": "แม่กลอง",
+  "lat": 13.97303,
+  "lng": 99.63656,
+  "type": "Factory",
+  "prov": "กาญจนบุรี",
+  "amp": "ท่าเรือ",
+  "cos": [
+   "Siam Cellulose Co., Ltd. (Factory)"
+  ]
+ },
+ {
+  "id": "TRA-SFC",
+  "name": "Siam Forestry ท่าเรือ",
+  "zone": "up",
+  "dams": [
+   "ศรีนครินทร์",
+   "วชิราลงกรณ"
+  ],
+  "tide": null,
+  "basin": "แม่กลอง",
+  "lat": 14.25729,
+  "lng": 99.74884,
+  "type": "Factory",
+  "prov": "กาญจนบุรี",
+  "amp": "ท่าเรือ",
+  "cos": [
+   "The Siam Forestry Co., Ltd. (Factory)"
+  ]
+ },
+ {
+  "id": "HQ-TCP",
+  "name": "Thai Cane Paper สนง.ใหญ่ คลองสาน",
+  "zone": "down",
+  "dams": [
+   "ภูมิพล",
+   "สิริกิติ์",
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": "GLF001",
+  "basin": "เจ้าพระยา",
+  "lat": 13.7225,
+  "lng": 100.49962,
+  "type": "Office",
+  "prov": "กรุงเทพ",
+  "amp": "คลองสาน",
+  "cos": [
+   "Thai Cane Paper Public Company Limited (Head Office)"
+  ]
+ },
+ {
+  "id": "TMG-TCP",
+  "name": "Thai Cane Paper ท่าม่วง",
+  "zone": "up",
+  "dams": [
+   "ศรีนครินทร์",
+   "วชิราลงกรณ"
+  ],
+  "tide": null,
+  "basin": "แม่กลอง",
+  "lat": 13.94771,
+  "lng": 99.6714,
+  "type": "Factory",
+  "prov": "กาญจนบุรี",
+  "amp": "ท่าม่วง",
+  "cos": [
+   "Thai Cane Paper Public Company Limited (Factory1: Tha Muang)"
+  ]
+ },
+ {
+  "id": "KBI-TCP",
+  "name": "Thai Cane Paper กบินทร์บุรี",
+  "zone": "mid",
+  "dams": [
+   "นฤบดินทรจินดา"
+  ],
+  "tide": null,
+  "basin": "บางปะกง-ปราจีนบุรี",
+  "lat": 13.93307,
+  "lng": 101.83536,
+  "type": "Factory",
+  "prov": "ปราจีนบุรี",
+  "amp": "บ่อทอง",
+  "cos": [
+   "Thai Cane Paper Public Company Limited (Factory2: Kabinburi)"
+  ]
+ },
+ {
+  "id": "PPD-TUP",
+  "name": "Thai Union Paper พระประแดง",
+  "zone": "down",
+  "dams": [
+   "ภูมิพล",
+   "สิริกิติ์",
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": "GLF001",
+  "basin": "เจ้าพระยา",
+  "lat": 13.65666,
+  "lng": 100.56507,
+  "type": "Factory",
+  "prov": "สมุทรปราการ",
+  "amp": "พระประแดง",
+  "cos": [
+   "Thai Union Paper Public Co., Ltd."
+  ]
+ },
+ {
+  "id": "NPG-PPPC",
+  "name": "Phoenix Pulp & Paper น้ำพอง",
+  "zone": "up",
+  "dams": [
+   "อุบลรัตน์"
+  ],
+  "tide": null,
+  "basin": "ชี (ลำน้ำพอง)",
+  "lat": 16.78614,
+  "lng": 102.79358,
+  "type": "Factory",
+  "prov": "ขอนแก่น",
+  "amp": "น้ำพอง",
+  "cos": [
+   "Phoenix Pulp & Paper Public Company Limited (Factory)"
+  ]
+ },
+ {
+  "id": "NVN-TCG",
+  "name": "TCG นวนคร",
+  "zone": "mid",
+  "dams": [
+   "ภูมิพล",
+   "สิริกิติ์",
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": null,
+  "basin": "เจ้าพระยา",
+  "lat": 14.18418,
+  "lng": 100.59254,
+  "type": "Factory",
+  "prov": "ปทุมธานี",
+  "amp": "คลองหลวง",
+  "cos": [
+   "Thai Containers Group Co., Ltd. (Nvanakorn Plant)"
+  ]
+ },
+ {
+  "id": "SPK-TCG",
+  "name": "TCG สมุทรปราการ",
+  "zone": "down",
+  "dams": [
+   "ภูมิพล",
+   "สิริกิติ์",
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": "GLF001",
+  "basin": "เจ้าพระยา",
+  "lat": 13.5434,
+  "lng": 100.66333,
+  "type": "Factory",
+  "prov": "สมุทรปราการ",
+  "amp": "เมือง",
+  "cos": [
+   "Thai Containers Group Co., Ltd. (สมุทรปราการ Plant)"
+  ]
+ },
+ {
+  "id": "RBR-TCG",
+  "name": "TCG ราชบุรี (บางแพ)",
+  "zone": "mid",
+  "dams": [
+   "ศรีนครินทร์",
+   "วชิราลงกรณ"
+  ],
+  "tide": null,
+  "basin": "แม่กลอง",
+  "lat": 13.71736,
+  "lng": 99.90146,
+  "type": "Factory",
+  "prov": "ราชบุรี",
+  "amp": "บางแพ",
+  "cos": [
+   "Thai Containers Group Co., Ltd. (Ratchaburi Plant)"
+  ]
+ },
+ {
+  "id": "SKA-TCG",
+  "name": "Thai Containers สงขลา",
+  "zone": "mid",
+  "dams": [],
+  "tide": "SLA005",
+  "basin": "ทะเลสาบสงขลา",
+  "lat": 7.09306,
+  "lng": 100.28252,
+  "type": "Factory",
+  "prov": "สงขลา",
+  "amp": "รัตภูมิ",
+  "cos": [
+   "Thai Containers สงขลา (1994) Co., Ltd."
+  ]
+ },
+ {
+  "id": "CBI-TCG",
+  "name": "TCG ชลบุรี (ศรีราชา)",
+  "zone": "down",
+  "dams": [
+   "บางพระ"
+  ],
+  "tide": null,
+  "basin": "ชายฝั่งทะเลตะวันออก",
+  "lat": 13.17811,
+  "lng": 100.9441,
+  "type": "Factory",
+  "prov": "ชลบุรี",
+  "amp": "ศรีราชา",
+  "cos": [
+   "Thai Containers Group Co., Ltd. (ชลบุรี Factory)"
+  ]
+ },
+ {
+  "id": "PRI-TCG",
+  "name": "TCG ปราจีนบุรี (ศรีมหาโพธิ)",
+  "zone": "mid",
+  "dams": [
+   "นฤบดินทรจินดา",
+   "ขุนด่านปราการชล"
+  ],
+  "tide": null,
+  "basin": "บางปะกง-ปราจีนบุรี",
+  "lat": 13.9434,
+  "lng": 101.59195,
+  "type": "Factory",
+  "prov": "ปราจีนบุรี",
+  "amp": "ศรีมหาโภชน์",
+  "cos": [
+   "Thai Containers Group Co., Ltd. (ปราจีนบุรี Factory)"
+  ]
+ },
+ {
+  "id": "PTT-TCG",
+  "name": "TCG ปทุมธานี",
+  "zone": "mid",
+  "dams": [
+   "ภูมิพล",
+   "สิริกิติ์",
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": "GLF001",
+  "basin": "เจ้าพระยา",
+  "lat": 13.95822,
+  "lng": 100.5025,
+  "type": "Factory",
+  "prov": "ปทุมธานี",
+  "amp": "เมือง",
+  "cos": [
+   "Thai Containers Group Co., Ltd. (ปทุมธานี Factory)"
+  ]
+ },
+ {
+  "id": "SRI-TCG",
+  "name": "Thai Containers สระบุรี (แก่งคอย)",
+  "zone": "up",
+  "dams": [
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": null,
+  "basin": "ป่าสัก",
+  "lat": 14.58757,
+  "lng": 101.00418,
+  "type": "Factory",
+  "prov": "สระบุรี",
+  "amp": "แก่งคอย",
+  "cos": [
+   "Thai Containers Saraburi Co., Ltd."
+  ]
+ },
+ {
+  "id": "KKN-TCG",
+  "name": "Thai Containers ขอนแก่น",
+  "zone": "mid",
+  "dams": [
+   "อุบลรัตน์"
+  ],
+  "tide": null,
+  "basin": "ชี",
+  "lat": 16.20693,
+  "lng": 102.75083,
+  "type": "Factory",
+  "prov": "ขอนแก่น",
+  "amp": "บ้านแฮด",
+  "cos": [
+   "Thai Containers ขอนแก่น Co., Ltd."
+  ]
+ },
+ {
+  "id": "RYG-TCG",
+  "name": "Thai Containers ระยอง (ปลวกแดง)",
+  "zone": "mid",
+  "dams": [
+   "หนองปลาไหล",
+   "ประแสร์"
+  ],
+  "tide": null,
+  "basin": "ชายฝั่งทะเลตะวันออก",
+  "lat": 13.01392,
+  "lng": 101.12812,
+  "type": "Factory",
+  "prov": "ระยอง",
+  "amp": "ปลวกแดง",
+  "cos": [
+   "Thai Containers Rayong Co., Ltd."
+  ]
+ },
+ {
+  "id": "PCH-TBSP",
+  "name": "TBSP ปู่เจ้า",
+  "zone": "down",
+  "dams": [
+   "ภูมิพล",
+   "สิริกิติ์",
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": "GLF001",
+  "basin": "เจ้าพระยา",
+  "lat": 13.6415,
+  "lng": 100.57794,
+  "type": "Factory",
+  "prov": "สมุทรปราการ",
+  "amp": "สำโรงใต้",
+  "cos": [
+   "Thai British Security Printing Public Company Limited (Factory1:Poochao)"
+  ]
+ },
+ {
+  "id": "BPU-TBSP",
+  "name": "TBSP บางปู",
+  "zone": "down",
+  "dams": [
+   "ภูมิพล",
+   "สิริกิติ์",
+   "ป่าสักชลสิทธิ์"
+  ],
+  "tide": "GLF001",
+  "basin": "เจ้าพระยา",
+  "lat": 13.57525,
+  "lng": 100.66979,
+  "type": "Factory",
+  "prov": "สมุทรปราการ",
+  "amp": "สำโรงใต้",
+  "cos": [
+   "Thai British Security Printing Public Company Limited (Factory2; Bangpoo)"
+  ]
+ }
+]

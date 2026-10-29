@@ -1,0 +1,7 @@
+src/
+data/
+vendor/
+supabase/
+dist/
+build.py
+README.md
