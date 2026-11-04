@@ -2255,7 +2255,7 @@ function fetchT(url, ms) {
 }
 async function getLive() {
   try {
-    var r = await fetchT('api/water', 15000);
+    var r = await fetchT('api/water', 40000);
     if (r.ok && /json/.test(r.headers.get('content-type') || '')) { var j = await r.json(); if (j.wl && j.wl.length) return { d: j, via: 'Vercel API' }; }
   } catch (e) {}
   try {

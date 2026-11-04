@@ -5,7 +5,7 @@
   ],
   "functions": {
     "api/water.js": {
-      "maxDuration": 30
+      "maxDuration": 40
     },
     "api/history.js": {
       "maxDuration": 30
