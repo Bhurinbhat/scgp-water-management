@@ -31,7 +31,7 @@ var TRIGGERS = [
 ];
 
 var SITES = window.SITES, hv = window.WaterTransform.haversine;
-var state = { zone: 'all', q: '', lvl: null, trig: null, sel: null, mode: 'load', data: null, evals: {} };
+var state = { zone: 'all', q: '', lvl: null, trig: null, sel: null, mode: 'load', data: null, evals: {}, range: '1D', sort: 'risk', hist: {}, hmode: 'bank', open: null, near: null, userPicked: false };
 
 /* ---------- helpers ---------- */
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -164,7 +164,7 @@ function evaluate(s) {
     var tr = x.prev == null || x.msl == null ? null : x.msl - x.prev;
     out[3] = { l: lvlLow(fb, CRITERIA.river.bands), v: f(x.msl), u: 'ม.รทก.', title: x.name + (x.river ? ' · ' + x.river : ''),
       why: (fb == null ? '' : (fb < 0 ? 'สูงกว่า' : 'ต่ำกว่า') + basis.replace(/ .*/, '') + ' ' + f(Math.abs(fb)) + ' ม. (' + basis + ')'), trend: tr,
-      src: x.ag + ' ' + x.code + ' · ห่าง ' + km(r3.d) + ' · ' + fmtT(x.t), geo: [{ lat: x.lat, lng: x.lng, n: x.name }] };
+      src: x.ag + ' ' + x.code + ' · ห่าง ' + km(r3.d) + ' · ' + fmtT(x.t), geo: [{ lat: x.lat, lng: x.lng, n: x.name }], st: x };
   } else out[3] = { l: null, na: 'ไม่มีสถานีวัดระดับน้ำในรัศมี ' + CRITERIA.radius.river + ' กม.' };
   // 4 bank-full % (worst nearby)
   var c4 = near(fw, s, CRITERIA.radius.bank); if (!c4.length) c4 = near(fw, s, CRITERIA.radius.bankFallback).slice(0, 1);
@@ -172,7 +172,7 @@ function evaluate(s) {
     var w4 = c4.slice().sort(function (a, b) { return b.x.pct - a.x.pct; })[0];
     out[4] = { l: lvlBy(w4.x.pct, CRITERIA.bank.bands), v: f(w4.x.pct, 1), u: '%', title: w4.x.name + (w4.x.river ? ' · ' + w4.x.river : ''),
       why: (w4.x.over ? 'ล้นตลิ่ง ' : 'ต่ำกว่าตลิ่ง ') + f(w4.x.diff) + ' ม. · พิจารณา ' + c4.length + ' สถานีใกล้พื้นที่',
-      src: w4.x.ag + ' ' + w4.x.code + ' · ห่าง ' + km(w4.d) + ' · ' + fmtT(w4.x.t), geo: c4.map(function (z) { return { lat: z.x.lat, lng: z.x.lng, n: z.x.name }; }) };
+      src: w4.x.ag + ' ' + w4.x.code + ' · ห่าง ' + km(w4.d) + ' · ' + fmtT(w4.x.t), geo: c4.map(function (z) { return { lat: z.x.lat, lng: z.x.lng, n: z.x.name }; }), st: w4.x };
   } else out[4] = { l: null, na: 'ไม่มีสถานีวัดระดับน้ำในรัศมี ' + CRITERIA.radius.bankFallback + ' กม.' };
   // 5 rain 24h
   var c5 = near(D.rain.filter(function (x) { return fresh(x.t); }), s, CRITERIA.radius.rain);
@@ -210,18 +210,20 @@ function evaluate(s) {
 function visibleSites() {
   var q = state.q.trim().toLowerCase();
   var list = SITES.filter(function (s) {
-    var e = state.evals[s.id];
+    var e = state.evals[s.id], st = refStation(s);
     if (state.zone !== 'all' && s.zone !== state.zone) return false;
     if (state.lvl != null && e.overall !== state.lvl) return false;
     if (state.trig != null && e[state.trig].l == null) return false;
-    if (q && (s.name + ' ' + s.prov + ' ' + s.amp + ' ' + s.cos.join(' ')).toLowerCase().indexOf(q) < 0) return false;
+    if (q && (s.name + ' ' + s.prov + ' ' + s.amp + ' ' + s.basin + ' ' + s.cos.join(' ') + (st ? ' ' + st.code + ' ' + st.name : '')).toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
-  return list.sort(function (a, b) {
-    var ea = state.evals[a.id], eb = state.evals[b.id];
-    var ka = state.trig != null ? ea[state.trig].l : ea.overall, kb = state.trig != null ? eb[state.trig].l : eb.overall;
-    return ((kb == null ? -1 : kb) - (ka == null ? -1 : ka)) || a.name.localeCompare(b.name, 'th');
-  });
+  function key(s) {
+    var e = state.evals[s.id], st = refStation(s);
+    if (state.sort === 'bank') return st && st.pct != null ? st.pct : -1;
+    if (state.sort === 'trend') { var t = st ? trendOf(st) : null; return t == null ? -99 : t; }
+    var k = state.trig != null ? e[state.trig].l : e.overall; return k == null ? -1 : k;
+  }
+  return list.sort(function (a, b) { if (state.sort === 'name') return a.name.localeCompare(b.name, 'th'); return (key(b) - key(a)) || a.name.localeCompare(b.name, 'th'); });
 }
 
 function trigSummary(n) {
@@ -397,10 +399,10 @@ function initTip() {
   svg.addEventListener('pointerleave', function () { tip.hidden = true; });
   svg.addEventListener('focusin', function (ev) { var el = ev.target.closest('.hov'); if (el) { var b = el.getBoundingClientRect(); show(el, b.left + b.width / 2, b.bottom); } });
   svg.addEventListener('focusout', function () { tip.hidden = true; });
-  svg.addEventListener('click', function (ev) { if (ev.target.closest('.factory')) { var s = profileSite(); select(s.id, false); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+  svg.addEventListener('click', function (ev) { if (ev.target.closest('.factory')) { var s = profileSite(); select(s.id, true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
   var sel = document.getElementById('profileSite');
   sel.innerHTML = ['up', 'mid', 'down'].map(function (z) { return '<optgroup label="' + ZONES[z] + '">' + SITES.filter(function (s) { return s.zone === z; }).map(function (s) { return '<option value="' + s.id + '">' + esc(s.name) + '</option>'; }).join('') + '</optgroup>'; }).join('');
-  sel.addEventListener('change', function () { select(sel.value, false); });
+  sel.addEventListener('change', function () { select(sel.value, true); });
 }
 
 /* ---------- กฟผ. (EGAT) data: rule curves + Mae Klong telemetry ---------- */
@@ -609,7 +611,7 @@ function initSchemTip() {
   svg.addEventListener('pointerleave', function () { tip.hidden = true; });
   svg.addEventListener('focusin', function (ev) { var el = ev.target.closest('.hov'); if (el) { var b = el.getBoundingClientRect(); show(el, b.left + b.width / 2, b.bottom); } });
   svg.addEventListener('focusout', function () { tip.hidden = true; });
-  svg.addEventListener('click', function (ev) { var el = ev.target.closest('.mk-fac'); if (el) { select(el.getAttribute('data-tip').split(':')[1], false); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+  svg.addEventListener('click', function (ev) { var el = ev.target.closest('.mk-fac'); if (el) { select(el.getAttribute('data-tip').split(':')[1], true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
 }
 
 function renderTrigCards() {
@@ -630,7 +632,7 @@ function renderKpis() {
   SITES.forEach(function (s) { var l = state.evals[s.id].overall; if (l == null) na++; else c[l]++; });
   var h = '';
   [3, 2, 1, 0].forEach(function (l) {
-    h += '<button type="button" class="kpi s' + l + '" data-lvl="' + l + '" aria-pressed="' + (state.lvl === l) + '"><span class="sw"></span>' + icon(LVL_ICON[l], 'kpi-ico', 'background:var(--cb);color:var(--c)') + '<span><span class="v">' + c[l] + '</span><br><span class="l">พื้นที่ ' + LV[l].th + '</span></span></button>';
+    h += '<button type="button" class="kpi s' + l + '" data-lvl="' + l + '" aria-pressed="' + (state.lvl === l) + '">' + icon(LVL_ICON[l], '', 'background:var(--cb);color:var(--c)') + '<span class="v">' + c[l] + '</span>' + LV[l].th + '</button>';
   });
   document.getElementById('kpis').innerHTML = h;
 }
@@ -641,53 +643,220 @@ function renderFilters() {
   if (state.lvl != null) h += '<span class="chip-filter">สถานะ: ' + LV[state.lvl].th + ' <button type="button" data-clear="lvl" aria-label="ล้างตัวกรองสถานะ">×</button></span>';
   document.getElementById('activeFilters').innerHTML = h;
   Array.prototype.forEach.call(document.querySelectorAll('#zoneSeg button'), function (b) { b.setAttribute('aria-pressed', b.dataset.zone === state.zone); });
+  Array.prototype.forEach.call(document.querySelectorAll('#rangeSeg button'), function (b) { b.setAttribute('aria-pressed', b.dataset.range === state.range); });
+  Array.prototype.forEach.call(document.querySelectorAll('#hourMode button'), function (b) { b.setAttribute('aria-pressed', b.dataset.hmode === state.hmode); });
 }
 
-function renderRows() {
-  var list = visibleSites(), h = '';
-  list.forEach(function (s) {
-    var e = state.evals[s.id];
-    h += '<tr class="row" data-id="' + s.id + '" tabindex="0" aria-selected="' + (state.sel === s.id) + '">';
-    h += '<td class="stripe ' + sc(e.overall) + '"><span></span></td>';
-    h += '<td><div class="sname">' + esc(s.name) + '</div><div class="ssub">' + esc(s.prov + ' · ' + s.amp) + (s.cos.length > 1 ? ' · ' + s.cos.length + ' บริษัท' : '') + '</div></td>';
-    h += '<td><span class="zone">' + ZONES[s.zone] + '</span></td>';
-    h += '<td><div class="cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) {
-      var l = e[n].l; return '<span class="cell ' + sc(l) + '" title="' + n + ' ' + esc(TRIGGERS[n - 1].th) + ': ' + lname(l) + '"' + (state.trig === n ? ' style="outline:2px solid var(--ink);outline-offset:1px"' : '') + '>' + (l == null ? '·' : n) + '</span>';
-    }).join('') + '</div></td>';
-    h += '<td><span class="spill ' + sc(e.overall) + '">' + lname(e.overall) + '</span></td></tr>';
-  });
-  document.getElementById('siteRows').innerHTML = h || '<tr><td colspan="5" class="empty">ไม่มีพื้นที่ตรงกับตัวกรอง</td></tr>';
-  document.getElementById('countLabel').textContent = list.length + '/' + SITES.length;
-  if (map) updateMarkers(list);
-}
-
-function renderDetail() {
-  var el = document.getElementById('detail');
-  var s = SITES.filter(function (x) { return x.id === state.sel; })[0];
-  if (!s) {
-    el.innerHTML = '<div class="empty">เลือกพื้นที่จากรายชื่อหรือแผนที่ เพื่อดูค่าวัดของทั้ง 7 Trigger Point พร้อมสถานีอ้างอิง</div>';
-    return;
+/* ---------- reference station + history helpers ---------- */
+function refStation(s) { var e = state.evals[s.id]; return (e[3] && e[3].st) || (e[4] && e[4].st) || null; }
+function histFor(st, range) { var H = state.hist[range || state.range]; return st && H && H.stations ? H.stations[st.id] : null; }
+function pctOf(v, h) { if (v == null || !h || h.bank == null) return null; var g = h.ground != null && h.ground < h.bank ? h.ground : null; return g != null ? (v - g) / (h.bank - g) * 100 : null; }
+function trendOf(st) {
+  var h = histFor(st, '1D');
+  if (h && h.points && h.points.length > 1) {
+    var p = h.points.filter(function (x) { return x[1] != null; }); if (p.length > 1) { var a = p[p.length - 2], b = p[p.length - 1]; return (b[1] - a[1]) / ((b[0] - a[0]) / 3600e3); }
   }
-  var e = state.evals[s.id], prim = ZONE_TRIG[s.zone], h = '';
-  h += '<div class="panel-b"><div class="detail-head"><div style="min-width:0"><div class="eyebrow">รายละเอียดพื้นที่ · ' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</div><h2>' + icon('factory') + esc(s.name) + '</h2>';
-  h += '<div class="meta"><span>จ.' + esc(s.prov) + ' อ.' + esc(s.amp) + '</span><span class="num">' + f(s.lat, 5) + ', ' + f(s.lng, 5) + '</span>' + (s.coord ? '<span>BCM Coordinator: ' + esc(s.coord) + '</span>' : '') + '</div>';
-  h += '<ul class="cos">' + s.cos.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></div>';
-  h += '<span class="spill ' + sc(e.overall) + '" style="font-size:14px;padding:6px 14px">ภาพรวม: ' + lname(e.overall) + '</span></div>';
-  h += '<div class="tgrid">';
+  return st && st.msl != null && st.prev != null ? st.msl - st.prev : null;
+}
+function trendTxt(r, unit) {
+  if (r == null) return '<span class="muted">–</span>';
+  if (Math.abs(r) < 0.005) return '■ ทรงตัว';
+  return (r > 0 ? '<span style="color:var(--warn)">▲ สูงขึ้น +' : '<span style="color:var(--ok)">▼ ลดลง −') + f(Math.abs(r)) + ' ' + (unit || 'ม./ชม.') + '</span>';
+}
+function projOf(points, idx) {
+  var p = points.filter(function (x) { return x[idx] != null; }); if (p.length < 3) return null;
+  var last = p[p.length - 1], win = p.filter(function (x) { return x[0] >= last[0] - 6 * 3600e3; }); if (win.length < 2) win = p.slice(-3);
+  var n = win.length, mx = 0, my = 0; win.forEach(function (x) { mx += x[0]; my += x[idx]; }); mx /= n; my /= n;
+  var sxy = 0, sxx = 0; win.forEach(function (x) { sxy += (x[0] - mx) * (x[idx] - my); sxx += (x[0] - mx) * (x[0] - mx); });
+  var slope = sxx ? sxy / sxx : 0; var t = last[0] + 6 * 3600e3;
+  return { t: t, v: last[idx] + slope * 6 * 3600e3, from: last };
+}
+function hhmm(t) { var d = new Date(t + 7 * 3600e3); var h = d.getUTCHours(), m = d.getUTCMinutes(); return (h === 0 && m === 0 ? '24' : String(h).padStart(2, '0')) + ':' + String(m).padStart(2, '0'); }
+function ddmm(t) { var d = new Date(t + 7 * 3600e3); return d.getUTCDate() + '/' + (d.getUTCMonth() + 1); }
+
+/* line chart in the Flood Watch style: area + line, dashed reference line, last-value dot, +6 h projection */
+function lineChart(o) {
+  var W = 660, H = 215, L = 46, R = 92, T = 14, B = 28, pw = W - L - R, ph = H - T - B;
+  var pts = o.points.filter(function (p) { return p[1] != null; });
+  if (pts.length < 2) return '<div class="chart-empty">' + esc(o.empty || 'ไม่มีข้อมูลในช่วงนี้') + '</div>';
+  var t0 = pts[0][0], t1 = Math.max(pts[pts.length - 1][0], o.proj ? o.proj.t : 0) + (o.range === '1D' ? 2 * 3600e3 : o.range === '1W' ? 6 * 3600e3 : 24 * 3600e3);
+  var vs = pts.map(function (p) { return p[1]; }); if (o.ref != null) vs.push(o.ref); if (o.proj) vs.push(o.proj.v);
+  var lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs), pad = Math.max((hi - lo) * 0.12, o.minSpan || 0.5);
+  lo = o.floor0 ? Math.max(0, lo - pad) : lo - pad; hi += pad;
+  var step = niceStep((hi - lo) / 6); lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+  function X(t) { return L + (t - t0) / (t1 - t0) * pw; } function Y(v) { return T + (1 - (v - lo) / (hi - lo)) * ph; }
+  var s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(o.aria || '') + '">';
+  for (var v = lo; v <= hi + 1e-9; v += step) { s += '<line x1="' + L + '" x2="' + (L + pw) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" style="stroke:var(--line)" stroke-width="1"/><text x="' + (L - 6) + '" y="' + (Y(v) + 3.5) + '" text-anchor="end">' + f(v, step < 1 ? 2 : 0) + '</text>'; }
+  // x ticks
+  var tick = o.range === '1D' ? 3 * 3600e3 : o.range === '1W' ? 864e5 : 7 * 864e5;
+  var first = Math.ceil((t0 + 7 * 3600e3) / tick) * tick - 7 * 3600e3;
+  for (var tt = first; tt <= t1; tt += tick) { var lab = o.range === '1D' ? hhmm(tt) : ddmm(tt); s += '<line x1="' + X(tt) + '" x2="' + X(tt) + '" y1="' + (T + ph) + '" y2="' + (T + ph + 4) + '" style="stroke:var(--muted)"/><text x="' + X(tt) + '" y="' + (H - 8) + '" text-anchor="middle">' + lab + '</text>'; }
+  if (o.range === '1D') { var mid = Math.floor((pts[pts.length - 1][0] + 7 * 3600e3) / 864e5) * 864e5 - 7 * 3600e3; if (mid > t0) s += '<line x1="' + X(mid) + '" x2="' + X(mid) + '" y1="' + T + '" y2="' + (T + ph) + '" style="stroke:var(--water)" stroke-dasharray="2 3"/><text x="' + (X(mid) - 4) + '" y="' + (T + 10) + '" text-anchor="end">เมื่อวาน</text><text x="' + (X(mid) + 4) + '" y="' + (T + 10) + '">วันนี้</text>'; }
+  // area + line
+  var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
+  s += '<path d="' + d + ' L' + X(pts[pts.length - 1][0]).toFixed(1) + ',' + (T + ph) + ' L' + X(pts[0][0]).toFixed(1) + ',' + (T + ph) + ' Z" style="fill:var(--water-soft)"/>';
+  s += '<path d="' + d + '" fill="none" style="stroke:var(--river)" stroke-width="2" stroke-linejoin="round"/>';
+  if (o.ref != null) s += '<line x1="' + L + '" x2="' + (L + pw) + '" y1="' + Y(o.ref) + '" y2="' + Y(o.ref) + '" style="stroke:var(--crit)" stroke-width="1.6" stroke-dasharray="6 4"/><text x="' + (L + 4) + '" y="' + (Y(o.ref) - 4) + '" style="fill:var(--crit)">' + esc(o.refLabel) + '</text>';
+  var last = pts[pts.length - 1];
+  if (o.proj) { s += '<line x1="' + X(last[0]) + '" y1="' + Y(last[1]) + '" x2="' + X(o.proj.t) + '" y2="' + Y(o.proj.v) + '" style="stroke:var(--river)" stroke-width="1.6" stroke-dasharray="4 4"/><text x="' + (X(o.proj.t) + 4) + '" y="' + (Y(o.proj.v) + 4) + '" class="lbl">+6 ชม. ≈ ' + f(o.proj.v, o.dec) + '</text>'; s += '<text x="' + (X(last[0]) + 4) + '" y="' + (T + ph - 4) + '">แนวโน้ม →</text>'; }
+  s += '<circle cx="' + X(last[0]) + '" cy="' + Y(last[1]) + '" r="4.5" style="fill:var(--ink)"/><text x="' + (X(last[0]) - 6) + '" y="' + (Y(last[1]) - 9) + '" text-anchor="end" class="lbl">' + f(last[1], o.dec) + ' ' + esc(o.unit) + '</text>';
+  return s + '</svg>';
+}
+function niceStep(x) { var p = Math.pow(10, Math.floor(Math.log10(x || 1))), n = x / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+
+function sparkline(st) {
+  var h = histFor(st, '1D'); if (!h || !h.points) return '<svg class="spark" viewBox="0 0 170 46"></svg>';
+  var pts = h.points.filter(function (p) { return p[1] != null; }); if (pts.length < 2) return '<svg class="spark" viewBox="0 0 170 46"></svg>';
+  var vs = pts.map(function (p) { return p[1]; }); if (h.bank != null) vs.push(h.bank);
+  var lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs), pad = (hi - lo) * 0.1 || 0.3; lo -= pad; hi += pad;
+  var t0 = pts[0][0], t1 = pts[pts.length - 1][0];
+  function X(t) { return 2 + (t - t0) / (t1 - t0 || 1) * 166; } function Y(v) { return 4 + (1 - (v - lo) / (hi - lo)) * 38; }
+  var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
+  var s = '<svg class="spark" viewBox="0 0 170 46" aria-hidden="true"><path d="' + d + ' L168,42 L2,42 Z" style="fill:var(--water-soft)"/><path d="' + d + '" fill="none" style="stroke:var(--river)" stroke-width="1.5"/>';
+  if (h.bank != null) s += '<line x1="2" x2="168" y1="' + Y(h.bank) + '" y2="' + Y(h.bank) + '" style="stroke:var(--crit)" stroke-dasharray="3 3"/>';
+  return s + '</svg>';
+}
+
+/* vertical staff gauge (height above gauge datum), like the Flood Watch card */
+function gaugeSVG(st, h) {
+  var bank = h && h.bank != null ? h.bank : st.minBank;
+  var g = h && h.ground != null && bank != null && h.ground < bank ? h.ground : null;
+  if (g == null && bank != null && st.pct > 0 && st.pct < 100) { var p = st.pct / 100; g = (st.msl - p * bank) / (1 - p); } // from ThaiWater % = (wl − ground) ÷ (bank − ground)
+  if (g == null || bank == null) return '<div style="width:70px"></div>';
+  var val = st.msl - g, bk = bank - g, top = Math.ceil(Math.max(bk * 1.2, val + 1));
+  var stepM = top > 24 ? 5 : top > 12 ? 2 : 1, Y0 = 322, Y1 = 10;
+  function Y(m) { return Y0 - m / top * (Y0 - Y1); }
+  var s = '<svg class="gauge" viewBox="0 0 70 330" style="width:70px" role="img" aria-label="ระดับน้ำ ' + f(val, 2) + ' ม. เหนือท้องน้ำ ตลิ่ง ' + f(bk, 2) + ' ม.">';
+  s += '<rect x="20" y="' + Y1 + '" width="16" height="' + (Y0 - Y1) + '" rx="3" style="fill:var(--sunk);stroke:var(--line)"/>';
+  s += '<rect x="20" y="' + Y(Math.max(0, val)) + '" width="16" height="' + (Y0 - Y(Math.max(0, val))) + '" rx="2" style="fill:var(--river)"/>';
+  for (var m = 0; m <= top; m += stepM) s += '<line x1="36" x2="41" y1="' + Y(m) + '" y2="' + Y(m) + '" style="stroke:var(--muted)"/><text x="44" y="' + (Y(m) + 3.5) + '" style="font:500 10px var(--f-data);fill:var(--muted)">' + m + '</text>';
+  s += '<line x1="2" x2="38" y1="' + Y(bk) + '" y2="' + Y(bk) + '" style="stroke:var(--crit)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="2" y="' + (Y(bk) - 4) + '" style="font:500 9.5px var(--f-body);fill:var(--crit)">ตลิ่ง</text>';
+  s += '<path d="M12 ' + Y(val) + ' l6 -4 v8 z" style="fill:var(--ink)"/>';
+  return s + '</svg>';
+}
+
+function triggerBoxes(s) {
+  var e = state.evals[s.id], prim = ZONE_TRIG[s.zone], h = '<div class="tgrid">';
   TRIGGERS.forEach(function (t) {
     var r = e[t.n], isP = prim.indexOf(t.n) >= 0;
     h += '<div class="tbox ' + sc(r.l) + (isP ? '' : ' irrelevant') + '">';
     h += '<div class="hd"><span class="tt">' + icon(TRIG_ICON[t.n], '', 'background:var(--cb);color:var(--c)') + '<span><span class="num muted" style="font-size:11px">TRIGGER ' + t.n + '</span><br>' + esc(t.th) + '</span></span><span class="spill ' + sc(r.l) + '">' + lname(r.l) + '</span></div>';
-    if (r.l == null && r.na) {
-      h += '<div class="why muted">' + esc(r.na) + '</div>';
-    } else {
+    if (r.l == null && r.na) h += '<div class="why muted">' + esc(r.na) + '</div>';
+    else {
       h += '<div class="val">' + r.v + '<small>' + esc(r.u) + '</small>' + (r.trend != null ? ' <span class="trend" style="color:' + (r.trend > 0.005 ? 'var(--warn)' : r.trend < -0.005 ? 'var(--ok)' : 'var(--muted)') + '">' + (r.trend > 0.005 ? '▲' : r.trend < -0.005 ? '▼' : '■') + ' ' + f(Math.abs(r.trend)) + '</span>' : '') + '</div>';
       h += '<div class="why"><b>' + esc(r.title) + '</b></div><div class="why muted">' + esc(r.why) + '</div><div class="src">' + esc(r.src) + '</div>';
     }
     h += '<div class="src">' + (isP ? 'จุดหลักของโซน' + ZONES[s.zone] : 'ข้อมูลประกอบ') + '</div></div>';
   });
-  h += '</div></div>';
-  el.innerHTML = h;
+  return h + '</div>';
+}
+
+/* ---------- featured card ("ใกล้ฉัน" / selected site) ---------- */
+function renderFeatured() {
+  var s = SITES.filter(function (x) { return x.id === state.sel; })[0] || topSite(); if (!s) return;
+  var e = state.evals[s.id], st = refStation(s), isNear = state.near && state.near.site && state.near.site.id === s.id;
+  document.getElementById('nearTitle').textContent = isNear ? 'ใกล้ฉัน' : 'พื้นที่ที่เลือก';
+  document.getElementById('nearSub').innerHTML = esc(s.prov + ' · อ.' + s.amp) + (isNear ? ' · ห่างจากคุณ ' + km(state.near.d) : '');
+  var note = document.getElementById('geoNote');
+  if (state.near && state.near.denied && !state.userPicked) { note.hidden = false; note.className = 'fw-note'; note.innerHTML = 'ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง · เปิดสิทธิ์ตำแหน่งของเว็บนี้ในการตั้งค่าเบราว์เซอร์ · แสดง <b>' + esc(s.name) + '</b> ไปก่อน · <button type="button" id="geoRetry">ลองใหม่</button>'; }
+  else if (state.near && state.near.site && !isNear) { note.hidden = false; note.className = 'fw-note'; note.innerHTML = 'กำลังดูพื้นที่ที่เลือก · <button type="button" id="geoBack">กลับไปพื้นที่ใกล้ฉัน (' + esc(state.near.site.name) + ')</button>'; }
+  else note.hidden = true;
+  var h = histFor(st), el = document.getElementById('featured'), o = '';
+  document.getElementById('nearAsof').textContent = st && st.t ? 'ข้อมูลล่าสุดที่มี ' + fmtT(st.t, false) : '';
+  o += '<div class="feat">';
+  // left
+  o += '<div class="feat-left">';
+  o += st ? gaugeSVG(st, h) : '<div></div>';
+  o += '<div style="display:grid;gap:4px;align-content:start;min-width:0">';
+  o += '<div class="feat-meta">' + esc(s.name) + '</div>';
+  if (st) {
+    var tr = trendOf(st), lv = lvlBy(st.pct, CRITERIA.bank.bands), left = st.minBank != null ? st.minBank - st.msl : null;
+    o += '<div class="feat-code">' + esc(st.code) + '</div><div class="feat-name">' + esc(st.name) + (st.river ? ' · ' + esc(st.river) : '') + '</div>';
+    o += '<button type="button" class="pin-btn" data-mapto="' + s.id + '">📍 ดูบนแผนที่</button>';
+    o += '<div class="feat-big">' + f(st.msl) + '<small>ม.รทก.</small></div>';
+    o += '<div><span class="spill ' + sc(lv) + '">' + lname(lv) + ' · ' + (tr == null ? 'ไม่ทราบแนวโน้ม' : Math.abs(tr) < 0.005 ? 'ทรงตัว' : tr > 0 ? 'กำลังสูงขึ้น' : 'กำลังลดลง') + '</span></div>';
+    o += '<dl class="kv"><dt>อัตราเปลี่ยน</dt><dd>' + (tr == null ? '–' : (tr > 0 ? '+' : '') + f(tr) + ' ม./ชม.') + '</dd><dt>ระดับตลิ่ง</dt><dd>' + f(st.minBank) + ' ม.</dd><dt>' + (left != null && left < 0 ? 'ล้นตลิ่ง' : 'ต่ำกว่าตลิ่ง') + '</dt><dd>' + f(left == null ? null : Math.abs(left)) + ' ม. (' + f(st.pct, 0) + '%)</dd></dl>';
+    var q = h && h.points ? h.points.filter(function (p) { return p[2] != null; }) : [];
+    if (q.length) {
+      var ql = q[q.length - 1][2], qcap = h.qmax, qpct = qcap ? ql / qcap * 100 : null, qtr = q.length > 1 ? (q[q.length - 1][2] - q[q.length - 2][2]) / ((q[q.length - 1][0] - q[q.length - 2][0]) / 3600e3) : null;
+      o += '<div class="sub-h">ปริมาณน้ำ · Discharge</div><div class="feat-big" style="font-size:30px">' + f(ql, 1) + '<small>ม³/วิ</small></div>';
+      o += qpct != null ? '<div><span class="spill ' + sc(lvlBy(qpct, CRITERIA.bank.bands)) + '">' + lname(lvlBy(qpct, CRITERIA.bank.bands)) + ' · ' + f(qpct, 0) + '% ของความจุ</span></div>' : '';
+      o += '<dl class="kv">' + (qcap ? '<dt>ความจุลำน้ำ</dt><dd>' + f(qcap, 0) + ' ม³/วิ</dd>' : '') + '<dt>แนวโน้ม</dt><dd>' + trendTxt(qtr, 'ม³/วิ/ชม.') + '</dd></dl>';
+    }
+  } else o += '<div class="muted">ไม่มีสถานีวัดระดับน้ำใกล้พื้นที่นี้</div>';
+  o += '</div></div>';
+  // right: charts
+  o += '<div class="feat-right">';
+  var rl = { '1D': 'ย้อนหลัง 24 ชม.', '1W': 'ย้อนหลัง 7 วัน', '1M': 'ย้อนหลัง 30 วัน' }[state.range];
+  if (st) {
+    var empty = state.histErr ? 'กราฟย้อนหลังแสดงเมื่อเปิดผ่านเว็บ scgp-water-management.vercel.app' : state.histLoading ? 'กำลังโหลดข้อมูลย้อนหลัง…' : 'สถานีนี้ไม่มีข้อมูลย้อนหลังใน สสน.';
+    var pts = h && h.points ? h.points : [];
+    o += '<div><div class="chart-h">ระดับน้ำ<small>' + rl + ' · ม.รทก. · เส้นแดง = ตลิ่ง</small></div>';
+    o += lineChart({ points: pts.map(function (p) { return [p[0], p[1]]; }), ref: h && h.bank != null ? h.bank : st.minBank, refLabel: 'ตลิ่ง ' + f(h && h.bank != null ? h.bank : st.minBank), unit: 'ม.', dec: 2, range: state.range, proj: state.range === '1D' ? projOf(pts, 1) : null, empty: empty, aria: 'กราฟระดับน้ำ ' + st.code }) + '</div>';
+    var qp = pts.filter(function (p) { return p[2] != null; });
+    if (qp.length > 1) o += '<div><div class="chart-h">ปริมาณน้ำ<small>' + rl + ' · ม³/วิ' + (h.qmax ? ' · เส้นแดง = ความจุลำน้ำ' : '') + '</small></div>' + lineChart({ points: qp.map(function (p) { return [p[0], p[2]]; }), ref: h.qmax, refLabel: 'ความจุ ' + f(h.qmax, 0), unit: 'ม³/วิ', dec: 1, range: state.range, floor0: true, minSpan: 20, proj: state.range === '1D' ? projOf(qp.map(function (p) { return [p[0], p[2]]; }), 1) : null, aria: 'กราฟปริมาณน้ำ ' + st.code }) + '</div>';
+  }
+  o += '</div>';
+  // SCGP context: 7 triggers + companies
+  o += '<div class="feat-trig"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>' + icon('factory') + esc(s.name) + '</b><span class="spill ' + sc(e.overall) + '">ภาพรวม 7 Trigger: ' + lname(e.overall) + '</span><span class="muted" style="font-size:12.5px">' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</span></div>';
+  o += '<div class="cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) { var l = e[n].l; return '<span class="cell ' + sc(l) + '" title="' + n + ' ' + esc(TRIGGERS[n - 1].th) + ': ' + lname(l) + '">' + (l == null ? '·' : n) + '</span>'; }).join('') + '</div></div>';
+  o += '<ul class="cos">' + s.cos.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>';
+  o += '<details class="more"><summary>ดูรายละเอียด 7 Trigger Point</summary>' + triggerBoxes(s) + '</details></div>';
+  o += '</div>';
+  el.innerHTML = o;
+}
+
+/* ---------- all-sites list ---------- */
+function renderList() {
+  var list = visibleSites(), o = '';
+  list.forEach(function (s) {
+    var e = state.evals[s.id], st = refStation(s), open = state.open === s.id;
+    var lv = st ? lvlBy(st.pct, CRITERIA.bank.bands) : null;
+    o += '<div class="srow ' + sc(e.overall) + '" data-row="' + s.id + '" role="button" tabindex="0" aria-expanded="' + open + '">';
+    o += '<span class="tl"><i></i></span>';
+    o += '<div style="min-width:0"><div class="s-meta">' + esc(ZONES[s.zone] + ' · ' + s.prov + ' · อ.' + s.amp) + '</div><div class="s-name">' + esc(s.name) + ' <span class="muted" style="font-size:12px">▾</span></div><div class="s-sub">' + (st ? esc(st.code + ' ' + st.name) : 'ไม่มีสถานีอ้างอิง') + '</div></div>';
+    if (st) {
+      var w = st.minBank ? Math.min(100, Math.max(0, st.pct / 1.25)) : 0, tr = trendOf(st);
+      o += '<div class="' + sc(lv) + '" style="min-width:0"><div class="lv-txt">' + f(st.msl) + ' ม. <small>/ ตลิ่ง ' + f(st.minBank) + '</small></div>';
+      o += '<div class="lvbar"><span style="width:' + w + '%"></span><i style="left:80%"></i></div>';
+      o += '<div class="lv-foot">' + fmtT(st.t, false) + ' · ' + f(st.pct, 0) + '% ของตลิ่ง · ' + trendTxt(tr) + '</div></div>';
+    } else o += '<div class="muted" style="font-size:12.5px">–</div>';
+    o += '<div class="cells-col"><div class="cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) { var l = e[n].l; return '<span class="cell ' + sc(l) + '" title="' + n + ' ' + esc(TRIGGERS[n - 1].th) + ': ' + lname(l) + '"' + (state.trig === n ? ' style="outline:2px solid var(--ink);outline-offset:1px"' : '') + '>' + (l == null ? '·' : n) + '</span>'; }).join('') + '</div><div class="s-sub" style="margin-top:4px">7 Trigger · <b style="color:var(--c)">' + lname(e.overall) + '</b></div></div>';
+    o += '<div class="spark-col" style="display:grid;gap:4px;min-width:0">';
+    if (st && st.minBank != null) { var left = st.minBank - st.msl; o += '<span class="left-chip ' + sc(lv) + '">' + (left < 0 ? 'ล้น ' + f(-left) + ' ม.' : 'เหลือ ' + f(left) + ' ม.') + '</span>'; }
+    o += st ? sparkline(st) : '';
+    o += '</div>';
+    if (open) o += '<div class="srow-detail" data-stop="1">' + triggerBoxes(s) + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="btn primary" data-feature="' + s.id + '">แสดงในการ์ดด้านบน</button><button type="button" class="btn" data-mapto="' + s.id + '">📍 ดูบนแผนที่</button></div></div>';
+    o += '</div>';
+  });
+  document.getElementById('siteList').innerHTML = o || '<div class="empty">ไม่มีพื้นที่ตรงกับตัวกรอง</div>';
+  document.getElementById('countLabel').textContent = list.length + '/' + SITES.length;
+  if (map) updateMarkers(list);
+}
+
+/* ---------- hourly table (24 h) ---------- */
+function renderHourTable() {
+  var el = document.getElementById('hourTable'), H = state.hist['1D'];
+  if (!H || !H.stations) { el.innerHTML = '<div class="chart-empty">' + (state.histErr ? 'ตารางรายชั่วโมงแสดงเมื่อเปิดผ่านเว็บ scgp-water-management.vercel.app' : 'กำลังโหลดข้อมูลรายชั่วโมง…') + '</div>'; return; }
+  var now = Date.now(), endH = Math.floor((now + 7 * 3600e3) / 3600e3) * 3600e3 - 7 * 3600e3, hours = [];
+  for (var i = 23; i >= 0; i--) hours.push(endH - i * 3600e3);
+  var dayOf = function (t) { return Math.floor((t + 7 * 3600e3) / 864e5); }, today = dayOf(endH);
+  var nY = hours.filter(function (t) { return dayOf(t) < today; }).length;
+  var o = '<table class="htable"><thead><tr><th></th>' + (nY ? '<th class="day" colspan="' + nY + '">เมื่อวาน</th>' : '') + '<th class="day" colspan="' + (24 - nY) + '">วันนี้</th></tr><tr><th class="st">พื้นที่ · สถานี</th>' + hours.map(function (t) { var hh = new Date(t + 7 * 3600e3).getUTCHours(); return '<th>' + (hh === 0 ? 24 : hh) + '</th>'; }).join('') + '</tr></thead><tbody>';
+  visibleSites().forEach(function (s) {
+    var st = refStation(s), h = st ? H.stations[st.id] : null;
+    o += '<tr><th class="st">' + esc(s.name) + (st ? '<small>' + esc(st.code) + '</small>' : '') + '</th>';
+    hours.forEach(function (t) {
+      var p = h && h.points ? h.points.filter(function (x) { return x[0] >= t && x[0] < t + 3600e3; }).pop() : null, v = null;
+      if (p) v = state.hmode === 'cap' ? (p[2] != null && h.qmax ? p[2] / h.qmax * 100 : null) : pctOf(p[1], h);
+      if (v == null) { o += '<td></td>'; return; }
+      var l = lvlBy(v, CRITERIA.bank.bands), bg = l ? 'var(--' + ['ok', 'watch', 'warn', 'crit'][l] + '-bg)' : 'color-mix(in srgb,var(--water) ' + Math.round(8 + Math.min(70, v) / 70 * 30) + '%,transparent)';
+      o += '<td style="background:' + bg + '" title="' + esc(s.name) + ' ' + hhmm(t) + ' · ' + f(v, 0) + '%">' + Math.round(v) + '</td>';
+    });
+    o += '</tr>';
+  });
+  o += '</tbody></table><p class="note">แหล่งข้อมูล: คลังข้อมูลน้ำแห่งชาติ (สสน.) ระดับน้ำรายชั่วโมงของสถานีอ้างอิงใกล้โรงงาน · % ของตลิ่ง = (ระดับน้ำ − ท้องน้ำ) ÷ (ตลิ่ง − ท้องน้ำ) · สีเหลือง/ส้ม/แดง = เกณฑ์ Trigger 4 (70/85/100%)</p>';
+  el.innerHTML = o;
 }
 
 function renderDams() {
@@ -728,40 +897,46 @@ var map = null, siteLayer, refLayer, markers = {};
 function initMap() {
   if (!window.L) { document.getElementById('map').innerHTML = '<div class="empty">โหลดแผนที่ไม่สำเร็จ</div>'; return; }
   map = L.map('map', { zoomControl: true, attributionControl: true, scrollWheelZoom: false }).setView([13.9, 100.6], 6);
-  var geo = L.geoJSON(window.REGION_GEO, { style: function (ft) { return { className: ft.properties.th ? 'geo-th' : 'geo-nb', weight: ft.properties.th ? 1.2 : .6 }; }, interactive: false }).addTo(map);
-  // Use OpenStreetMap tiles where the host allows them; otherwise the outline map above stays as the base.
+  L.geoJSON(window.REGION_GEO, { style: function (ft) { return { className: ft.properties.th ? 'geo-th' : 'geo-nb', weight: ft.properties.th ? 1.2 : .6 }; }, interactive: false }).addTo(map);
+  // base maps (road / satellite / terrain) where the host allows map tiles; the outline map stays underneath otherwise
   var probe = new Image();
   probe.onload = function () {
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+    var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' });
+    var sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18, attribution: 'Imagery &copy; Esri' });
+    var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '&copy; OpenTopoMap (CC-BY-SA)' });
+    road.addTo(map);
+    L.control.layers({ 'แผนที่ถนน': road, 'ดาวเทียม': sat, 'ภูมิประเทศ': topo }, null, { position: 'topright', collapsed: false }).addTo(map);
     document.documentElement.classList.add('has-tiles');
   };
   probe.src = 'https://tile.openstreetmap.org/6/50/29.png';
-  map.attributionControl.addAttribution('ข้อมูลน้ำ: สสน. · กรมชลประทาน');
+  map.attributionControl.addAttribution('ข้อมูลน้ำ: สสน. · กรมชลประทาน · กฟผ.');
   refLayer = L.layerGroup().addTo(map);
   var damLayer = L.layerGroup().addTo(map);
   var used = {}; SITES.forEach(function (s) { s.dams.forEach(function (d) { used[d] = 1; }); });
   state.data.dam.filter(function (d) { return used[d.name]; }).forEach(function (d) {
-    var l = lvlBy(d.pct, CRITERIA.dam.bands);
+    var l = damLevel(d);
     L.marker([d.lat, d.lng], { icon: L.divIcon({ className: '', html: '<div class="dam-ico ' + sc(l) + '"></div>', iconSize: [16, 14], iconAnchor: [8, 7] }), keyboard: false })
       .bindTooltip('เขื่อน' + esc(d.name) + ' ' + f(d.pct, 1) + '% · ระบาย ' + f(d.rel) + ' ล้าน ลบ.ม./วัน').addTo(damLayer);
   });
   siteLayer = L.layerGroup().addTo(map);
-  var leg = L.control({ position: 'bottomleft' });
-  leg.onAdd = function () { var d = L.DomUtil.create('div', 'map-legend'); d.innerHTML = '<div><i style="background:var(--ok)"></i>ปกติ</div><div><i style="background:var(--watch)"></i>เฝ้าระวัง</div><div><i style="background:var(--warn)"></i>เตือนภัย</div><div><i style="background:var(--crit)"></i>วิกฤต</div><div><span class="tri"></span>เขื่อน</div><div><i style="background:transparent;border:2px solid var(--ink)"></i>สถานีอ้างอิง</div>'; return d; };
-  leg.addTo(map);
-  map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15));
+  var all = L.control({ position: 'bottomleft' });
+  all.onAdd = function () { var b = L.DomUtil.create('button', 'btn'); b.type = 'button'; b.textContent = 'ดูทุกพื้นที่'; L.DomEvent.on(b, 'click', function (ev) { L.DomEvent.stop(ev); fitAll(); }); return b; };
+  all.addTo(map);
+  fitAll();
 }
+function fitAll() { if (map) map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15)); }
 function updateMarkers(list) {
   siteLayer.clearLayers(); markers = {};
   list.forEach(function (s) {
     var e = state.evals[s.id];
     var m = L.circleMarker([s.lat, s.lng], { radius: state.sel === s.id ? 11 : 8, className: 'site-mk ' + sc(e.overall) + (state.sel === s.id ? ' sel' : ''), weight: 2 })
       .bindTooltip(esc(s.name) + ' · ' + lname(e.overall))
-      .on('click', function () { select(s.id, false); });
+      .on('click', function () { select(s.id, true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     m.addTo(siteLayer); markers[s.id] = m;
   });
 }
 function showRefs(s) {
+  if (!refLayer) return;
   refLayer.clearLayers();
   var e = state.evals[s.id];
   [3, 4, 5, 6, 7].forEach(function (n) { (e[n].geo || []).forEach(function (g) {
@@ -769,21 +944,62 @@ function showRefs(s) {
     L.polyline([[s.lat, s.lng], [g.lat, g.lng]], { className: 'ref-line', weight: 1, dashArray: '3 4' }).addTo(refLayer);
   }); });
 }
+function mapTo(id) {
+  var s = SITES.filter(function (x) { return x.id === id; })[0]; if (!s || !map) return;
+  document.getElementById('mapSec').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showRefs(s); map.setView([s.lat, s.lng], 11); if (markers[s.id]) markers[s.id].openTooltip();
+}
+
+/* ---------- history (สสน. waterlevel_graph via /api/history) ---------- */
+async function loadHistory(range) {
+  var ids = []; SITES.forEach(function (s) { var st = refStation(s); if (st && ids.indexOf(st.id) < 0) ids.push(st.id); });
+  if (!ids.length || state.hist[range]) return;
+  state.histLoading = true;
+  try {
+    var r = await fetchT('api/history?range=' + range + '&stations=' + ids.join(','), 30000);
+    if (!r.ok || !/json/.test(r.headers.get('content-type') || '')) throw new Error('history ' + r.status);
+    state.hist[range] = await r.json(); state.histErr = false;
+  } catch (e) { state.histErr = true; }
+  state.histLoading = false;
+}
+async function refreshHistory() {
+  await loadHistory(state.range); if (state.range !== '1D') await loadHistory('1D');
+  renderFeatured(); renderList(); renderHourTable();
+}
+
+/* ---------- near me (geolocation) ---------- */
+function locate() {
+  if (!navigator.geolocation) { state.near = { denied: true }; renderFeatured(); return; }
+  navigator.geolocation.getCurrentPosition(function (p) {
+    var best = null; SITES.forEach(function (s) { var d = hv(p.coords.latitude, p.coords.longitude, s.lat, s.lng); if (!best || d < best.d) best = { site: s, d: d }; });
+    state.near = best; if (!state.userPicked) { state.sel = best.site.id; renderAllForSel(); }
+    else renderFeatured();
+  }, function () { state.near = { denied: true }; renderFeatured(); }, { timeout: 8000, maximumAge: 600000 });
+}
 
 /* ---------- interactions ---------- */
-function select(id, fromList) {
-  state.sel = id;
-  renderProfile(); renderSchematic(); renderRows(); renderDetail();
-  var s = SITES.filter(function (x) { return x.id === id; })[0];
-  if (map && s) { showRefs(s); map.setView([s.lat, s.lng], Math.max(map.getZoom(), 10)); }
-  if (fromList !== false) {} else { var r = document.querySelector('tr.row[data-id="' + id + '"]'); if (r) r.scrollIntoView({ block: 'nearest' }); }
+function renderAllForSel() {
+  renderProfile(); renderSchematic(); renderFeatured(); renderList();
+  var s = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (s) showRefs(s);
 }
-function rerender() { renderProfile(); renderSchematic(); renderTrigCards(); renderKpis(); renderFilters(); renderRows(); renderDetail(); }
+function select(id, user) {
+  state.sel = id; if (user) state.userPicked = true;
+  renderAllForSel();
+}
+function rerender() { renderProfile(); renderSchematic(); renderTrigCards(); renderKpis(); renderFilters(); renderFeatured(); renderList(); renderHourTable(); }
 
 document.addEventListener('click', function (ev) {
-  var t = ev.target.closest('[data-trig],[data-lvl],[data-zone],[data-clear],tr.row');
+  var t = ev.target.closest('[data-trig],[data-lvl],[data-zone],[data-clear],[data-range],[data-hmode],[data-feature],[data-mapto],[data-row],#geoRetry,#geoBack,#fabMap,#fabTop');
   if (!t || !state.data) return;
-  if (t.matches('tr.row')) { select(t.dataset.id, true); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (t.id === 'fabTop') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  if (t.id === 'fabMap') { document.getElementById('mapSec').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (t.id === 'geoRetry') { locate(); return; }
+  if (t.id === 'geoBack') { state.userPicked = false; select(state.near.site.id, false); return; }
+  if (t.dataset.mapto) { mapTo(t.dataset.mapto); return; }
+  if (t.dataset.feature) { select(t.dataset.feature, true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (t.dataset.row) { if (ev.target.closest('[data-stop]')) return; state.open = state.open === t.dataset.row ? null : t.dataset.row; renderList(); return; }
+  if (t.dataset.range) { state.range = t.dataset.range; renderFilters(); renderFeatured(); refreshHistory(); return; }
+  if (t.dataset.hmode) { state.hmode = t.dataset.hmode; renderFilters(); renderHourTable(); return; }
   if (t.dataset.trig) { var n = +t.dataset.trig; state.trig = state.trig === n ? null : n; }
   else if (t.dataset.lvl) { var l = +t.dataset.lvl; state.lvl = state.lvl === l ? null : l; }
   else if (t.dataset.zone) { state.zone = state.zone === t.dataset.zone && t.dataset.zone !== 'all' ? 'all' : t.dataset.zone; }
@@ -791,12 +1007,14 @@ document.addEventListener('click', function (ev) {
   rerender();
 });
 document.addEventListener('keydown', function (ev) {
+  if (ev.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { ev.preventDefault(); document.getElementById('q').focus(); return; }
   if (ev.key !== 'Enter' && ev.key !== ' ') return;
-  var t = ev.target.closest && ev.target.closest('.trig-node,tr.row');
-  if (t) { ev.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  var t = ev.target.closest && ev.target.closest('.trig-node,.srow');
+  if (t && ev.target === t) { ev.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
 });
-document.getElementById('q').addEventListener('input', function (e) { state.q = e.target.value; renderRows(); });
-document.getElementById('refreshBtn').addEventListener('click', function () { load(); });
+document.getElementById('q').addEventListener('input', function (e) { state.q = e.target.value; renderList(); renderHourTable(); });
+document.getElementById('sortSel').addEventListener('change', function (e) { state.sort = e.target.value; renderList(); renderHourTable(); });
+document.getElementById('refreshBtn').addEventListener('click', function () { state.hist = {}; load(); });
 paintIcons();
 
 /* ---------- data loading: Vercel API → direct open-data API → saved snapshot ---------- */
@@ -828,9 +1046,9 @@ async function getEgatDirect() {
 function setMode(mode, via) {
   state.mode = mode;
   var p = document.getElementById('modePill'), t = document.getElementById('modeText');
-  p.className = 'pill ' + (mode === 'live' ? 'live' : mode === 'snap' ? 'snap' : 'load');
-  t.textContent = mode === 'live' ? 'LIVE · ' + via : mode === 'snap' ? 'ข้อมูลที่บันทึกไว้ (snapshot)' : 'กำลังโหลดข้อมูล…';
-  document.getElementById('asof').textContent = state.data ? 'ข้อมูล ณ ' + fmtT(new Date(state.data.fetchedAt)) : '';
+  p.className = 'fw-status ' + (mode === 'live' ? 'live' : mode === 'snap' ? 'snap' : 'load');
+  t.textContent = mode === 'live' ? 'ข้อมูลสด · ' + via + ' · ' + SITES.length + ' พื้นที่' : mode === 'snap' ? 'ข้อมูลที่บันทึกไว้ (snapshot) · ' + SITES.length + ' พื้นที่' : 'กำลังโหลดข้อมูล…';
+  document.getElementById('asof').textContent = state.data ? ' · อัปเดต ' + new Date(state.data.fetchedAt).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour12: false }) : '';
 }
 var timer = null;
 async function load() {
@@ -844,20 +1062,17 @@ async function load() {
   setMode(live ? 'live' : 'snap', live && live.via);
   rb.classList.remove('spin');
   if (!state.sel) state.sel = topSite().id;
+  var first = !map;
   if (!map) { initMap(); initTip(); initSchemTip(); }
   rerender(); renderDams(); renderCriteria();
   if (state.sel) { var s = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (s && map) showRefs(s); }
+  refreshHistory();
+  if (first) locate();
   document.getElementById('mapNote').textContent = SITES.length + ' พื้นที่ · ' + SITES.reduce(function (a, s) { return a + s.cos.length; }, 0) + ' บริษัท';
   clearTimeout(timer);
   if (live) timer = setTimeout(load, 10 * 60 * 1000);
 }
 
 // Start with the most at-risk site selected so the detail panel opens on something useful.
-authGuard().then(function (ok) { if (!ok) return; return load(); }).then(function () {
-  if (!state.data) return;
-  if (!state.sel) {
-    var top = SITES.slice().sort(function (a, b) { return (state.evals[b.id].overall || 0) - (state.evals[a.id].overall || 0); })[0];
-    if (top) { state.sel = top.id; renderRows(); renderDetail(); if (map) showRefs(top); }
-  }
-});
+authGuard().then(function (ok) { if (!ok) return; return load(); });
 })();

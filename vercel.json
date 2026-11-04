@@ -1,6 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["sin1"],
-  "functions": { "api/water.js": { "maxDuration": 30 } },
-  "crons": [{ "path": "/api/water", "schedule": "0 23 * * *" }]
+  "regions": [
+    "sin1"
+  ],
+  "functions": {
+    "api/water.js": {
+      "maxDuration": 30
+    },
+    "api/history.js": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/water",
+      "schedule": "0 23 * * *"
+    }
+  ]
 }

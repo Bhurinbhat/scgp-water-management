@@ -3,7 +3,7 @@
 <meta name="description" content="SCGP Water Management Dashboard — ติดตามสถานการณ์น้ำของสถานประกอบการ SCGP ตาม 7 Risk Trigger Point">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* required styles */
 
@@ -671,28 +671,28 @@ svg.leaflet-image-layer.leaflet-interactive path {
 <style>
 /* Layout: operations console — river profile (7 triggers) on top, map + site register side by side, site detail and dam table below. */
 :root{
-  /* SCGP CI: navy #202070 · blue #3070B8 · red #D03030 · orange #E08030 · amber #F0B040 */
-  --bg:#F3F5F9; --surface:#FFFFFF; --sunk:#EAEEF5; --ink:#141A3A; --muted:#5A6385; --line:#DCE1EC;
-  --accent:#3070B8; --accent-ink:#FFFFFF; --deep:#202070; --brand-red:#D03030; --brand-orange:#E08030; --brand-amber:#F0B040;
-  --water:#3AAFA4; --water-2:#2C8F87; --sea:#2B8DC4; --land:#C9D7D6;
-  --ok:#2E9B57; --watch:#C99A00; --warn:#E06E21; --crit:#D23434; --na:#9AABAE;
-  --ok-bg:#E3F3E8; --watch-bg:#FBF2CC; --warn-bg:#FDE7D7; --crit-bg:#FBDEDE; --na-bg:#ECF0F1;
-  --f-body:"IBM Plex Sans Thai","Noto Sans Thai","Leelawadee UI",Tahoma,system-ui,sans-serif;
-  --f-data:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+  /* Flood Watch design language (Prompt + IBM Plex Mono, river teal) with SCGP status scale */
+  --bg:#EEF3F2; --surface:#FFFFFF; --sunk:#E3EBEA; --ink:#0F1F1E; --muted:#566967; --line:#CFDAD8;
+  --accent:#0E7C86; --accent-ink:#FFFFFF; --deep:#12403F; --river:#0E7C86; --water:#2A9DB0; --water-soft:#2A9DB033;
+  --water-2:#1F7F8E; --sea:#2B8DC4; --land:#C9D7D6; --brand-red:#C23527; --brand-orange:#D0621D; --brand-amber:#B87A00;
+  --ok:#2A8657; --watch:#B87A00; --warn:#D0621D; --crit:#C23527; --na:#8FA19F;
+  --ok-bg:#2A865718; --watch-bg:#B87A001F; --warn-bg:#D0621D1C; --crit-bg:#C235271A; --na-bg:#8FA19F1F;
+  --f-body:"Prompt",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --r:12px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#090C1E; --surface:#12183A; --sunk:#0D1230; --ink:#E6E9F6; --muted:#9AA3C6; --line:#252D55;
-  --accent:#6FA6E8; --accent-ink:#0B1030; --deep:#9EA2F0; --brand-red:#F06A5A; --brand-orange:#F2A050; --brand-amber:#F5C25E;
-  --water:#2C8C84; --water-2:#23736C; --sea:#1F6FA3; --land:#24393B;
-  --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
-  --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}}
+  --bg:#0B1514; --surface:#12201F; --sunk:#0E1A19; --ink:#E4EEEC; --muted:#93A8A5; --line:#243937;
+  --accent:#3FB5BF; --accent-ink:#06201F; --deep:#BFE3E0; --river:#3FB5BF; --water:#3AAFC2; --water-soft:#3AAFC233;
+  --water-2:#2A8C98; --sea:#1F6FA3; --land:#24393B; --brand-red:#F06A5A; --brand-orange:#F0915A; --brand-amber:#E3B23C;
+  --ok:#4CC27A; --watch:#E3B23C; --warn:#F0915A; --crit:#F06A5A; --na:#6E8285;
+  --ok-bg:#4CC27A22; --watch-bg:#E3B23C24; --warn-bg:#F0915A24; --crit-bg:#F06A5A24; --na-bg:#6E828524; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#090C1E; --surface:#12183A; --sunk:#0D1230; --ink:#E6E9F6; --muted:#9AA3C6; --line:#252D55;
-  --accent:#6FA6E8; --accent-ink:#0B1030; --deep:#9EA2F0; --brand-red:#F06A5A; --brand-orange:#F2A050; --brand-amber:#F5C25E;
-  --water:#2C8C84; --water-2:#23736C; --sea:#1F6FA3; --land:#24393B;
-  --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
-  --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}
+  --bg:#0B1514; --surface:#12201F; --sunk:#0E1A19; --ink:#E4EEEC; --muted:#93A8A5; --line:#243937;
+  --accent:#3FB5BF; --accent-ink:#06201F; --deep:#BFE3E0; --river:#3FB5BF; --water:#3AAFC2; --water-soft:#3AAFC233;
+  --water-2:#2A8C98; --sea:#1F6FA3; --land:#24393B; --brand-red:#F06A5A; --brand-orange:#F0915A; --brand-amber:#E3B23C;
+  --ok:#4CC27A; --watch:#E3B23C; --warn:#F0915A; --crit:#F06A5A; --na:#6E8285;
+  --ok-bg:#4CC27A22; --watch-bg:#E3B23C24; --warn-bg:#F0915A24; --crit-bg:#F06A5A24; --na-bg:#6E828524; color-scheme:dark}
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
@@ -707,37 +707,127 @@ h1,h2,h3{text-wrap:balance;margin:0}
 h2{font-size:18px;font-weight:600;display:flex;align-items:center}
 .muted{color:var(--muted)}
 
-/* Header — white bar with the SCGP logo and the brand gradient strip */
-body::before{background:var(--surface)}
-header.top{background:var(--surface);color:var(--ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:900;box-shadow:0 1px 0 var(--line),0 6px 18px rgba(20,26,58,.06)}
-header.top::after{content:"";display:block;height:4px;background:linear-gradient(90deg,#202070,#3070B8 45%,#D03030 78%,#E08030)}
-header.top .wrap{display:flex;align-items:center;gap:16px;padding-block:10px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:14px;min-width:0;flex:1 1 360px;text-decoration:none;color:inherit}
-.logo{height:38px;width:auto;display:block}
-.logo-chip{display:inline-flex;flex:none}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-chip{background:#fff;border-radius:9px;padding:5px 9px}}
-:root[data-theme="dark"] .logo-chip{background:#fff;border-radius:9px;padding:5px 9px}
-.brand-div{width:1px;align-self:stretch;background:var(--line);flex:none}
-.brand h1{font-size:19px;font-weight:700;letter-spacing:.01em;color:var(--deep);display:flex;align-items:center;gap:8px}
-.brand p{margin:0;font-size:12.5px;color:var(--muted)}
-.status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
-.pill.live{background:var(--ok-bg);color:var(--ok)}
-.pill.snap{background:var(--watch-bg);color:var(--watch)}
-.pill.load{background:var(--sunk);color:var(--muted)}
-.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
-.pill.live .dot{animation:pulse 1.6s infinite}
-@keyframes pulse{50%{opacity:.25}}
-@media (prefers-reduced-motion:reduce){.pill.live .dot{animation:none}}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
+/* ---------- Page header (Flood Watch layout) ---------- */
+body::before{background:var(--bg)}
+.fw-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:22px 14px;border-bottom:1px solid var(--line)}
+.fw-eyebrow{display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.fw-eyebrow img{height:20px;width:auto;display:block}
+.fw-head h1{font:700 clamp(26px,3vw,34px)/1.15 var(--f-body);letter-spacing:-.005em;margin:4px 0 6px;color:var(--ink)}
+.fw-status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.fw-status .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+.fw-status.snap .dot{background:var(--watch)} .fw-status.load .dot{background:var(--na)}
+.fw-status .dot{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.fw-ctrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.fw-ctrl label{display:flex;align-items:center;gap:8px}
+.fw-ctrl select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;cursor:pointer;font:500 13px var(--f-body);display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
 .btn:hover{border-color:var(--accent)}
-.btn svg{width:16px;height:16px}
+.btn.primary{background:var(--river);color:#fff;border-color:var(--river)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn svg{width:15px;height:15px}
 .btn.spin svg{animation:ai-rot 1s linear infinite}
-.asof{font-size:12px;color:var(--muted)}
-.user-chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 4px}
-.user-chip .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#202070,#3070B8);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
-.user-chip button,.user-chip a{border:0;background:var(--sunk);border-radius:999px;padding:3px 10px;cursor:pointer;font-size:12px;color:var(--ink);text-decoration:none}
-.demo-chip{font-size:12px;border-radius:999px;padding:3px 10px;background:var(--warn-bg);color:var(--warn);font-weight:600;text-decoration:none}
+.user-chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 4px;background:var(--surface);color:var(--ink)}
+.user-chip .av{width:24px;height:24px;border-radius:50%;background:var(--river);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.user-chip button{border:0;background:var(--sunk);border-radius:999px;padding:3px 10px;cursor:pointer;font:inherit;color:var(--ink)}
+.demo-chip{font-size:12px;border-radius:999px;padding:4px 10px;background:var(--watch-bg);color:var(--watch);font-weight:500;text-decoration:none}
+
+/* search + range + status chips */
+.fw-search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 12px;margin-top:16px}
+.fw-search .mag{color:var(--muted);font-size:16px}
+.fw-search input{flex:1;min-width:0;border:0;background:transparent;font:400 15px var(--f-body);color:var(--ink);padding:12px 0;outline:none}
+.fw-search kbd{font:500 11px var(--f-data);border:1px solid var(--line);border-radius:5px;padding:2px 6px;color:var(--muted);background:var(--sunk)}
+.fw-search:focus-within{border-color:var(--river);box-shadow:0 0 0 3px var(--water-soft)}
+.fw-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px}
+.range{display:inline-flex;gap:4px}
+.range button{border:0;background:transparent;border-radius:7px;padding:5px 12px;font:600 12.5px var(--f-data);color:var(--muted);cursor:pointer}
+.range button[aria-pressed="true"]{background:var(--river);color:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.kpi{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px 4px 6px;font:500 12.5px var(--f-body);color:var(--ink);cursor:pointer}
+.kpi .v{font:600 13px var(--f-data)}
+.kpi .ai{width:22px;height:22px;border-radius:50%;margin:0}
+.kpi .ai svg{width:15px;height:15px}
+.kpi[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:5px 10px;cursor:pointer;font:500 12.5px var(--f-body);color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--sunk);color:var(--ink)}
+.chip-filter{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 6px 3px 10px;background:var(--sunk);font-size:12.5px}
+.chip-filter button{border:0;background:var(--surface);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1}
+
+/* section heads like Flood Watch: bold title + muted subtitle on one line */
+.fw-sec{display:grid;gap:10px;min-width:0}
+.fw-sec>*{min-width:0}
+.fw-sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fw-sec-h h2{font:600 19px var(--f-body);display:flex;align-items:center;gap:0;flex-wrap:wrap}
+.fw-sec-h h2 small{font:400 13px var(--f-body);color:var(--muted);margin-left:8px}
+.fw-sec-h .r{font-size:12.5px;color:var(--muted)}
+.fw-note{background:var(--watch-bg);color:var(--ink);border-radius:8px;padding:8px 12px;font-size:12.5px}
+.fw-note b{color:var(--watch)}
+.fw-note button{border:0;background:none;color:var(--river);font:inherit;text-decoration:underline;cursor:pointer;padding:0}
+
+/* featured (near me) card */
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:22px}
+@media (max-width:860px){.feat{grid-template-columns:1fr}}
+.feat-left{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;align-content:start}
+.gauge{width:56px;height:330px;display:block}
+.feat-meta{font-size:12px;color:var(--muted)}
+.feat-code{font:700 26px var(--f-body);line-height:1.1;color:var(--ink)}
+.feat-name{font-size:13px;color:var(--muted)}
+.feat-big{font:600 40px var(--f-data);line-height:1;color:var(--ink);margin-top:6px}
+.feat-big small{font:500 15px var(--f-body);color:var(--muted);margin-left:4px}
+.kv{display:grid;grid-template-columns:auto auto;justify-content:space-between;gap:4px 12px;font-size:12.5px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-family:var(--f-data)}
+.sub-h{font-size:11.5px;letter-spacing:.06em;color:var(--muted);font-weight:600;text-transform:uppercase;margin-top:6px}
+.pin-btn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:3px 8px;font:500 12px var(--f-body);color:var(--river);cursor:pointer;margin-top:6px}
+.feat-right{display:grid;gap:14px;min-width:0;align-content:start}
+.chart-h{font-size:13.5px;font-weight:600}
+.chart-h small{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--f-data);font-size:9.5px;fill:var(--muted)}
+.chart .lbl{fill:var(--ink);font-weight:500}
+.chart-empty{border:1px dashed var(--line);border-radius:10px;padding:20px;text-align:center;color:var(--muted);font-size:13px}
+.feat-trig{grid-column:1/-1;border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+.cos{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.cos li{font-size:12px;background:var(--sunk);border-radius:6px;padding:2px 8px}
+details.more summary{cursor:pointer;color:var(--river);font-size:13px;font-weight:500}
+
+/* all-sites list (station-list style) */
+.slist{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.srow{display:grid;grid-template-columns:22px minmax(150px,1.1fr) minmax(220px,1.6fr) 170px minmax(140px,1fr);gap:14px;align-items:center;padding:14px 16px;border-top:1px solid var(--line);cursor:pointer;position:relative}
+.srow:first-child{border-top:0}
+.srow:hover{background:color-mix(in srgb,var(--river) 5%,var(--surface))}
+.srow[aria-expanded="true"]{background:color-mix(in srgb,var(--river) 7%,var(--surface))}
+@media (max-width:1100px){.srow{grid-template-columns:22px minmax(0,1fr) minmax(0,1.4fr)}.srow .cells-col,.srow .spark-col{grid-column:2/-1}}
+@media (max-width:640px){.srow{grid-template-columns:18px minmax(0,1fr)}.srow>*:not(.tl){grid-column:2}}
+.tl{align-self:stretch;position:relative}
+.tl::before{content:"";position:absolute;left:50%;top:-14px;bottom:-14px;width:2px;transform:translateX(-50%);background:var(--water-soft)}
+.tl i{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:var(--c);box-shadow:0 0 0 3px var(--surface)}
+.s-meta{font-size:11.5px;color:var(--muted)}
+.s-name{font:600 16px var(--f-body);line-height:1.25}
+.s-sub{font-size:12px;color:var(--muted)}
+.lv-txt{font:500 13px var(--f-data)}
+.lv-txt small{color:var(--muted);font-family:var(--f-body)}
+.lvbar{position:relative;height:9px;border-radius:5px;background:var(--sunk);margin:6px 0 5px;overflow:visible}
+.lvbar span{position:absolute;inset:0 auto 0 0;border-radius:5px;background:var(--c)}
+.lvbar i{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:1px}
+.lv-foot{font:400 11.5px var(--f-data);color:var(--muted)}
+.left-chip{justify-self:end;font:600 12px var(--f-body);border-radius:999px;padding:3px 10px;background:var(--cb);color:var(--c);white-space:nowrap}
+.spark{width:100%;height:46px;display:block}
+.srow-detail{grid-column:1/-1;cursor:default}
+.cells{display:grid;grid-template-columns:repeat(7,20px);gap:3px}
+.cell{width:20px;height:20px;border-radius:5px;font-size:10px;font-weight:600;display:grid;place-items:center;font-family:var(--f-data)}
+
+/* hourly table */
+.htable{border-collapse:separate;border-spacing:2px;font:500 11px var(--f-data);min-width:900px}
+.htable th{color:var(--muted);font-weight:500;padding:3px 4px;text-align:center}
+.htable th.st{text-align:left;font:500 12px var(--f-body);color:var(--ink);white-space:nowrap;padding-right:10px}
+.htable th.st small{color:var(--muted);font-size:11px;margin-left:4px}
+.htable td{width:30px;height:24px;text-align:center;border-radius:4px;color:var(--ink)}
+.htable .day{font:600 11px var(--f-body);color:var(--muted)}
+
+/* floating actions */
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;z-index:800}
+.fab button{border:0;border-radius:999px;background:var(--river);color:#fff;font:600 13px var(--f-body);padding:9px 16px;box-shadow:0 6px 18px rgba(14,124,134,.35);cursor:pointer;display:inline-flex;gap:6px;align-items:center}
 
 /* Animated icons (ai-*) — each one acts out what its section measures */
 .ai{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);flex:none;vertical-align:middle;margin-right:8px}
@@ -840,25 +930,8 @@ main>*{min-width:0}
 .tcounts{display:flex;gap:8px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
 .tcounts b{font-family:var(--f-data);font-weight:600;color:var(--ink)}
 
-/* Summary + filters */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.kpi{border-radius:9px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left}
-.kpi[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--accent)}
-.kpi .v{font-family:var(--f-data);font-size:26px;font-weight:600;line-height:1}
-.kpi .l{font-size:12.5px;color:var(--muted);line-height:1.3}
-.kpi .sw{width:10px;align-self:stretch;border-radius:4px;flex:none}
-.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
-.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:13px}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
-.search{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);min-width:0;flex:1 1 180px;max-width:280px}
-.chip-filter{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 6px 4px 10px;background:var(--sunk);font-size:12.5px}
-.chip-filter button{border:0;background:var(--surface);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1}
-
 /* Map + list */
-.split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px}
-@media (max-width:980px){.split{grid-template-columns:1fr}}
-#map{height:560px;border-radius:0 0 var(--r) var(--r);background:var(--sunk)}
+#map{height:520px;border-radius:14px;background:var(--sunk);border:1px solid var(--line)}
 @media (max-width:640px){#map{height:380px}}
 .leaflet-container{font-family:var(--f-body);background:var(--sunk)}
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surface);color:var(--ink)}
@@ -880,29 +953,15 @@ main>*{min-width:0}
 .dam-ico{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:14px solid var(--c);filter:drop-shadow(0 0 1px var(--ink))}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) saturate(.6)}}
 :root[data-theme="dark"] .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) saturate(.6)}
-.list{max-height:560px;overflow:auto}
-@media (max-width:980px){.list{max-height:none}}
 table{border-collapse:collapse;width:100%}
-.sites th{font-size:11.5px;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1;white-space:nowrap}
-.sites td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-.sites tr.row{cursor:pointer}
-.sites tr.row:hover td{background:var(--sunk)}
-.sites tr.row[aria-selected="true"] td{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
-.sname{font-weight:600;line-height:1.3}
-.ssub{font-size:12px;color:var(--muted)}
-.stripe{width:4px;padding:0!important}
-.stripe span{display:block;width:4px;height:34px;border-radius:2px}
-.cells{display:grid;grid-template-columns:repeat(7,18px);gap:3px}
-.cell{width:18px;height:18px;border-radius:4px;font-size:10px;font-weight:700;display:grid;place-items:center;font-family:var(--f-data)}
 .zone{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
-@media (max-width:640px){.sites th:nth-child(3),.sites td:nth-child(3),.sites th:nth-child(5),.sites td:nth-child(5){display:none}.cells{grid-template-columns:repeat(7,15px);gap:2px}.cell{width:15px;height:15px;font-size:9px}.sites td{padding:8px 6px}}
 .spill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
 
 /* Status colors */
 .s0{--c:var(--ok);--cb:var(--ok-bg)} .s1{--c:var(--watch);--cb:var(--watch-bg)} .s2{--c:var(--warn);--cb:var(--warn-bg)} .s3{--c:var(--crit);--cb:var(--crit-bg)} .sn{--c:var(--na);--cb:var(--na-bg)}
 .cell,.spill{background:var(--cb);color:var(--c)}
 .cell{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
-.stripe span,.kpi .sw{background:var(--c)}
+
 
 /* Detail */
 .detail-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
@@ -942,26 +1001,87 @@ table{border-collapse:collapse;width:100%}
 footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
 </style>
 
-<header class="top">
-  <div class="wrap">
-    <a class="brand" href="./" title="กลับหน้าเข้าสู่ระบบ">
-      <span class="logo-chip"><img class="logo" src="data:image/webp;base64,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" alt="SCGP"></span>
-      <span class="brand-div" aria-hidden="true"></span>
-      <span style="min-width:0">
-        <h1><span class="ai" data-ico="drop" aria-hidden="true"></span>Water Management Dashboard</h1>
-        <p>ติดตามสถานการณ์น้ำสถานประกอบการ SCGP ตาม 7 Risk Trigger Point · BCM</p>
-      </span>
-    </a>
-    <div class="status-bar">
-      <span id="modePill" class="pill load"><span class="dot"></span><span id="modeText">กำลังโหลดข้อมูล…</span></span>
-      <span class="asof" id="asof"></span>
-      <button class="btn" id="refreshBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>โหลดข้อมูลใหม่</button>
+<main class="wrap">
+  <header class="fw-head">
+    <div style="min-width:0">
+      <div class="fw-eyebrow"><a href="./" title="กลับหน้าเข้าสู่ระบบ"><img src="data:image/webp;base64,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" alt="SCGP"></a><span>BCM · 7 RISK TRIGGER POINT</span></div>
+      <h1>Water Management Dashboard</h1>
+      <div class="fw-status load" id="modePill"><span class="dot"></span><span id="modeText">กำลังโหลดข้อมูล…</span><span id="asof"></span></div>
+    </div>
+    <div class="fw-ctrl">
+      <label for="sortSel">เรียง <select id="sortSel">
+        <option value="risk">สถานะ (เสี่ยงสูง→ต่ำ)</option>
+        <option value="bank">% ตลิ่ง (สูง→ต่ำ)</option>
+        <option value="trend">แนวโน้ม (สูงขึ้นเร็วสุดก่อน)</option>
+        <option value="name">ชื่อพื้นที่</option>
+      </select></label>
+      <button class="btn primary" id="refreshBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>รีเฟรช</button>
       <span id="userChip"></span>
     </div>
-  </div>
-</header>
+  </header>
 
-<main class="wrap">
+  <div class="fw-search" role="search">
+    <span class="mag" aria-hidden="true">⌕</span>
+    <input id="q" type="search" placeholder="ค้นหาพื้นที่ บริษัท จังหวัด หรือรหัสสถานี: บ้านโป่ง, K.55A, TCG, ระยอง…" aria-label="ค้นหาพื้นที่ บริษัท จังหวัด หรือรหัสสถานี" autocomplete="off">
+    <kbd>/</kbd>
+  </div>
+
+  <div class="fw-bar">
+    <div class="range" role="group" aria-label="ช่วงเวลาของกราฟ" id="rangeSeg">
+      <button type="button" data-range="1D" aria-pressed="true">1D</button>
+      <button type="button" data-range="1W" aria-pressed="false">1W</button>
+      <button type="button" data-range="1M" aria-pressed="false">1M</button>
+    </div>
+    <div class="chips">
+      <span class="chips" id="kpis" aria-label="กรองตามสถานะ"></span>
+      <div class="seg" role="group" aria-label="กรองตามโซน" id="zoneSeg">
+        <button type="button" data-zone="all" aria-pressed="true">ทุกโซน</button>
+        <button type="button" data-zone="up" aria-pressed="false">ต้นน้ำ</button>
+        <button type="button" data-zone="mid" aria-pressed="false">กลางน้ำ</button>
+        <button type="button" data-zone="down" aria-pressed="false">ปลายน้ำ</button>
+      </div>
+      <span id="activeFilters" class="chips"></span>
+    </div>
+  </div>
+
+  <section class="fw-sec" aria-labelledby="h-near">
+    <div class="fw-sec-h">
+      <h2 id="h-near"><span id="nearTitle">ใกล้ฉัน</span><small id="nearSub"></small></h2>
+      <span class="r" id="nearAsof"></span>
+    </div>
+    <div id="geoNote" hidden></div>
+    <div id="featured"></div>
+  </section>
+
+  <section class="fw-sec" aria-labelledby="h-map" id="mapSec">
+    <div class="fw-sec-h">
+      <h2 id="h-map">แผนที่พื้นที่ SCGP<small>ตำแหน่งจริงบนแผนที่ · <span id="mapNote"></span></small></h2>
+      <span class="chips r">
+        <span class="spill s3">วิกฤต</span><span class="spill s2">เตือนภัย</span><span class="spill s1">เฝ้าระวัง</span><span class="spill s0">ปกติ</span><span class="spill sn">ไม่มีข้อมูล</span>
+      </span>
+    </div>
+    <div id="map" role="region" aria-label="แผนที่สถานประกอบการและเขื่อน"></div>
+  </section>
+
+  <section class="fw-sec" aria-labelledby="h-list" id="listSec">
+    <div class="fw-sec-h">
+      <h2 id="h-list">พื้นที่ SCGP<small>ทุกพื้นที่ <span class="num" id="countLabel"></span> · ระดับน้ำจากสถานีอ้างอิงใกล้โรงงาน</small></h2>
+      <span class="r">คลิกพื้นที่เพื่อขยายดู 7 Trigger · แถบ = ระดับน้ำเทียบตลิ่ง (เส้นดำ = ตลิ่ง)</span>
+    </div>
+    <div class="slist" id="siteList"></div>
+  </section>
+
+  <section class="fw-sec" aria-labelledby="h-hour">
+    <div class="fw-sec-h">
+      <h2 id="h-hour">ตารางรายชั่วโมง<small>ย้อนหลัง 24 ชม. · สถานีอ้างอิงของแต่ละพื้นที่</small></h2>
+      <div class="seg" role="group" aria-label="ค่าที่แสดงในตาราง" id="hourMode">
+        <button type="button" data-hmode="bank" aria-pressed="true">% ของตลิ่ง</button>
+        <button type="button" data-hmode="cap" aria-pressed="false">% ของความจุลำน้ำ</button>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-b scroll-x" id="hourTable"></div></div>
+  </section>
+
 
   <section class="panel" aria-labelledby="h-profile">
     <div class="panel-h">
@@ -1002,44 +1122,6 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
     </div>
   </section>
 
-  <section aria-label="สรุปสถานะ" style="display:grid;gap:12px">
-    <div class="kpis" id="kpis"></div>
-    <div class="filters">
-      <div class="seg" role="group" aria-label="กรองตามโซน" id="zoneSeg">
-        <button type="button" data-zone="all" aria-pressed="true">ทุกโซน</button>
-        <button type="button" data-zone="up" aria-pressed="false">ต้นน้ำ</button>
-        <button type="button" data-zone="mid" aria-pressed="false">กลางน้ำ</button>
-        <button type="button" data-zone="down" aria-pressed="false">ปลายน้ำ</button>
-      </div>
-      <input id="q" class="search" type="search" placeholder="ค้นหาบริษัท / จังหวัด" aria-label="ค้นหาบริษัทหรือจังหวัด">
-      <span id="activeFilters" class="filters"></span>
-    </div>
-  </section>
-
-  <section class="split">
-    <div class="panel" style="min-width:0">
-      <div class="panel-h" style="padding-bottom:12px">
-        <div><div class="eyebrow">แผนที่</div><h2><span class="ai" data-ico="pin" aria-hidden="true"></span>ที่ตั้งสถานประกอบการ SCGP</h2></div>
-        <span class="muted" style="font-size:12px" id="mapNote"></span>
-      </div>
-      <div id="map" role="region" aria-label="แผนที่สถานประกอบการและเขื่อน"></div>
-    </div>
-    <div class="panel" style="min-width:0">
-      <div class="panel-h" style="padding-bottom:10px">
-        <div><div class="eyebrow">ทะเบียนพื้นที่</div><h2><span class="ai" data-ico="list" aria-hidden="true"></span>สถานะรายพื้นที่ <span class="muted num" id="countLabel" style="font-size:14px;font-weight:500"></span></h2></div>
-        <span class="muted" style="font-size:12px">ช่อง 1–7 = Trigger Point</span>
-      </div>
-      <div class="list">
-        <table class="sites" aria-label="รายชื่อพื้นที่และสถานะ 7 Trigger Point">
-          <thead><tr><th class="stripe" aria-label="สถานะ"></th><th>พื้นที่</th><th>โซน</th><th>1 2 3 4 5 6 7</th><th>สถานะ</th></tr></thead>
-          <tbody id="siteRows"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel" id="detail" aria-live="polite"></section>
-
   <section class="panel" aria-labelledby="h-dams">
     <div class="panel-h">
       <div><div class="eyebrow">Trigger 1–2 · กรมชลประทาน</div><h2 id="h-dams"><span class="ai" data-ico="dam" aria-hidden="true"></span>เขื่อนที่ส่งผลต่อพื้นที่ SCGP</h2></div>
@@ -1065,6 +1147,7 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
 
   <footer>ข้อมูลตำแหน่งจาก SCG Location (KMZ) กลุ่ม SCGP 27 บริษัท / 24 พื้นที่ · ข้อมูลน้ำจากหน่วยงานรัฐที่เปิดเผยต่อสาธารณะ ใช้ประกอบการตัดสินใจ BCM ควบคู่กับประกาศทางการ</footer>
 </main>
+<div class="fab"><button type="button" id="fabMap">▦ แผนที่</button><button type="button" id="fabTop">↑ ขึ้นบน</button></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -1179,7 +1262,7 @@ var TRIGGERS = [
 ];
 
 var SITES = window.SITES, hv = window.WaterTransform.haversine;
-var state = { zone: 'all', q: '', lvl: null, trig: null, sel: null, mode: 'load', data: null, evals: {} };
+var state = { zone: 'all', q: '', lvl: null, trig: null, sel: null, mode: 'load', data: null, evals: {}, range: '1D', sort: 'risk', hist: {}, hmode: 'bank', open: null, near: null, userPicked: false };
 
 /* ---------- helpers ---------- */
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -1312,7 +1395,7 @@ function evaluate(s) {
     var tr = x.prev == null || x.msl == null ? null : x.msl - x.prev;
     out[3] = { l: lvlLow(fb, CRITERIA.river.bands), v: f(x.msl), u: 'ม.รทก.', title: x.name + (x.river ? ' · ' + x.river : ''),
       why: (fb == null ? '' : (fb < 0 ? 'สูงกว่า' : 'ต่ำกว่า') + basis.replace(/ .*/, '') + ' ' + f(Math.abs(fb)) + ' ม. (' + basis + ')'), trend: tr,
-      src: x.ag + ' ' + x.code + ' · ห่าง ' + km(r3.d) + ' · ' + fmtT(x.t), geo: [{ lat: x.lat, lng: x.lng, n: x.name }] };
+      src: x.ag + ' ' + x.code + ' · ห่าง ' + km(r3.d) + ' · ' + fmtT(x.t), geo: [{ lat: x.lat, lng: x.lng, n: x.name }], st: x };
   } else out[3] = { l: null, na: 'ไม่มีสถานีวัดระดับน้ำในรัศมี ' + CRITERIA.radius.river + ' กม.' };
   // 4 bank-full % (worst nearby)
   var c4 = near(fw, s, CRITERIA.radius.bank); if (!c4.length) c4 = near(fw, s, CRITERIA.radius.bankFallback).slice(0, 1);
@@ -1320,7 +1403,7 @@ function evaluate(s) {
     var w4 = c4.slice().sort(function (a, b) { return b.x.pct - a.x.pct; })[0];
     out[4] = { l: lvlBy(w4.x.pct, CRITERIA.bank.bands), v: f(w4.x.pct, 1), u: '%', title: w4.x.name + (w4.x.river ? ' · ' + w4.x.river : ''),
       why: (w4.x.over ? 'ล้นตลิ่ง ' : 'ต่ำกว่าตลิ่ง ') + f(w4.x.diff) + ' ม. · พิจารณา ' + c4.length + ' สถานีใกล้พื้นที่',
-      src: w4.x.ag + ' ' + w4.x.code + ' · ห่าง ' + km(w4.d) + ' · ' + fmtT(w4.x.t), geo: c4.map(function (z) { return { lat: z.x.lat, lng: z.x.lng, n: z.x.name }; }) };
+      src: w4.x.ag + ' ' + w4.x.code + ' · ห่าง ' + km(w4.d) + ' · ' + fmtT(w4.x.t), geo: c4.map(function (z) { return { lat: z.x.lat, lng: z.x.lng, n: z.x.name }; }), st: w4.x };
   } else out[4] = { l: null, na: 'ไม่มีสถานีวัดระดับน้ำในรัศมี ' + CRITERIA.radius.bankFallback + ' กม.' };
   // 5 rain 24h
   var c5 = near(D.rain.filter(function (x) { return fresh(x.t); }), s, CRITERIA.radius.rain);
@@ -1358,18 +1441,20 @@ function evaluate(s) {
 function visibleSites() {
   var q = state.q.trim().toLowerCase();
   var list = SITES.filter(function (s) {
-    var e = state.evals[s.id];
+    var e = state.evals[s.id], st = refStation(s);
     if (state.zone !== 'all' && s.zone !== state.zone) return false;
     if (state.lvl != null && e.overall !== state.lvl) return false;
     if (state.trig != null && e[state.trig].l == null) return false;
-    if (q && (s.name + ' ' + s.prov + ' ' + s.amp + ' ' + s.cos.join(' ')).toLowerCase().indexOf(q) < 0) return false;
+    if (q && (s.name + ' ' + s.prov + ' ' + s.amp + ' ' + s.basin + ' ' + s.cos.join(' ') + (st ? ' ' + st.code + ' ' + st.name : '')).toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
-  return list.sort(function (a, b) {
-    var ea = state.evals[a.id], eb = state.evals[b.id];
-    var ka = state.trig != null ? ea[state.trig].l : ea.overall, kb = state.trig != null ? eb[state.trig].l : eb.overall;
-    return ((kb == null ? -1 : kb) - (ka == null ? -1 : ka)) || a.name.localeCompare(b.name, 'th');
-  });
+  function key(s) {
+    var e = state.evals[s.id], st = refStation(s);
+    if (state.sort === 'bank') return st && st.pct != null ? st.pct : -1;
+    if (state.sort === 'trend') { var t = st ? trendOf(st) : null; return t == null ? -99 : t; }
+    var k = state.trig != null ? e[state.trig].l : e.overall; return k == null ? -1 : k;
+  }
+  return list.sort(function (a, b) { if (state.sort === 'name') return a.name.localeCompare(b.name, 'th'); return (key(b) - key(a)) || a.name.localeCompare(b.name, 'th'); });
 }
 
 function trigSummary(n) {
@@ -1545,10 +1630,10 @@ function initTip() {
   svg.addEventListener('pointerleave', function () { tip.hidden = true; });
   svg.addEventListener('focusin', function (ev) { var el = ev.target.closest('.hov'); if (el) { var b = el.getBoundingClientRect(); show(el, b.left + b.width / 2, b.bottom); } });
   svg.addEventListener('focusout', function () { tip.hidden = true; });
-  svg.addEventListener('click', function (ev) { if (ev.target.closest('.factory')) { var s = profileSite(); select(s.id, false); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+  svg.addEventListener('click', function (ev) { if (ev.target.closest('.factory')) { var s = profileSite(); select(s.id, true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
   var sel = document.getElementById('profileSite');
   sel.innerHTML = ['up', 'mid', 'down'].map(function (z) { return '<optgroup label="' + ZONES[z] + '">' + SITES.filter(function (s) { return s.zone === z; }).map(function (s) { return '<option value="' + s.id + '">' + esc(s.name) + '</option>'; }).join('') + '</optgroup>'; }).join('');
-  sel.addEventListener('change', function () { select(sel.value, false); });
+  sel.addEventListener('change', function () { select(sel.value, true); });
 }
 
 /* ---------- กฟผ. (EGAT) data: rule curves + Mae Klong telemetry ---------- */
@@ -1757,7 +1842,7 @@ function initSchemTip() {
   svg.addEventListener('pointerleave', function () { tip.hidden = true; });
   svg.addEventListener('focusin', function (ev) { var el = ev.target.closest('.hov'); if (el) { var b = el.getBoundingClientRect(); show(el, b.left + b.width / 2, b.bottom); } });
   svg.addEventListener('focusout', function () { tip.hidden = true; });
-  svg.addEventListener('click', function (ev) { var el = ev.target.closest('.mk-fac'); if (el) { select(el.getAttribute('data-tip').split(':')[1], false); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+  svg.addEventListener('click', function (ev) { var el = ev.target.closest('.mk-fac'); if (el) { select(el.getAttribute('data-tip').split(':')[1], true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
 }
 
 function renderTrigCards() {
@@ -1778,7 +1863,7 @@ function renderKpis() {
   SITES.forEach(function (s) { var l = state.evals[s.id].overall; if (l == null) na++; else c[l]++; });
   var h = '';
   [3, 2, 1, 0].forEach(function (l) {
-    h += '<button type="button" class="kpi s' + l + '" data-lvl="' + l + '" aria-pressed="' + (state.lvl === l) + '"><span class="sw"></span>' + icon(LVL_ICON[l], 'kpi-ico', 'background:var(--cb);color:var(--c)') + '<span><span class="v">' + c[l] + '</span><br><span class="l">พื้นที่ ' + LV[l].th + '</span></span></button>';
+    h += '<button type="button" class="kpi s' + l + '" data-lvl="' + l + '" aria-pressed="' + (state.lvl === l) + '">' + icon(LVL_ICON[l], '', 'background:var(--cb);color:var(--c)') + '<span class="v">' + c[l] + '</span>' + LV[l].th + '</button>';
   });
   document.getElementById('kpis').innerHTML = h;
 }
@@ -1789,53 +1874,220 @@ function renderFilters() {
   if (state.lvl != null) h += '<span class="chip-filter">สถานะ: ' + LV[state.lvl].th + ' <button type="button" data-clear="lvl" aria-label="ล้างตัวกรองสถานะ">×</button></span>';
   document.getElementById('activeFilters').innerHTML = h;
   Array.prototype.forEach.call(document.querySelectorAll('#zoneSeg button'), function (b) { b.setAttribute('aria-pressed', b.dataset.zone === state.zone); });
+  Array.prototype.forEach.call(document.querySelectorAll('#rangeSeg button'), function (b) { b.setAttribute('aria-pressed', b.dataset.range === state.range); });
+  Array.prototype.forEach.call(document.querySelectorAll('#hourMode button'), function (b) { b.setAttribute('aria-pressed', b.dataset.hmode === state.hmode); });
 }
 
-function renderRows() {
-  var list = visibleSites(), h = '';
-  list.forEach(function (s) {
-    var e = state.evals[s.id];
-    h += '<tr class="row" data-id="' + s.id + '" tabindex="0" aria-selected="' + (state.sel === s.id) + '">';
-    h += '<td class="stripe ' + sc(e.overall) + '"><span></span></td>';
-    h += '<td><div class="sname">' + esc(s.name) + '</div><div class="ssub">' + esc(s.prov + ' · ' + s.amp) + (s.cos.length > 1 ? ' · ' + s.cos.length + ' บริษัท' : '') + '</div></td>';
-    h += '<td><span class="zone">' + ZONES[s.zone] + '</span></td>';
-    h += '<td><div class="cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) {
-      var l = e[n].l; return '<span class="cell ' + sc(l) + '" title="' + n + ' ' + esc(TRIGGERS[n - 1].th) + ': ' + lname(l) + '"' + (state.trig === n ? ' style="outline:2px solid var(--ink);outline-offset:1px"' : '') + '>' + (l == null ? '·' : n) + '</span>';
-    }).join('') + '</div></td>';
-    h += '<td><span class="spill ' + sc(e.overall) + '">' + lname(e.overall) + '</span></td></tr>';
-  });
-  document.getElementById('siteRows').innerHTML = h || '<tr><td colspan="5" class="empty">ไม่มีพื้นที่ตรงกับตัวกรอง</td></tr>';
-  document.getElementById('countLabel').textContent = list.length + '/' + SITES.length;
-  if (map) updateMarkers(list);
-}
-
-function renderDetail() {
-  var el = document.getElementById('detail');
-  var s = SITES.filter(function (x) { return x.id === state.sel; })[0];
-  if (!s) {
-    el.innerHTML = '<div class="empty">เลือกพื้นที่จากรายชื่อหรือแผนที่ เพื่อดูค่าวัดของทั้ง 7 Trigger Point พร้อมสถานีอ้างอิง</div>';
-    return;
+/* ---------- reference station + history helpers ---------- */
+function refStation(s) { var e = state.evals[s.id]; return (e[3] && e[3].st) || (e[4] && e[4].st) || null; }
+function histFor(st, range) { var H = state.hist[range || state.range]; return st && H && H.stations ? H.stations[st.id] : null; }
+function pctOf(v, h) { if (v == null || !h || h.bank == null) return null; var g = h.ground != null && h.ground < h.bank ? h.ground : null; return g != null ? (v - g) / (h.bank - g) * 100 : null; }
+function trendOf(st) {
+  var h = histFor(st, '1D');
+  if (h && h.points && h.points.length > 1) {
+    var p = h.points.filter(function (x) { return x[1] != null; }); if (p.length > 1) { var a = p[p.length - 2], b = p[p.length - 1]; return (b[1] - a[1]) / ((b[0] - a[0]) / 3600e3); }
   }
-  var e = state.evals[s.id], prim = ZONE_TRIG[s.zone], h = '';
-  h += '<div class="panel-b"><div class="detail-head"><div style="min-width:0"><div class="eyebrow">รายละเอียดพื้นที่ · ' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</div><h2>' + icon('factory') + esc(s.name) + '</h2>';
-  h += '<div class="meta"><span>จ.' + esc(s.prov) + ' อ.' + esc(s.amp) + '</span><span class="num">' + f(s.lat, 5) + ', ' + f(s.lng, 5) + '</span>' + (s.coord ? '<span>BCM Coordinator: ' + esc(s.coord) + '</span>' : '') + '</div>';
-  h += '<ul class="cos">' + s.cos.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></div>';
-  h += '<span class="spill ' + sc(e.overall) + '" style="font-size:14px;padding:6px 14px">ภาพรวม: ' + lname(e.overall) + '</span></div>';
-  h += '<div class="tgrid">';
+  return st && st.msl != null && st.prev != null ? st.msl - st.prev : null;
+}
+function trendTxt(r, unit) {
+  if (r == null) return '<span class="muted">–</span>';
+  if (Math.abs(r) < 0.005) return '■ ทรงตัว';
+  return (r > 0 ? '<span style="color:var(--warn)">▲ สูงขึ้น +' : '<span style="color:var(--ok)">▼ ลดลง −') + f(Math.abs(r)) + ' ' + (unit || 'ม./ชม.') + '</span>';
+}
+function projOf(points, idx) {
+  var p = points.filter(function (x) { return x[idx] != null; }); if (p.length < 3) return null;
+  var last = p[p.length - 1], win = p.filter(function (x) { return x[0] >= last[0] - 6 * 3600e3; }); if (win.length < 2) win = p.slice(-3);
+  var n = win.length, mx = 0, my = 0; win.forEach(function (x) { mx += x[0]; my += x[idx]; }); mx /= n; my /= n;
+  var sxy = 0, sxx = 0; win.forEach(function (x) { sxy += (x[0] - mx) * (x[idx] - my); sxx += (x[0] - mx) * (x[0] - mx); });
+  var slope = sxx ? sxy / sxx : 0; var t = last[0] + 6 * 3600e3;
+  return { t: t, v: last[idx] + slope * 6 * 3600e3, from: last };
+}
+function hhmm(t) { var d = new Date(t + 7 * 3600e3); var h = d.getUTCHours(), m = d.getUTCMinutes(); return (h === 0 && m === 0 ? '24' : String(h).padStart(2, '0')) + ':' + String(m).padStart(2, '0'); }
+function ddmm(t) { var d = new Date(t + 7 * 3600e3); return d.getUTCDate() + '/' + (d.getUTCMonth() + 1); }
+
+/* line chart in the Flood Watch style: area + line, dashed reference line, last-value dot, +6 h projection */
+function lineChart(o) {
+  var W = 660, H = 215, L = 46, R = 92, T = 14, B = 28, pw = W - L - R, ph = H - T - B;
+  var pts = o.points.filter(function (p) { return p[1] != null; });
+  if (pts.length < 2) return '<div class="chart-empty">' + esc(o.empty || 'ไม่มีข้อมูลในช่วงนี้') + '</div>';
+  var t0 = pts[0][0], t1 = Math.max(pts[pts.length - 1][0], o.proj ? o.proj.t : 0) + (o.range === '1D' ? 2 * 3600e3 : o.range === '1W' ? 6 * 3600e3 : 24 * 3600e3);
+  var vs = pts.map(function (p) { return p[1]; }); if (o.ref != null) vs.push(o.ref); if (o.proj) vs.push(o.proj.v);
+  var lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs), pad = Math.max((hi - lo) * 0.12, o.minSpan || 0.5);
+  lo = o.floor0 ? Math.max(0, lo - pad) : lo - pad; hi += pad;
+  var step = niceStep((hi - lo) / 6); lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+  function X(t) { return L + (t - t0) / (t1 - t0) * pw; } function Y(v) { return T + (1 - (v - lo) / (hi - lo)) * ph; }
+  var s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(o.aria || '') + '">';
+  for (var v = lo; v <= hi + 1e-9; v += step) { s += '<line x1="' + L + '" x2="' + (L + pw) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" style="stroke:var(--line)" stroke-width="1"/><text x="' + (L - 6) + '" y="' + (Y(v) + 3.5) + '" text-anchor="end">' + f(v, step < 1 ? 2 : 0) + '</text>'; }
+  // x ticks
+  var tick = o.range === '1D' ? 3 * 3600e3 : o.range === '1W' ? 864e5 : 7 * 864e5;
+  var first = Math.ceil((t0 + 7 * 3600e3) / tick) * tick - 7 * 3600e3;
+  for (var tt = first; tt <= t1; tt += tick) { var lab = o.range === '1D' ? hhmm(tt) : ddmm(tt); s += '<line x1="' + X(tt) + '" x2="' + X(tt) + '" y1="' + (T + ph) + '" y2="' + (T + ph + 4) + '" style="stroke:var(--muted)"/><text x="' + X(tt) + '" y="' + (H - 8) + '" text-anchor="middle">' + lab + '</text>'; }
+  if (o.range === '1D') { var mid = Math.floor((pts[pts.length - 1][0] + 7 * 3600e3) / 864e5) * 864e5 - 7 * 3600e3; if (mid > t0) s += '<line x1="' + X(mid) + '" x2="' + X(mid) + '" y1="' + T + '" y2="' + (T + ph) + '" style="stroke:var(--water)" stroke-dasharray="2 3"/><text x="' + (X(mid) - 4) + '" y="' + (T + 10) + '" text-anchor="end">เมื่อวาน</text><text x="' + (X(mid) + 4) + '" y="' + (T + 10) + '">วันนี้</text>'; }
+  // area + line
+  var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
+  s += '<path d="' + d + ' L' + X(pts[pts.length - 1][0]).toFixed(1) + ',' + (T + ph) + ' L' + X(pts[0][0]).toFixed(1) + ',' + (T + ph) + ' Z" style="fill:var(--water-soft)"/>';
+  s += '<path d="' + d + '" fill="none" style="stroke:var(--river)" stroke-width="2" stroke-linejoin="round"/>';
+  if (o.ref != null) s += '<line x1="' + L + '" x2="' + (L + pw) + '" y1="' + Y(o.ref) + '" y2="' + Y(o.ref) + '" style="stroke:var(--crit)" stroke-width="1.6" stroke-dasharray="6 4"/><text x="' + (L + 4) + '" y="' + (Y(o.ref) - 4) + '" style="fill:var(--crit)">' + esc(o.refLabel) + '</text>';
+  var last = pts[pts.length - 1];
+  if (o.proj) { s += '<line x1="' + X(last[0]) + '" y1="' + Y(last[1]) + '" x2="' + X(o.proj.t) + '" y2="' + Y(o.proj.v) + '" style="stroke:var(--river)" stroke-width="1.6" stroke-dasharray="4 4"/><text x="' + (X(o.proj.t) + 4) + '" y="' + (Y(o.proj.v) + 4) + '" class="lbl">+6 ชม. ≈ ' + f(o.proj.v, o.dec) + '</text>'; s += '<text x="' + (X(last[0]) + 4) + '" y="' + (T + ph - 4) + '">แนวโน้ม →</text>'; }
+  s += '<circle cx="' + X(last[0]) + '" cy="' + Y(last[1]) + '" r="4.5" style="fill:var(--ink)"/><text x="' + (X(last[0]) - 6) + '" y="' + (Y(last[1]) - 9) + '" text-anchor="end" class="lbl">' + f(last[1], o.dec) + ' ' + esc(o.unit) + '</text>';
+  return s + '</svg>';
+}
+function niceStep(x) { var p = Math.pow(10, Math.floor(Math.log10(x || 1))), n = x / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+
+function sparkline(st) {
+  var h = histFor(st, '1D'); if (!h || !h.points) return '<svg class="spark" viewBox="0 0 170 46"></svg>';
+  var pts = h.points.filter(function (p) { return p[1] != null; }); if (pts.length < 2) return '<svg class="spark" viewBox="0 0 170 46"></svg>';
+  var vs = pts.map(function (p) { return p[1]; }); if (h.bank != null) vs.push(h.bank);
+  var lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs), pad = (hi - lo) * 0.1 || 0.3; lo -= pad; hi += pad;
+  var t0 = pts[0][0], t1 = pts[pts.length - 1][0];
+  function X(t) { return 2 + (t - t0) / (t1 - t0 || 1) * 166; } function Y(v) { return 4 + (1 - (v - lo) / (hi - lo)) * 38; }
+  var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
+  var s = '<svg class="spark" viewBox="0 0 170 46" aria-hidden="true"><path d="' + d + ' L168,42 L2,42 Z" style="fill:var(--water-soft)"/><path d="' + d + '" fill="none" style="stroke:var(--river)" stroke-width="1.5"/>';
+  if (h.bank != null) s += '<line x1="2" x2="168" y1="' + Y(h.bank) + '" y2="' + Y(h.bank) + '" style="stroke:var(--crit)" stroke-dasharray="3 3"/>';
+  return s + '</svg>';
+}
+
+/* vertical staff gauge (height above gauge datum), like the Flood Watch card */
+function gaugeSVG(st, h) {
+  var bank = h && h.bank != null ? h.bank : st.minBank;
+  var g = h && h.ground != null && bank != null && h.ground < bank ? h.ground : null;
+  if (g == null && bank != null && st.pct > 0 && st.pct < 100) { var p = st.pct / 100; g = (st.msl - p * bank) / (1 - p); } // from ThaiWater % = (wl − ground) ÷ (bank − ground)
+  if (g == null || bank == null) return '<div style="width:70px"></div>';
+  var val = st.msl - g, bk = bank - g, top = Math.ceil(Math.max(bk * 1.2, val + 1));
+  var stepM = top > 24 ? 5 : top > 12 ? 2 : 1, Y0 = 322, Y1 = 10;
+  function Y(m) { return Y0 - m / top * (Y0 - Y1); }
+  var s = '<svg class="gauge" viewBox="0 0 70 330" style="width:70px" role="img" aria-label="ระดับน้ำ ' + f(val, 2) + ' ม. เหนือท้องน้ำ ตลิ่ง ' + f(bk, 2) + ' ม.">';
+  s += '<rect x="20" y="' + Y1 + '" width="16" height="' + (Y0 - Y1) + '" rx="3" style="fill:var(--sunk);stroke:var(--line)"/>';
+  s += '<rect x="20" y="' + Y(Math.max(0, val)) + '" width="16" height="' + (Y0 - Y(Math.max(0, val))) + '" rx="2" style="fill:var(--river)"/>';
+  for (var m = 0; m <= top; m += stepM) s += '<line x1="36" x2="41" y1="' + Y(m) + '" y2="' + Y(m) + '" style="stroke:var(--muted)"/><text x="44" y="' + (Y(m) + 3.5) + '" style="font:500 10px var(--f-data);fill:var(--muted)">' + m + '</text>';
+  s += '<line x1="2" x2="38" y1="' + Y(bk) + '" y2="' + Y(bk) + '" style="stroke:var(--crit)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="2" y="' + (Y(bk) - 4) + '" style="font:500 9.5px var(--f-body);fill:var(--crit)">ตลิ่ง</text>';
+  s += '<path d="M12 ' + Y(val) + ' l6 -4 v8 z" style="fill:var(--ink)"/>';
+  return s + '</svg>';
+}
+
+function triggerBoxes(s) {
+  var e = state.evals[s.id], prim = ZONE_TRIG[s.zone], h = '<div class="tgrid">';
   TRIGGERS.forEach(function (t) {
     var r = e[t.n], isP = prim.indexOf(t.n) >= 0;
     h += '<div class="tbox ' + sc(r.l) + (isP ? '' : ' irrelevant') + '">';
     h += '<div class="hd"><span class="tt">' + icon(TRIG_ICON[t.n], '', 'background:var(--cb);color:var(--c)') + '<span><span class="num muted" style="font-size:11px">TRIGGER ' + t.n + '</span><br>' + esc(t.th) + '</span></span><span class="spill ' + sc(r.l) + '">' + lname(r.l) + '</span></div>';
-    if (r.l == null && r.na) {
-      h += '<div class="why muted">' + esc(r.na) + '</div>';
-    } else {
+    if (r.l == null && r.na) h += '<div class="why muted">' + esc(r.na) + '</div>';
+    else {
       h += '<div class="val">' + r.v + '<small>' + esc(r.u) + '</small>' + (r.trend != null ? ' <span class="trend" style="color:' + (r.trend > 0.005 ? 'var(--warn)' : r.trend < -0.005 ? 'var(--ok)' : 'var(--muted)') + '">' + (r.trend > 0.005 ? '▲' : r.trend < -0.005 ? '▼' : '■') + ' ' + f(Math.abs(r.trend)) + '</span>' : '') + '</div>';
       h += '<div class="why"><b>' + esc(r.title) + '</b></div><div class="why muted">' + esc(r.why) + '</div><div class="src">' + esc(r.src) + '</div>';
     }
     h += '<div class="src">' + (isP ? 'จุดหลักของโซน' + ZONES[s.zone] : 'ข้อมูลประกอบ') + '</div></div>';
   });
-  h += '</div></div>';
-  el.innerHTML = h;
+  return h + '</div>';
+}
+
+/* ---------- featured card ("ใกล้ฉัน" / selected site) ---------- */
+function renderFeatured() {
+  var s = SITES.filter(function (x) { return x.id === state.sel; })[0] || topSite(); if (!s) return;
+  var e = state.evals[s.id], st = refStation(s), isNear = state.near && state.near.site && state.near.site.id === s.id;
+  document.getElementById('nearTitle').textContent = isNear ? 'ใกล้ฉัน' : 'พื้นที่ที่เลือก';
+  document.getElementById('nearSub').innerHTML = esc(s.prov + ' · อ.' + s.amp) + (isNear ? ' · ห่างจากคุณ ' + km(state.near.d) : '');
+  var note = document.getElementById('geoNote');
+  if (state.near && state.near.denied && !state.userPicked) { note.hidden = false; note.className = 'fw-note'; note.innerHTML = 'ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง · เปิดสิทธิ์ตำแหน่งของเว็บนี้ในการตั้งค่าเบราว์เซอร์ · แสดง <b>' + esc(s.name) + '</b> ไปก่อน · <button type="button" id="geoRetry">ลองใหม่</button>'; }
+  else if (state.near && state.near.site && !isNear) { note.hidden = false; note.className = 'fw-note'; note.innerHTML = 'กำลังดูพื้นที่ที่เลือก · <button type="button" id="geoBack">กลับไปพื้นที่ใกล้ฉัน (' + esc(state.near.site.name) + ')</button>'; }
+  else note.hidden = true;
+  var h = histFor(st), el = document.getElementById('featured'), o = '';
+  document.getElementById('nearAsof').textContent = st && st.t ? 'ข้อมูลล่าสุดที่มี ' + fmtT(st.t, false) : '';
+  o += '<div class="feat">';
+  // left
+  o += '<div class="feat-left">';
+  o += st ? gaugeSVG(st, h) : '<div></div>';
+  o += '<div style="display:grid;gap:4px;align-content:start;min-width:0">';
+  o += '<div class="feat-meta">' + esc(s.name) + '</div>';
+  if (st) {
+    var tr = trendOf(st), lv = lvlBy(st.pct, CRITERIA.bank.bands), left = st.minBank != null ? st.minBank - st.msl : null;
+    o += '<div class="feat-code">' + esc(st.code) + '</div><div class="feat-name">' + esc(st.name) + (st.river ? ' · ' + esc(st.river) : '') + '</div>';
+    o += '<button type="button" class="pin-btn" data-mapto="' + s.id + '">📍 ดูบนแผนที่</button>';
+    o += '<div class="feat-big">' + f(st.msl) + '<small>ม.รทก.</small></div>';
+    o += '<div><span class="spill ' + sc(lv) + '">' + lname(lv) + ' · ' + (tr == null ? 'ไม่ทราบแนวโน้ม' : Math.abs(tr) < 0.005 ? 'ทรงตัว' : tr > 0 ? 'กำลังสูงขึ้น' : 'กำลังลดลง') + '</span></div>';
+    o += '<dl class="kv"><dt>อัตราเปลี่ยน</dt><dd>' + (tr == null ? '–' : (tr > 0 ? '+' : '') + f(tr) + ' ม./ชม.') + '</dd><dt>ระดับตลิ่ง</dt><dd>' + f(st.minBank) + ' ม.</dd><dt>' + (left != null && left < 0 ? 'ล้นตลิ่ง' : 'ต่ำกว่าตลิ่ง') + '</dt><dd>' + f(left == null ? null : Math.abs(left)) + ' ม. (' + f(st.pct, 0) + '%)</dd></dl>';
+    var q = h && h.points ? h.points.filter(function (p) { return p[2] != null; }) : [];
+    if (q.length) {
+      var ql = q[q.length - 1][2], qcap = h.qmax, qpct = qcap ? ql / qcap * 100 : null, qtr = q.length > 1 ? (q[q.length - 1][2] - q[q.length - 2][2]) / ((q[q.length - 1][0] - q[q.length - 2][0]) / 3600e3) : null;
+      o += '<div class="sub-h">ปริมาณน้ำ · Discharge</div><div class="feat-big" style="font-size:30px">' + f(ql, 1) + '<small>ม³/วิ</small></div>';
+      o += qpct != null ? '<div><span class="spill ' + sc(lvlBy(qpct, CRITERIA.bank.bands)) + '">' + lname(lvlBy(qpct, CRITERIA.bank.bands)) + ' · ' + f(qpct, 0) + '% ของความจุ</span></div>' : '';
+      o += '<dl class="kv">' + (qcap ? '<dt>ความจุลำน้ำ</dt><dd>' + f(qcap, 0) + ' ม³/วิ</dd>' : '') + '<dt>แนวโน้ม</dt><dd>' + trendTxt(qtr, 'ม³/วิ/ชม.') + '</dd></dl>';
+    }
+  } else o += '<div class="muted">ไม่มีสถานีวัดระดับน้ำใกล้พื้นที่นี้</div>';
+  o += '</div></div>';
+  // right: charts
+  o += '<div class="feat-right">';
+  var rl = { '1D': 'ย้อนหลัง 24 ชม.', '1W': 'ย้อนหลัง 7 วัน', '1M': 'ย้อนหลัง 30 วัน' }[state.range];
+  if (st) {
+    var empty = state.histErr ? 'กราฟย้อนหลังแสดงเมื่อเปิดผ่านเว็บ scgp-water-management.vercel.app' : state.histLoading ? 'กำลังโหลดข้อมูลย้อนหลัง…' : 'สถานีนี้ไม่มีข้อมูลย้อนหลังใน สสน.';
+    var pts = h && h.points ? h.points : [];
+    o += '<div><div class="chart-h">ระดับน้ำ<small>' + rl + ' · ม.รทก. · เส้นแดง = ตลิ่ง</small></div>';
+    o += lineChart({ points: pts.map(function (p) { return [p[0], p[1]]; }), ref: h && h.bank != null ? h.bank : st.minBank, refLabel: 'ตลิ่ง ' + f(h && h.bank != null ? h.bank : st.minBank), unit: 'ม.', dec: 2, range: state.range, proj: state.range === '1D' ? projOf(pts, 1) : null, empty: empty, aria: 'กราฟระดับน้ำ ' + st.code }) + '</div>';
+    var qp = pts.filter(function (p) { return p[2] != null; });
+    if (qp.length > 1) o += '<div><div class="chart-h">ปริมาณน้ำ<small>' + rl + ' · ม³/วิ' + (h.qmax ? ' · เส้นแดง = ความจุลำน้ำ' : '') + '</small></div>' + lineChart({ points: qp.map(function (p) { return [p[0], p[2]]; }), ref: h.qmax, refLabel: 'ความจุ ' + f(h.qmax, 0), unit: 'ม³/วิ', dec: 1, range: state.range, floor0: true, minSpan: 20, proj: state.range === '1D' ? projOf(qp.map(function (p) { return [p[0], p[2]]; }), 1) : null, aria: 'กราฟปริมาณน้ำ ' + st.code }) + '</div>';
+  }
+  o += '</div>';
+  // SCGP context: 7 triggers + companies
+  o += '<div class="feat-trig"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>' + icon('factory') + esc(s.name) + '</b><span class="spill ' + sc(e.overall) + '">ภาพรวม 7 Trigger: ' + lname(e.overall) + '</span><span class="muted" style="font-size:12.5px">' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</span></div>';
+  o += '<div class="cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) { var l = e[n].l; return '<span class="cell ' + sc(l) + '" title="' + n + ' ' + esc(TRIGGERS[n - 1].th) + ': ' + lname(l) + '">' + (l == null ? '·' : n) + '</span>'; }).join('') + '</div></div>';
+  o += '<ul class="cos">' + s.cos.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>';
+  o += '<details class="more"><summary>ดูรายละเอียด 7 Trigger Point</summary>' + triggerBoxes(s) + '</details></div>';
+  o += '</div>';
+  el.innerHTML = o;
+}
+
+/* ---------- all-sites list ---------- */
+function renderList() {
+  var list = visibleSites(), o = '';
+  list.forEach(function (s) {
+    var e = state.evals[s.id], st = refStation(s), open = state.open === s.id;
+    var lv = st ? lvlBy(st.pct, CRITERIA.bank.bands) : null;
+    o += '<div class="srow ' + sc(e.overall) + '" data-row="' + s.id + '" role="button" tabindex="0" aria-expanded="' + open + '">';
+    o += '<span class="tl"><i></i></span>';
+    o += '<div style="min-width:0"><div class="s-meta">' + esc(ZONES[s.zone] + ' · ' + s.prov + ' · อ.' + s.amp) + '</div><div class="s-name">' + esc(s.name) + ' <span class="muted" style="font-size:12px">▾</span></div><div class="s-sub">' + (st ? esc(st.code + ' ' + st.name) : 'ไม่มีสถานีอ้างอิง') + '</div></div>';
+    if (st) {
+      var w = st.minBank ? Math.min(100, Math.max(0, st.pct / 1.25)) : 0, tr = trendOf(st);
+      o += '<div class="' + sc(lv) + '" style="min-width:0"><div class="lv-txt">' + f(st.msl) + ' ม. <small>/ ตลิ่ง ' + f(st.minBank) + '</small></div>';
+      o += '<div class="lvbar"><span style="width:' + w + '%"></span><i style="left:80%"></i></div>';
+      o += '<div class="lv-foot">' + fmtT(st.t, false) + ' · ' + f(st.pct, 0) + '% ของตลิ่ง · ' + trendTxt(tr) + '</div></div>';
+    } else o += '<div class="muted" style="font-size:12.5px">–</div>';
+    o += '<div class="cells-col"><div class="cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) { var l = e[n].l; return '<span class="cell ' + sc(l) + '" title="' + n + ' ' + esc(TRIGGERS[n - 1].th) + ': ' + lname(l) + '"' + (state.trig === n ? ' style="outline:2px solid var(--ink);outline-offset:1px"' : '') + '>' + (l == null ? '·' : n) + '</span>'; }).join('') + '</div><div class="s-sub" style="margin-top:4px">7 Trigger · <b style="color:var(--c)">' + lname(e.overall) + '</b></div></div>';
+    o += '<div class="spark-col" style="display:grid;gap:4px;min-width:0">';
+    if (st && st.minBank != null) { var left = st.minBank - st.msl; o += '<span class="left-chip ' + sc(lv) + '">' + (left < 0 ? 'ล้น ' + f(-left) + ' ม.' : 'เหลือ ' + f(left) + ' ม.') + '</span>'; }
+    o += st ? sparkline(st) : '';
+    o += '</div>';
+    if (open) o += '<div class="srow-detail" data-stop="1">' + triggerBoxes(s) + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="btn primary" data-feature="' + s.id + '">แสดงในการ์ดด้านบน</button><button type="button" class="btn" data-mapto="' + s.id + '">📍 ดูบนแผนที่</button></div></div>';
+    o += '</div>';
+  });
+  document.getElementById('siteList').innerHTML = o || '<div class="empty">ไม่มีพื้นที่ตรงกับตัวกรอง</div>';
+  document.getElementById('countLabel').textContent = list.length + '/' + SITES.length;
+  if (map) updateMarkers(list);
+}
+
+/* ---------- hourly table (24 h) ---------- */
+function renderHourTable() {
+  var el = document.getElementById('hourTable'), H = state.hist['1D'];
+  if (!H || !H.stations) { el.innerHTML = '<div class="chart-empty">' + (state.histErr ? 'ตารางรายชั่วโมงแสดงเมื่อเปิดผ่านเว็บ scgp-water-management.vercel.app' : 'กำลังโหลดข้อมูลรายชั่วโมง…') + '</div>'; return; }
+  var now = Date.now(), endH = Math.floor((now + 7 * 3600e3) / 3600e3) * 3600e3 - 7 * 3600e3, hours = [];
+  for (var i = 23; i >= 0; i--) hours.push(endH - i * 3600e3);
+  var dayOf = function (t) { return Math.floor((t + 7 * 3600e3) / 864e5); }, today = dayOf(endH);
+  var nY = hours.filter(function (t) { return dayOf(t) < today; }).length;
+  var o = '<table class="htable"><thead><tr><th></th>' + (nY ? '<th class="day" colspan="' + nY + '">เมื่อวาน</th>' : '') + '<th class="day" colspan="' + (24 - nY) + '">วันนี้</th></tr><tr><th class="st">พื้นที่ · สถานี</th>' + hours.map(function (t) { var hh = new Date(t + 7 * 3600e3).getUTCHours(); return '<th>' + (hh === 0 ? 24 : hh) + '</th>'; }).join('') + '</tr></thead><tbody>';
+  visibleSites().forEach(function (s) {
+    var st = refStation(s), h = st ? H.stations[st.id] : null;
+    o += '<tr><th class="st">' + esc(s.name) + (st ? '<small>' + esc(st.code) + '</small>' : '') + '</th>';
+    hours.forEach(function (t) {
+      var p = h && h.points ? h.points.filter(function (x) { return x[0] >= t && x[0] < t + 3600e3; }).pop() : null, v = null;
+      if (p) v = state.hmode === 'cap' ? (p[2] != null && h.qmax ? p[2] / h.qmax * 100 : null) : pctOf(p[1], h);
+      if (v == null) { o += '<td></td>'; return; }
+      var l = lvlBy(v, CRITERIA.bank.bands), bg = l ? 'var(--' + ['ok', 'watch', 'warn', 'crit'][l] + '-bg)' : 'color-mix(in srgb,var(--water) ' + Math.round(8 + Math.min(70, v) / 70 * 30) + '%,transparent)';
+      o += '<td style="background:' + bg + '" title="' + esc(s.name) + ' ' + hhmm(t) + ' · ' + f(v, 0) + '%">' + Math.round(v) + '</td>';
+    });
+    o += '</tr>';
+  });
+  o += '</tbody></table><p class="note">แหล่งข้อมูล: คลังข้อมูลน้ำแห่งชาติ (สสน.) ระดับน้ำรายชั่วโมงของสถานีอ้างอิงใกล้โรงงาน · % ของตลิ่ง = (ระดับน้ำ − ท้องน้ำ) ÷ (ตลิ่ง − ท้องน้ำ) · สีเหลือง/ส้ม/แดง = เกณฑ์ Trigger 4 (70/85/100%)</p>';
+  el.innerHTML = o;
 }
 
 function renderDams() {
@@ -1876,40 +2128,46 @@ var map = null, siteLayer, refLayer, markers = {};
 function initMap() {
   if (!window.L) { document.getElementById('map').innerHTML = '<div class="empty">โหลดแผนที่ไม่สำเร็จ</div>'; return; }
   map = L.map('map', { zoomControl: true, attributionControl: true, scrollWheelZoom: false }).setView([13.9, 100.6], 6);
-  var geo = L.geoJSON(window.REGION_GEO, { style: function (ft) { return { className: ft.properties.th ? 'geo-th' : 'geo-nb', weight: ft.properties.th ? 1.2 : .6 }; }, interactive: false }).addTo(map);
-  // Use OpenStreetMap tiles where the host allows them; otherwise the outline map above stays as the base.
+  L.geoJSON(window.REGION_GEO, { style: function (ft) { return { className: ft.properties.th ? 'geo-th' : 'geo-nb', weight: ft.properties.th ? 1.2 : .6 }; }, interactive: false }).addTo(map);
+  // base maps (road / satellite / terrain) where the host allows map tiles; the outline map stays underneath otherwise
   var probe = new Image();
   probe.onload = function () {
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+    var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' });
+    var sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18, attribution: 'Imagery &copy; Esri' });
+    var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '&copy; OpenTopoMap (CC-BY-SA)' });
+    road.addTo(map);
+    L.control.layers({ 'แผนที่ถนน': road, 'ดาวเทียม': sat, 'ภูมิประเทศ': topo }, null, { position: 'topright', collapsed: false }).addTo(map);
     document.documentElement.classList.add('has-tiles');
   };
   probe.src = 'https://tile.openstreetmap.org/6/50/29.png';
-  map.attributionControl.addAttribution('ข้อมูลน้ำ: สสน. · กรมชลประทาน');
+  map.attributionControl.addAttribution('ข้อมูลน้ำ: สสน. · กรมชลประทาน · กฟผ.');
   refLayer = L.layerGroup().addTo(map);
   var damLayer = L.layerGroup().addTo(map);
   var used = {}; SITES.forEach(function (s) { s.dams.forEach(function (d) { used[d] = 1; }); });
   state.data.dam.filter(function (d) { return used[d.name]; }).forEach(function (d) {
-    var l = lvlBy(d.pct, CRITERIA.dam.bands);
+    var l = damLevel(d);
     L.marker([d.lat, d.lng], { icon: L.divIcon({ className: '', html: '<div class="dam-ico ' + sc(l) + '"></div>', iconSize: [16, 14], iconAnchor: [8, 7] }), keyboard: false })
       .bindTooltip('เขื่อน' + esc(d.name) + ' ' + f(d.pct, 1) + '% · ระบาย ' + f(d.rel) + ' ล้าน ลบ.ม./วัน').addTo(damLayer);
   });
   siteLayer = L.layerGroup().addTo(map);
-  var leg = L.control({ position: 'bottomleft' });
-  leg.onAdd = function () { var d = L.DomUtil.create('div', 'map-legend'); d.innerHTML = '<div><i style="background:var(--ok)"></i>ปกติ</div><div><i style="background:var(--watch)"></i>เฝ้าระวัง</div><div><i style="background:var(--warn)"></i>เตือนภัย</div><div><i style="background:var(--crit)"></i>วิกฤต</div><div><span class="tri"></span>เขื่อน</div><div><i style="background:transparent;border:2px solid var(--ink)"></i>สถานีอ้างอิง</div>'; return d; };
-  leg.addTo(map);
-  map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15));
+  var all = L.control({ position: 'bottomleft' });
+  all.onAdd = function () { var b = L.DomUtil.create('button', 'btn'); b.type = 'button'; b.textContent = 'ดูทุกพื้นที่'; L.DomEvent.on(b, 'click', function (ev) { L.DomEvent.stop(ev); fitAll(); }); return b; };
+  all.addTo(map);
+  fitAll();
 }
+function fitAll() { if (map) map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15)); }
 function updateMarkers(list) {
   siteLayer.clearLayers(); markers = {};
   list.forEach(function (s) {
     var e = state.evals[s.id];
     var m = L.circleMarker([s.lat, s.lng], { radius: state.sel === s.id ? 11 : 8, className: 'site-mk ' + sc(e.overall) + (state.sel === s.id ? ' sel' : ''), weight: 2 })
       .bindTooltip(esc(s.name) + ' · ' + lname(e.overall))
-      .on('click', function () { select(s.id, false); });
+      .on('click', function () { select(s.id, true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     m.addTo(siteLayer); markers[s.id] = m;
   });
 }
 function showRefs(s) {
+  if (!refLayer) return;
   refLayer.clearLayers();
   var e = state.evals[s.id];
   [3, 4, 5, 6, 7].forEach(function (n) { (e[n].geo || []).forEach(function (g) {
@@ -1917,21 +2175,62 @@ function showRefs(s) {
     L.polyline([[s.lat, s.lng], [g.lat, g.lng]], { className: 'ref-line', weight: 1, dashArray: '3 4' }).addTo(refLayer);
   }); });
 }
+function mapTo(id) {
+  var s = SITES.filter(function (x) { return x.id === id; })[0]; if (!s || !map) return;
+  document.getElementById('mapSec').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showRefs(s); map.setView([s.lat, s.lng], 11); if (markers[s.id]) markers[s.id].openTooltip();
+}
+
+/* ---------- history (สสน. waterlevel_graph via /api/history) ---------- */
+async function loadHistory(range) {
+  var ids = []; SITES.forEach(function (s) { var st = refStation(s); if (st && ids.indexOf(st.id) < 0) ids.push(st.id); });
+  if (!ids.length || state.hist[range]) return;
+  state.histLoading = true;
+  try {
+    var r = await fetchT('api/history?range=' + range + '&stations=' + ids.join(','), 30000);
+    if (!r.ok || !/json/.test(r.headers.get('content-type') || '')) throw new Error('history ' + r.status);
+    state.hist[range] = await r.json(); state.histErr = false;
+  } catch (e) { state.histErr = true; }
+  state.histLoading = false;
+}
+async function refreshHistory() {
+  await loadHistory(state.range); if (state.range !== '1D') await loadHistory('1D');
+  renderFeatured(); renderList(); renderHourTable();
+}
+
+/* ---------- near me (geolocation) ---------- */
+function locate() {
+  if (!navigator.geolocation) { state.near = { denied: true }; renderFeatured(); return; }
+  navigator.geolocation.getCurrentPosition(function (p) {
+    var best = null; SITES.forEach(function (s) { var d = hv(p.coords.latitude, p.coords.longitude, s.lat, s.lng); if (!best || d < best.d) best = { site: s, d: d }; });
+    state.near = best; if (!state.userPicked) { state.sel = best.site.id; renderAllForSel(); }
+    else renderFeatured();
+  }, function () { state.near = { denied: true }; renderFeatured(); }, { timeout: 8000, maximumAge: 600000 });
+}
 
 /* ---------- interactions ---------- */
-function select(id, fromList) {
-  state.sel = id;
-  renderProfile(); renderSchematic(); renderRows(); renderDetail();
-  var s = SITES.filter(function (x) { return x.id === id; })[0];
-  if (map && s) { showRefs(s); map.setView([s.lat, s.lng], Math.max(map.getZoom(), 10)); }
-  if (fromList !== false) {} else { var r = document.querySelector('tr.row[data-id="' + id + '"]'); if (r) r.scrollIntoView({ block: 'nearest' }); }
+function renderAllForSel() {
+  renderProfile(); renderSchematic(); renderFeatured(); renderList();
+  var s = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (s) showRefs(s);
 }
-function rerender() { renderProfile(); renderSchematic(); renderTrigCards(); renderKpis(); renderFilters(); renderRows(); renderDetail(); }
+function select(id, user) {
+  state.sel = id; if (user) state.userPicked = true;
+  renderAllForSel();
+}
+function rerender() { renderProfile(); renderSchematic(); renderTrigCards(); renderKpis(); renderFilters(); renderFeatured(); renderList(); renderHourTable(); }
 
 document.addEventListener('click', function (ev) {
-  var t = ev.target.closest('[data-trig],[data-lvl],[data-zone],[data-clear],tr.row');
+  var t = ev.target.closest('[data-trig],[data-lvl],[data-zone],[data-clear],[data-range],[data-hmode],[data-feature],[data-mapto],[data-row],#geoRetry,#geoBack,#fabMap,#fabTop');
   if (!t || !state.data) return;
-  if (t.matches('tr.row')) { select(t.dataset.id, true); document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (t.id === 'fabTop') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  if (t.id === 'fabMap') { document.getElementById('mapSec').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (t.id === 'geoRetry') { locate(); return; }
+  if (t.id === 'geoBack') { state.userPicked = false; select(state.near.site.id, false); return; }
+  if (t.dataset.mapto) { mapTo(t.dataset.mapto); return; }
+  if (t.dataset.feature) { select(t.dataset.feature, true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (t.dataset.row) { if (ev.target.closest('[data-stop]')) return; state.open = state.open === t.dataset.row ? null : t.dataset.row; renderList(); return; }
+  if (t.dataset.range) { state.range = t.dataset.range; renderFilters(); renderFeatured(); refreshHistory(); return; }
+  if (t.dataset.hmode) { state.hmode = t.dataset.hmode; renderFilters(); renderHourTable(); return; }
   if (t.dataset.trig) { var n = +t.dataset.trig; state.trig = state.trig === n ? null : n; }
   else if (t.dataset.lvl) { var l = +t.dataset.lvl; state.lvl = state.lvl === l ? null : l; }
   else if (t.dataset.zone) { state.zone = state.zone === t.dataset.zone && t.dataset.zone !== 'all' ? 'all' : t.dataset.zone; }
@@ -1939,12 +2238,14 @@ document.addEventListener('click', function (ev) {
   rerender();
 });
 document.addEventListener('keydown', function (ev) {
+  if (ev.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { ev.preventDefault(); document.getElementById('q').focus(); return; }
   if (ev.key !== 'Enter' && ev.key !== ' ') return;
-  var t = ev.target.closest && ev.target.closest('.trig-node,tr.row');
-  if (t) { ev.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  var t = ev.target.closest && ev.target.closest('.trig-node,.srow');
+  if (t && ev.target === t) { ev.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
 });
-document.getElementById('q').addEventListener('input', function (e) { state.q = e.target.value; renderRows(); });
-document.getElementById('refreshBtn').addEventListener('click', function () { load(); });
+document.getElementById('q').addEventListener('input', function (e) { state.q = e.target.value; renderList(); renderHourTable(); });
+document.getElementById('sortSel').addEventListener('change', function (e) { state.sort = e.target.value; renderList(); renderHourTable(); });
+document.getElementById('refreshBtn').addEventListener('click', function () { state.hist = {}; load(); });
 paintIcons();
 
 /* ---------- data loading: Vercel API → direct open-data API → saved snapshot ---------- */
@@ -1976,9 +2277,9 @@ async function getEgatDirect() {
 function setMode(mode, via) {
   state.mode = mode;
   var p = document.getElementById('modePill'), t = document.getElementById('modeText');
-  p.className = 'pill ' + (mode === 'live' ? 'live' : mode === 'snap' ? 'snap' : 'load');
-  t.textContent = mode === 'live' ? 'LIVE · ' + via : mode === 'snap' ? 'ข้อมูลที่บันทึกไว้ (snapshot)' : 'กำลังโหลดข้อมูล…';
-  document.getElementById('asof').textContent = state.data ? 'ข้อมูล ณ ' + fmtT(new Date(state.data.fetchedAt)) : '';
+  p.className = 'fw-status ' + (mode === 'live' ? 'live' : mode === 'snap' ? 'snap' : 'load');
+  t.textContent = mode === 'live' ? 'ข้อมูลสด · ' + via + ' · ' + SITES.length + ' พื้นที่' : mode === 'snap' ? 'ข้อมูลที่บันทึกไว้ (snapshot) · ' + SITES.length + ' พื้นที่' : 'กำลังโหลดข้อมูล…';
+  document.getElementById('asof').textContent = state.data ? ' · อัปเดต ' + new Date(state.data.fetchedAt).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour12: false }) : '';
 }
 var timer = null;
 async function load() {
@@ -1992,22 +2293,19 @@ async function load() {
   setMode(live ? 'live' : 'snap', live && live.via);
   rb.classList.remove('spin');
   if (!state.sel) state.sel = topSite().id;
+  var first = !map;
   if (!map) { initMap(); initTip(); initSchemTip(); }
   rerender(); renderDams(); renderCriteria();
   if (state.sel) { var s = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (s && map) showRefs(s); }
+  refreshHistory();
+  if (first) locate();
   document.getElementById('mapNote').textContent = SITES.length + ' พื้นที่ · ' + SITES.reduce(function (a, s) { return a + s.cos.length; }, 0) + ' บริษัท';
   clearTimeout(timer);
   if (live) timer = setTimeout(load, 10 * 60 * 1000);
 }
 
 // Start with the most at-risk site selected so the detail panel opens on something useful.
-authGuard().then(function (ok) { if (!ok) return; return load(); }).then(function () {
-  if (!state.data) return;
-  if (!state.sel) {
-    var top = SITES.slice().sort(function (a, b) { return (state.evals[b.id].overall || 0) - (state.evals[a.id].overall || 0); })[0];
-    if (top) { state.sel = top.id; renderRows(); renderDetail(); if (map) showRefs(top); }
-  }
-});
+authGuard().then(function (ok) { if (!ok) return; return load(); });
 })();
 </script>
 </body></html>

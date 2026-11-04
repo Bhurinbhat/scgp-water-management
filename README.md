@@ -18,6 +18,7 @@
 ```
 index.html               หน้าเข้าสู่ระบบ (SCG SSO) — สร้างจาก src/login.html
 dashboard.html           หน้า Dashboard หลังเข้าสู่ระบบ — สร้างจาก src/template.html + src/app.js
+api/history.js           ข้อมูลย้อนหลัง 1D/1W/1M ของสถานี สสน. (กราฟ, sparkline, ตารางรายชั่วโมง)
 api/config.js            ค่าตั้งค่าสาธารณะสำหรับหน้าเว็บ (เปิด/ปิด SSO, Supabase URL, โดเมนที่อนุญาต)
 assets/                  โลโก้ SCGP
 api/water.js             Vercel Function: ดึง สสน. + กฟผ. แบบ real-time, เก็บประวัติลง Supabase

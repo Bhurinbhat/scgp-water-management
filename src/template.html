@@ -3,35 +3,35 @@
 <meta name="description" content="SCGP Water Management Dashboard — ติดตามสถานการณ์น้ำของสถานประกอบการ SCGP ตาม 7 Risk Trigger Point">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /*LEAFLET_CSS*/
 </style>
 <style>
 /* Layout: operations console — river profile (7 triggers) on top, map + site register side by side, site detail and dam table below. */
 :root{
-  /* SCGP CI: navy #202070 · blue #3070B8 · red #D03030 · orange #E08030 · amber #F0B040 */
-  --bg:#F3F5F9; --surface:#FFFFFF; --sunk:#EAEEF5; --ink:#141A3A; --muted:#5A6385; --line:#DCE1EC;
-  --accent:#3070B8; --accent-ink:#FFFFFF; --deep:#202070; --brand-red:#D03030; --brand-orange:#E08030; --brand-amber:#F0B040;
-  --water:#3AAFA4; --water-2:#2C8F87; --sea:#2B8DC4; --land:#C9D7D6;
-  --ok:#2E9B57; --watch:#C99A00; --warn:#E06E21; --crit:#D23434; --na:#9AABAE;
-  --ok-bg:#E3F3E8; --watch-bg:#FBF2CC; --warn-bg:#FDE7D7; --crit-bg:#FBDEDE; --na-bg:#ECF0F1;
-  --f-body:"IBM Plex Sans Thai","Noto Sans Thai","Leelawadee UI",Tahoma,system-ui,sans-serif;
-  --f-data:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+  /* Flood Watch design language (Prompt + IBM Plex Mono, river teal) with SCGP status scale */
+  --bg:#EEF3F2; --surface:#FFFFFF; --sunk:#E3EBEA; --ink:#0F1F1E; --muted:#566967; --line:#CFDAD8;
+  --accent:#0E7C86; --accent-ink:#FFFFFF; --deep:#12403F; --river:#0E7C86; --water:#2A9DB0; --water-soft:#2A9DB033;
+  --water-2:#1F7F8E; --sea:#2B8DC4; --land:#C9D7D6; --brand-red:#C23527; --brand-orange:#D0621D; --brand-amber:#B87A00;
+  --ok:#2A8657; --watch:#B87A00; --warn:#D0621D; --crit:#C23527; --na:#8FA19F;
+  --ok-bg:#2A865718; --watch-bg:#B87A001F; --warn-bg:#D0621D1C; --crit-bg:#C235271A; --na-bg:#8FA19F1F;
+  --f-body:"Prompt",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --r:12px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#090C1E; --surface:#12183A; --sunk:#0D1230; --ink:#E6E9F6; --muted:#9AA3C6; --line:#252D55;
-  --accent:#6FA6E8; --accent-ink:#0B1030; --deep:#9EA2F0; --brand-red:#F06A5A; --brand-orange:#F2A050; --brand-amber:#F5C25E;
-  --water:#2C8C84; --water-2:#23736C; --sea:#1F6FA3; --land:#24393B;
-  --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
-  --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}}
+  --bg:#0B1514; --surface:#12201F; --sunk:#0E1A19; --ink:#E4EEEC; --muted:#93A8A5; --line:#243937;
+  --accent:#3FB5BF; --accent-ink:#06201F; --deep:#BFE3E0; --river:#3FB5BF; --water:#3AAFC2; --water-soft:#3AAFC233;
+  --water-2:#2A8C98; --sea:#1F6FA3; --land:#24393B; --brand-red:#F06A5A; --brand-orange:#F0915A; --brand-amber:#E3B23C;
+  --ok:#4CC27A; --watch:#E3B23C; --warn:#F0915A; --crit:#F06A5A; --na:#6E8285;
+  --ok-bg:#4CC27A22; --watch-bg:#E3B23C24; --warn-bg:#F0915A24; --crit-bg:#F06A5A24; --na-bg:#6E828524; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#090C1E; --surface:#12183A; --sunk:#0D1230; --ink:#E6E9F6; --muted:#9AA3C6; --line:#252D55;
-  --accent:#6FA6E8; --accent-ink:#0B1030; --deep:#9EA2F0; --brand-red:#F06A5A; --brand-orange:#F2A050; --brand-amber:#F5C25E;
-  --water:#2C8C84; --water-2:#23736C; --sea:#1F6FA3; --land:#24393B;
-  --ok:#4CC27A; --watch:#E7C23A; --warn:#F28C45; --crit:#F05A5A; --na:#6E8285;
-  --ok-bg:#12301F; --watch-bg:#33290A; --warn-bg:#3A2212; --crit-bg:#3B1616; --na-bg:#1A2B2E; color-scheme:dark}
+  --bg:#0B1514; --surface:#12201F; --sunk:#0E1A19; --ink:#E4EEEC; --muted:#93A8A5; --line:#243937;
+  --accent:#3FB5BF; --accent-ink:#06201F; --deep:#BFE3E0; --river:#3FB5BF; --water:#3AAFC2; --water-soft:#3AAFC233;
+  --water-2:#2A8C98; --sea:#1F6FA3; --land:#24393B; --brand-red:#F06A5A; --brand-orange:#F0915A; --brand-amber:#E3B23C;
+  --ok:#4CC27A; --watch:#E3B23C; --warn:#F0915A; --crit:#F06A5A; --na:#6E8285;
+  --ok-bg:#4CC27A22; --watch-bg:#E3B23C24; --warn-bg:#F0915A24; --crit-bg:#F06A5A24; --na-bg:#6E828524; color-scheme:dark}
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
@@ -46,37 +46,127 @@ h1,h2,h3{text-wrap:balance;margin:0}
 h2{font-size:18px;font-weight:600;display:flex;align-items:center}
 .muted{color:var(--muted)}
 
-/* Header — white bar with the SCGP logo and the brand gradient strip */
-body::before{background:var(--surface)}
-header.top{background:var(--surface);color:var(--ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:900;box-shadow:0 1px 0 var(--line),0 6px 18px rgba(20,26,58,.06)}
-header.top::after{content:"";display:block;height:4px;background:linear-gradient(90deg,#202070,#3070B8 45%,#D03030 78%,#E08030)}
-header.top .wrap{display:flex;align-items:center;gap:16px;padding-block:10px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:14px;min-width:0;flex:1 1 360px;text-decoration:none;color:inherit}
-.logo{height:38px;width:auto;display:block}
-.logo-chip{display:inline-flex;flex:none}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-chip{background:#fff;border-radius:9px;padding:5px 9px}}
-:root[data-theme="dark"] .logo-chip{background:#fff;border-radius:9px;padding:5px 9px}
-.brand-div{width:1px;align-self:stretch;background:var(--line);flex:none}
-.brand h1{font-size:19px;font-weight:700;letter-spacing:.01em;color:var(--deep);display:flex;align-items:center;gap:8px}
-.brand p{margin:0;font-size:12.5px;color:var(--muted)}
-.status-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
-.pill.live{background:var(--ok-bg);color:var(--ok)}
-.pill.snap{background:var(--watch-bg);color:var(--watch)}
-.pill.load{background:var(--sunk);color:var(--muted)}
-.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
-.pill.live .dot{animation:pulse 1.6s infinite}
-@keyframes pulse{50%{opacity:.25}}
-@media (prefers-reduced-motion:reduce){.pill.live .dot{animation:none}}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
+/* ---------- Page header (Flood Watch layout) ---------- */
+body::before{background:var(--bg)}
+.fw-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:22px 14px;border-bottom:1px solid var(--line)}
+.fw-eyebrow{display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.fw-eyebrow img{height:20px;width:auto;display:block}
+.fw-head h1{font:700 clamp(26px,3vw,34px)/1.15 var(--f-body);letter-spacing:-.005em;margin:4px 0 6px;color:var(--ink)}
+.fw-status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.fw-status .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+.fw-status.snap .dot{background:var(--watch)} .fw-status.load .dot{background:var(--na)}
+.fw-status .dot{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.fw-ctrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.fw-ctrl label{display:flex;align-items:center;gap:8px}
+.fw-ctrl select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;cursor:pointer;font:500 13px var(--f-body);display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
 .btn:hover{border-color:var(--accent)}
-.btn svg{width:16px;height:16px}
+.btn.primary{background:var(--river);color:#fff;border-color:var(--river)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn svg{width:15px;height:15px}
 .btn.spin svg{animation:ai-rot 1s linear infinite}
-.asof{font-size:12px;color:var(--muted)}
-.user-chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 4px}
-.user-chip .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#202070,#3070B8);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
-.user-chip button,.user-chip a{border:0;background:var(--sunk);border-radius:999px;padding:3px 10px;cursor:pointer;font-size:12px;color:var(--ink);text-decoration:none}
-.demo-chip{font-size:12px;border-radius:999px;padding:3px 10px;background:var(--warn-bg);color:var(--warn);font-weight:600;text-decoration:none}
+.user-chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 4px;background:var(--surface);color:var(--ink)}
+.user-chip .av{width:24px;height:24px;border-radius:50%;background:var(--river);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.user-chip button{border:0;background:var(--sunk);border-radius:999px;padding:3px 10px;cursor:pointer;font:inherit;color:var(--ink)}
+.demo-chip{font-size:12px;border-radius:999px;padding:4px 10px;background:var(--watch-bg);color:var(--watch);font-weight:500;text-decoration:none}
+
+/* search + range + status chips */
+.fw-search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 12px;margin-top:16px}
+.fw-search .mag{color:var(--muted);font-size:16px}
+.fw-search input{flex:1;min-width:0;border:0;background:transparent;font:400 15px var(--f-body);color:var(--ink);padding:12px 0;outline:none}
+.fw-search kbd{font:500 11px var(--f-data);border:1px solid var(--line);border-radius:5px;padding:2px 6px;color:var(--muted);background:var(--sunk)}
+.fw-search:focus-within{border-color:var(--river);box-shadow:0 0 0 3px var(--water-soft)}
+.fw-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px}
+.range{display:inline-flex;gap:4px}
+.range button{border:0;background:transparent;border-radius:7px;padding:5px 12px;font:600 12.5px var(--f-data);color:var(--muted);cursor:pointer}
+.range button[aria-pressed="true"]{background:var(--river);color:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.kpi{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px 4px 6px;font:500 12.5px var(--f-body);color:var(--ink);cursor:pointer}
+.kpi .v{font:600 13px var(--f-data)}
+.kpi .ai{width:22px;height:22px;border-radius:50%;margin:0}
+.kpi .ai svg{width:15px;height:15px}
+.kpi[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:5px 10px;cursor:pointer;font:500 12.5px var(--f-body);color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--sunk);color:var(--ink)}
+.chip-filter{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 6px 3px 10px;background:var(--sunk);font-size:12.5px}
+.chip-filter button{border:0;background:var(--surface);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1}
+
+/* section heads like Flood Watch: bold title + muted subtitle on one line */
+.fw-sec{display:grid;gap:10px;min-width:0}
+.fw-sec>*{min-width:0}
+.fw-sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fw-sec-h h2{font:600 19px var(--f-body);display:flex;align-items:center;gap:0;flex-wrap:wrap}
+.fw-sec-h h2 small{font:400 13px var(--f-body);color:var(--muted);margin-left:8px}
+.fw-sec-h .r{font-size:12.5px;color:var(--muted)}
+.fw-note{background:var(--watch-bg);color:var(--ink);border-radius:8px;padding:8px 12px;font-size:12.5px}
+.fw-note b{color:var(--watch)}
+.fw-note button{border:0;background:none;color:var(--river);font:inherit;text-decoration:underline;cursor:pointer;padding:0}
+
+/* featured (near me) card */
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:22px}
+@media (max-width:860px){.feat{grid-template-columns:1fr}}
+.feat-left{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;align-content:start}
+.gauge{width:56px;height:330px;display:block}
+.feat-meta{font-size:12px;color:var(--muted)}
+.feat-code{font:700 26px var(--f-body);line-height:1.1;color:var(--ink)}
+.feat-name{font-size:13px;color:var(--muted)}
+.feat-big{font:600 40px var(--f-data);line-height:1;color:var(--ink);margin-top:6px}
+.feat-big small{font:500 15px var(--f-body);color:var(--muted);margin-left:4px}
+.kv{display:grid;grid-template-columns:auto auto;justify-content:space-between;gap:4px 12px;font-size:12.5px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-family:var(--f-data)}
+.sub-h{font-size:11.5px;letter-spacing:.06em;color:var(--muted);font-weight:600;text-transform:uppercase;margin-top:6px}
+.pin-btn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:3px 8px;font:500 12px var(--f-body);color:var(--river);cursor:pointer;margin-top:6px}
+.feat-right{display:grid;gap:14px;min-width:0;align-content:start}
+.chart-h{font-size:13.5px;font-weight:600}
+.chart-h small{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--f-data);font-size:9.5px;fill:var(--muted)}
+.chart .lbl{fill:var(--ink);font-weight:500}
+.chart-empty{border:1px dashed var(--line);border-radius:10px;padding:20px;text-align:center;color:var(--muted);font-size:13px}
+.feat-trig{grid-column:1/-1;border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+.cos{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.cos li{font-size:12px;background:var(--sunk);border-radius:6px;padding:2px 8px}
+details.more summary{cursor:pointer;color:var(--river);font-size:13px;font-weight:500}
+
+/* all-sites list (station-list style) */
+.slist{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.srow{display:grid;grid-template-columns:22px minmax(150px,1.1fr) minmax(220px,1.6fr) 170px minmax(140px,1fr);gap:14px;align-items:center;padding:14px 16px;border-top:1px solid var(--line);cursor:pointer;position:relative}
+.srow:first-child{border-top:0}
+.srow:hover{background:color-mix(in srgb,var(--river) 5%,var(--surface))}
+.srow[aria-expanded="true"]{background:color-mix(in srgb,var(--river) 7%,var(--surface))}
+@media (max-width:1100px){.srow{grid-template-columns:22px minmax(0,1fr) minmax(0,1.4fr)}.srow .cells-col,.srow .spark-col{grid-column:2/-1}}
+@media (max-width:640px){.srow{grid-template-columns:18px minmax(0,1fr)}.srow>*:not(.tl){grid-column:2}}
+.tl{align-self:stretch;position:relative}
+.tl::before{content:"";position:absolute;left:50%;top:-14px;bottom:-14px;width:2px;transform:translateX(-50%);background:var(--water-soft)}
+.tl i{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:var(--c);box-shadow:0 0 0 3px var(--surface)}
+.s-meta{font-size:11.5px;color:var(--muted)}
+.s-name{font:600 16px var(--f-body);line-height:1.25}
+.s-sub{font-size:12px;color:var(--muted)}
+.lv-txt{font:500 13px var(--f-data)}
+.lv-txt small{color:var(--muted);font-family:var(--f-body)}
+.lvbar{position:relative;height:9px;border-radius:5px;background:var(--sunk);margin:6px 0 5px;overflow:visible}
+.lvbar span{position:absolute;inset:0 auto 0 0;border-radius:5px;background:var(--c)}
+.lvbar i{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:1px}
+.lv-foot{font:400 11.5px var(--f-data);color:var(--muted)}
+.left-chip{justify-self:end;font:600 12px var(--f-body);border-radius:999px;padding:3px 10px;background:var(--cb);color:var(--c);white-space:nowrap}
+.spark{width:100%;height:46px;display:block}
+.srow-detail{grid-column:1/-1;cursor:default}
+.cells{display:grid;grid-template-columns:repeat(7,20px);gap:3px}
+.cell{width:20px;height:20px;border-radius:5px;font-size:10px;font-weight:600;display:grid;place-items:center;font-family:var(--f-data)}
+
+/* hourly table */
+.htable{border-collapse:separate;border-spacing:2px;font:500 11px var(--f-data);min-width:900px}
+.htable th{color:var(--muted);font-weight:500;padding:3px 4px;text-align:center}
+.htable th.st{text-align:left;font:500 12px var(--f-body);color:var(--ink);white-space:nowrap;padding-right:10px}
+.htable th.st small{color:var(--muted);font-size:11px;margin-left:4px}
+.htable td{width:30px;height:24px;text-align:center;border-radius:4px;color:var(--ink)}
+.htable .day{font:600 11px var(--f-body);color:var(--muted)}
+
+/* floating actions */
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;z-index:800}
+.fab button{border:0;border-radius:999px;background:var(--river);color:#fff;font:600 13px var(--f-body);padding:9px 16px;box-shadow:0 6px 18px rgba(14,124,134,.35);cursor:pointer;display:inline-flex;gap:6px;align-items:center}
 
 /* Animated icons (ai-*) — each one acts out what its section measures */
 .ai{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);flex:none;vertical-align:middle;margin-right:8px}
@@ -179,25 +269,8 @@ main>*{min-width:0}
 .tcounts{display:flex;gap:8px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
 .tcounts b{font-family:var(--f-data);font-weight:600;color:var(--ink)}
 
-/* Summary + filters */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.kpi{border-radius:9px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left}
-.kpi[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--accent)}
-.kpi .v{font-family:var(--f-data);font-size:26px;font-weight:600;line-height:1}
-.kpi .l{font-size:12.5px;color:var(--muted);line-height:1.3}
-.kpi .sw{width:10px;align-self:stretch;border-radius:4px;flex:none}
-.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
-.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:13px}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
-.search{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);min-width:0;flex:1 1 180px;max-width:280px}
-.chip-filter{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 6px 4px 10px;background:var(--sunk);font-size:12.5px}
-.chip-filter button{border:0;background:var(--surface);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1}
-
 /* Map + list */
-.split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px}
-@media (max-width:980px){.split{grid-template-columns:1fr}}
-#map{height:560px;border-radius:0 0 var(--r) var(--r);background:var(--sunk)}
+#map{height:520px;border-radius:14px;background:var(--sunk);border:1px solid var(--line)}
 @media (max-width:640px){#map{height:380px}}
 .leaflet-container{font-family:var(--f-body);background:var(--sunk)}
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surface);color:var(--ink)}
@@ -219,29 +292,15 @@ main>*{min-width:0}
 .dam-ico{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:14px solid var(--c);filter:drop-shadow(0 0 1px var(--ink))}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) saturate(.6)}}
 :root[data-theme="dark"] .leaflet-tile-pane{filter:invert(.92) hue-rotate(180deg) brightness(.85) saturate(.6)}
-.list{max-height:560px;overflow:auto}
-@media (max-width:980px){.list{max-height:none}}
 table{border-collapse:collapse;width:100%}
-.sites th{font-size:11.5px;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1;white-space:nowrap}
-.sites td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-.sites tr.row{cursor:pointer}
-.sites tr.row:hover td{background:var(--sunk)}
-.sites tr.row[aria-selected="true"] td{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
-.sname{font-weight:600;line-height:1.3}
-.ssub{font-size:12px;color:var(--muted)}
-.stripe{width:4px;padding:0!important}
-.stripe span{display:block;width:4px;height:34px;border-radius:2px}
-.cells{display:grid;grid-template-columns:repeat(7,18px);gap:3px}
-.cell{width:18px;height:18px;border-radius:4px;font-size:10px;font-weight:700;display:grid;place-items:center;font-family:var(--f-data)}
 .zone{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
-@media (max-width:640px){.sites th:nth-child(3),.sites td:nth-child(3),.sites th:nth-child(5),.sites td:nth-child(5){display:none}.cells{grid-template-columns:repeat(7,15px);gap:2px}.cell{width:15px;height:15px;font-size:9px}.sites td{padding:8px 6px}}
 .spill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
 
 /* Status colors */
 .s0{--c:var(--ok);--cb:var(--ok-bg)} .s1{--c:var(--watch);--cb:var(--watch-bg)} .s2{--c:var(--warn);--cb:var(--warn-bg)} .s3{--c:var(--crit);--cb:var(--crit-bg)} .sn{--c:var(--na);--cb:var(--na-bg)}
 .cell,.spill{background:var(--cb);color:var(--c)}
 .cell{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
-.stripe span,.kpi .sw{background:var(--c)}
+
 
 /* Detail */
 .detail-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
@@ -281,26 +340,87 @@ table{border-collapse:collapse;width:100%}
 footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
 </style>
 
-<header class="top">
-  <div class="wrap">
-    <a class="brand" href="./" title="กลับหน้าเข้าสู่ระบบ">
-      <span class="logo-chip"><img class="logo" src="/*LOGO*/" alt="SCGP"></span>
-      <span class="brand-div" aria-hidden="true"></span>
-      <span style="min-width:0">
-        <h1><span class="ai" data-ico="drop" aria-hidden="true"></span>Water Management Dashboard</h1>
-        <p>ติดตามสถานการณ์น้ำสถานประกอบการ SCGP ตาม 7 Risk Trigger Point · BCM</p>
-      </span>
-    </a>
-    <div class="status-bar">
-      <span id="modePill" class="pill load"><span class="dot"></span><span id="modeText">กำลังโหลดข้อมูล…</span></span>
-      <span class="asof" id="asof"></span>
-      <button class="btn" id="refreshBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>โหลดข้อมูลใหม่</button>
+<main class="wrap">
+  <header class="fw-head">
+    <div style="min-width:0">
+      <div class="fw-eyebrow"><a href="./" title="กลับหน้าเข้าสู่ระบบ"><img src="/*LOGO*/" alt="SCGP"></a><span>BCM · 7 RISK TRIGGER POINT</span></div>
+      <h1>Water Management Dashboard</h1>
+      <div class="fw-status load" id="modePill"><span class="dot"></span><span id="modeText">กำลังโหลดข้อมูล…</span><span id="asof"></span></div>
+    </div>
+    <div class="fw-ctrl">
+      <label for="sortSel">เรียง <select id="sortSel">
+        <option value="risk">สถานะ (เสี่ยงสูง→ต่ำ)</option>
+        <option value="bank">% ตลิ่ง (สูง→ต่ำ)</option>
+        <option value="trend">แนวโน้ม (สูงขึ้นเร็วสุดก่อน)</option>
+        <option value="name">ชื่อพื้นที่</option>
+      </select></label>
+      <button class="btn primary" id="refreshBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>รีเฟรช</button>
       <span id="userChip"></span>
     </div>
-  </div>
-</header>
+  </header>
 
-<main class="wrap">
+  <div class="fw-search" role="search">
+    <span class="mag" aria-hidden="true">⌕</span>
+    <input id="q" type="search" placeholder="ค้นหาพื้นที่ บริษัท จังหวัด หรือรหัสสถานี: บ้านโป่ง, K.55A, TCG, ระยอง…" aria-label="ค้นหาพื้นที่ บริษัท จังหวัด หรือรหัสสถานี" autocomplete="off">
+    <kbd>/</kbd>
+  </div>
+
+  <div class="fw-bar">
+    <div class="range" role="group" aria-label="ช่วงเวลาของกราฟ" id="rangeSeg">
+      <button type="button" data-range="1D" aria-pressed="true">1D</button>
+      <button type="button" data-range="1W" aria-pressed="false">1W</button>
+      <button type="button" data-range="1M" aria-pressed="false">1M</button>
+    </div>
+    <div class="chips">
+      <span class="chips" id="kpis" aria-label="กรองตามสถานะ"></span>
+      <div class="seg" role="group" aria-label="กรองตามโซน" id="zoneSeg">
+        <button type="button" data-zone="all" aria-pressed="true">ทุกโซน</button>
+        <button type="button" data-zone="up" aria-pressed="false">ต้นน้ำ</button>
+        <button type="button" data-zone="mid" aria-pressed="false">กลางน้ำ</button>
+        <button type="button" data-zone="down" aria-pressed="false">ปลายน้ำ</button>
+      </div>
+      <span id="activeFilters" class="chips"></span>
+    </div>
+  </div>
+
+  <section class="fw-sec" aria-labelledby="h-near">
+    <div class="fw-sec-h">
+      <h2 id="h-near"><span id="nearTitle">ใกล้ฉัน</span><small id="nearSub"></small></h2>
+      <span class="r" id="nearAsof"></span>
+    </div>
+    <div id="geoNote" hidden></div>
+    <div id="featured"></div>
+  </section>
+
+  <section class="fw-sec" aria-labelledby="h-map" id="mapSec">
+    <div class="fw-sec-h">
+      <h2 id="h-map">แผนที่พื้นที่ SCGP<small>ตำแหน่งจริงบนแผนที่ · <span id="mapNote"></span></small></h2>
+      <span class="chips r">
+        <span class="spill s3">วิกฤต</span><span class="spill s2">เตือนภัย</span><span class="spill s1">เฝ้าระวัง</span><span class="spill s0">ปกติ</span><span class="spill sn">ไม่มีข้อมูล</span>
+      </span>
+    </div>
+    <div id="map" role="region" aria-label="แผนที่สถานประกอบการและเขื่อน"></div>
+  </section>
+
+  <section class="fw-sec" aria-labelledby="h-list" id="listSec">
+    <div class="fw-sec-h">
+      <h2 id="h-list">พื้นที่ SCGP<small>ทุกพื้นที่ <span class="num" id="countLabel"></span> · ระดับน้ำจากสถานีอ้างอิงใกล้โรงงาน</small></h2>
+      <span class="r">คลิกพื้นที่เพื่อขยายดู 7 Trigger · แถบ = ระดับน้ำเทียบตลิ่ง (เส้นดำ = ตลิ่ง)</span>
+    </div>
+    <div class="slist" id="siteList"></div>
+  </section>
+
+  <section class="fw-sec" aria-labelledby="h-hour">
+    <div class="fw-sec-h">
+      <h2 id="h-hour">ตารางรายชั่วโมง<small>ย้อนหลัง 24 ชม. · สถานีอ้างอิงของแต่ละพื้นที่</small></h2>
+      <div class="seg" role="group" aria-label="ค่าที่แสดงในตาราง" id="hourMode">
+        <button type="button" data-hmode="bank" aria-pressed="true">% ของตลิ่ง</button>
+        <button type="button" data-hmode="cap" aria-pressed="false">% ของความจุลำน้ำ</button>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-b scroll-x" id="hourTable"></div></div>
+  </section>
+
 
   <section class="panel" aria-labelledby="h-profile">
     <div class="panel-h">
@@ -341,44 +461,6 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
     </div>
   </section>
 
-  <section aria-label="สรุปสถานะ" style="display:grid;gap:12px">
-    <div class="kpis" id="kpis"></div>
-    <div class="filters">
-      <div class="seg" role="group" aria-label="กรองตามโซน" id="zoneSeg">
-        <button type="button" data-zone="all" aria-pressed="true">ทุกโซน</button>
-        <button type="button" data-zone="up" aria-pressed="false">ต้นน้ำ</button>
-        <button type="button" data-zone="mid" aria-pressed="false">กลางน้ำ</button>
-        <button type="button" data-zone="down" aria-pressed="false">ปลายน้ำ</button>
-      </div>
-      <input id="q" class="search" type="search" placeholder="ค้นหาบริษัท / จังหวัด" aria-label="ค้นหาบริษัทหรือจังหวัด">
-      <span id="activeFilters" class="filters"></span>
-    </div>
-  </section>
-
-  <section class="split">
-    <div class="panel" style="min-width:0">
-      <div class="panel-h" style="padding-bottom:12px">
-        <div><div class="eyebrow">แผนที่</div><h2><span class="ai" data-ico="pin" aria-hidden="true"></span>ที่ตั้งสถานประกอบการ SCGP</h2></div>
-        <span class="muted" style="font-size:12px" id="mapNote"></span>
-      </div>
-      <div id="map" role="region" aria-label="แผนที่สถานประกอบการและเขื่อน"></div>
-    </div>
-    <div class="panel" style="min-width:0">
-      <div class="panel-h" style="padding-bottom:10px">
-        <div><div class="eyebrow">ทะเบียนพื้นที่</div><h2><span class="ai" data-ico="list" aria-hidden="true"></span>สถานะรายพื้นที่ <span class="muted num" id="countLabel" style="font-size:14px;font-weight:500"></span></h2></div>
-        <span class="muted" style="font-size:12px">ช่อง 1–7 = Trigger Point</span>
-      </div>
-      <div class="list">
-        <table class="sites" aria-label="รายชื่อพื้นที่และสถานะ 7 Trigger Point">
-          <thead><tr><th class="stripe" aria-label="สถานะ"></th><th>พื้นที่</th><th>โซน</th><th>1 2 3 4 5 6 7</th><th>สถานะ</th></tr></thead>
-          <tbody id="siteRows"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel" id="detail" aria-live="polite"></section>
-
   <section class="panel" aria-labelledby="h-dams">
     <div class="panel-h">
       <div><div class="eyebrow">Trigger 1–2 · กรมชลประทาน</div><h2 id="h-dams"><span class="ai" data-ico="dam" aria-hidden="true"></span>เขื่อนที่ส่งผลต่อพื้นที่ SCGP</h2></div>
@@ -404,6 +486,7 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
 
   <footer>ข้อมูลตำแหน่งจาก SCG Location (KMZ) กลุ่ม SCGP 27 บริษัท / 24 พื้นที่ · ข้อมูลน้ำจากหน่วยงานรัฐที่เปิดเผยต่อสาธารณะ ใช้ประกอบการตัดสินใจ BCM ควบคู่กับประกาศทางการ</footer>
 </main>
+<div class="fab"><button type="button" id="fabMap">▦ แผนที่</button><button type="button" id="fabTop">↑ ขึ้นบน</button></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
