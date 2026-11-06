@@ -1075,8 +1075,87 @@ table{border-collapse:collapse;width:100%}
 .crit-table th{color:var(--muted);font-weight:600;font-size:11.5px}
 .note{font-size:12px;color:var(--muted);margin-top:10px}
 footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
+
+/* ================= Glassy theme =================
+   Frosted, translucent panels floating over a slow-moving water-coloured light field.
+   --surface stays opaque (used for strokes/knockouts inside SVG); panels use --glass. */
+:root{
+  --bg:#E4EEF3; --sunk:rgba(20,70,90,.07); --line:rgba(20,50,70,.11);
+  --glass:rgba(255,255,255,.52); --glass-hi:rgba(255,255,255,.74); --glass-edge:rgba(255,255,255,.75);
+  --glass-shadow:0 10px 34px -10px rgba(22,60,92,.22),0 1px 0 rgba(255,255,255,.85) inset;
+  --blur:blur(18px) saturate(170%);
+  --b1:#2A9DB0; --b2:#3070B8; --b3:#8E7CF0; --b4:#F0B040; --b5:#4FC3A1;
+  --grad:linear-gradient(135deg,#0E7C86 0%,#3070B8 100%);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#060D16; --sunk:rgba(255,255,255,.06); --line:rgba(255,255,255,.09);
+  --glass:rgba(16,30,40,.52); --glass-hi:rgba(20,36,48,.78); --glass-edge:rgba(255,255,255,.10);
+  --glass-shadow:0 12px 40px -12px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.07) inset;
+  --b1:#127C8C; --b2:#22479A; --b3:#4B3B9E; --b4:#8A5A12; --b5:#1C7A62; --grad:linear-gradient(135deg,#1FA3AE 0%,#3F7FD0 100%)}}
+:root[data-theme="dark"]{
+  --bg:#060D16; --sunk:rgba(255,255,255,.06); --line:rgba(255,255,255,.09);
+  --glass:rgba(16,30,40,.52); --glass-hi:rgba(20,36,48,.78); --glass-edge:rgba(255,255,255,.10);
+  --glass-shadow:0 12px 40px -12px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.07) inset;
+  --b1:#127C8C; --b2:#22479A; --b3:#4B3B9E; --b4:#8A5A12; --b5:#1C7A62; --grad:linear-gradient(135deg,#1FA3AE 0%,#3F7FD0 100%)}
+
+body{background:var(--bg);min-height:100vh}
+.glass-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:
+  radial-gradient(1200px 700px at 10% -10%,color-mix(in srgb,var(--b1) 38%,transparent),transparent 60%),
+  radial-gradient(900px 600px at 100% 10%,color-mix(in srgb,var(--b2) 30%,transparent),transparent 60%),
+  radial-gradient(900px 700px at 50% 110%,color-mix(in srgb,var(--b5) 26%,transparent),transparent 60%),var(--bg)}
+.glass-bg i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;animation:drift 26s ease-in-out infinite alternate}
+.glass-bg i:nth-child(1){width:46vmax;height:46vmax;left:-12vmax;top:8vh;background:var(--b1)}
+.glass-bg i:nth-child(2){width:38vmax;height:38vmax;right:-10vmax;top:-8vh;background:var(--b2);animation-duration:32s}
+.glass-bg i:nth-child(3){width:30vmax;height:30vmax;left:38vw;top:46vh;background:var(--b3);opacity:.35;animation-duration:38s}
+.glass-bg i:nth-child(4){width:22vmax;height:22vmax;right:8vw;bottom:-6vh;background:var(--b4);opacity:.28;animation-duration:30s}
+.glass-bg svg{position:absolute;left:0;bottom:0;width:200%;height:160px;opacity:.5}
+.glass-bg svg path{fill:color-mix(in srgb,var(--b1) 30%,transparent)}
+.glass-bg svg .w2{fill:color-mix(in srgb,var(--b2) 22%,transparent);animation:waveX 18s linear infinite}
+.glass-bg svg .w1{animation:waveX 26s linear infinite reverse}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(6vw,4vh) scale(1.08)}100%{transform:translate(-4vw,-3vh) scale(.95)}}
+@keyframes waveX{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){.glass-bg i,.glass-bg svg path{animation:none}}
+
+/* glass surfaces */
+.fw-head,.fw-search,.fw-bar,.feat,.slist,.panel,.kpi,.btn:not(.primary),.fw-ctrl select,.user-chip,.pin-btn,.tcard,.rc-chip,.site-pick select,.src-card,.climbox,.tbox,.map-legend,.leaflet-control-layers,.leaflet-tooltip.mcard,.ptip,.map-btn{
+  background:var(--glass)!important;border:1px solid var(--glass-edge)!important;box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.tbox{border-left:4px solid var(--c)!important}
+.leaflet-tooltip.mcard,.ptip{background:var(--glass-hi)!important}
+.fw-head{margin-top:18px;padding:18px 22px!important;border-radius:20px;align-items:center}
+.feat,.slist,.panel{border-radius:20px}
+.fw-search,.fw-bar{border-radius:16px}
+.fw-search{padding:2px 16px}
+.fw-bar{padding:8px}
+.panel-h{padding:18px 22px 0}.panel-b{padding:14px 22px 22px}
+.feat{padding:22px}
+.kpi{transition:transform .15s,box-shadow .15s}
+.kpi:hover{transform:translateY(-1px)}
+.btn.primary,.range button[aria-pressed="true"],.fab button{background:var(--grad)!important;border-color:transparent!important;color:#fff;box-shadow:0 6px 18px -6px color-mix(in srgb,var(--b2) 70%,transparent)}
+.seg{border-color:var(--glass-edge);background:var(--sunk)}
+.seg button[aria-pressed="true"]{background:var(--glass-hi);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.srow{border-top-color:var(--line)}
+.srow:hover{background:color-mix(in srgb,var(--glass-hi) 70%,transparent)}
+.srow[aria-expanded="true"]{background:color-mix(in srgb,var(--glass-hi) 85%,transparent)}
+.tl i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent),0 0 12px color-mix(in srgb,var(--c) 60%,transparent)}
+.cos li,.chip-filter{background:var(--sunk)}
+#map{border:1px solid var(--glass-edge);border-radius:20px;box-shadow:var(--glass-shadow);overflow:hidden}
+.leaflet-control-zoom a{background:var(--glass-hi)!important;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.fw-sec-h h2,.panel-h h2{letter-spacing:-.005em}
+.fw-head h1{background:linear-gradient(120deg,var(--ink) 30%,color-mix(in srgb,var(--b2) 80%,var(--ink)));-webkit-background-clip:text;background-clip:text;color:transparent}
+.feat-big,.mc-big b{text-shadow:0 1px 0 color-mix(in srgb,var(--glass-hi) 60%,transparent)}
+.fw-sec{padding:0}
+.htable td{box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+footer{text-align:center}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .fw-eyebrow img{background:rgba(255,255,255,.92);border-radius:7px;padding:3px 6px;height:26px}}
+:root[data-theme="dark"] .fw-eyebrow img{background:rgba(255,255,255,.92);border-radius:7px;padding:3px 6px;height:26px}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .fw-head,.fw-search,.fw-bar,.feat,.slist,.panel,.kpi,.src-card,.tbox,.map-legend,.leaflet-tooltip.mcard{background:var(--glass-hi)!important}}
 </style>
 
+<div class="glass-bg" aria-hidden="true"><i></i><i></i><i></i><i></i>
+  <svg viewBox="0 0 2880 160" preserveAspectRatio="none"><path class="w1" d="M0 90 Q180 50 360 90 T720 90 T1080 90 T1440 90 T1800 90 T2160 90 T2520 90 T2880 90 V160 H0Z"/><path class="w2" d="M0 110 Q240 75 480 110 T960 110 T1440 110 T1920 110 T2400 110 T2880 110 V160 H0Z"/></svg>
+</div>
 <main class="wrap">
   <header class="fw-head">
     <div style="min-width:0">
