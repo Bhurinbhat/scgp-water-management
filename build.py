@@ -26,6 +26,7 @@ rep = {
     '/*SITES*/': compact('data/sites.json'),
     '/*SNAPSHOT*/': compact('data/snapshot.json'),
     '/*GEO*/': compact('data/region.geo.json'),
+    '/*CLIMATE*/': compact('data/climate.json'),
     '/*APP*/': (R / 'src/app.js').read_text(),
     '/*LOGO*/': LOGO,
 }

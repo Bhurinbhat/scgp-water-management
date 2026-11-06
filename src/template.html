@@ -90,6 +90,14 @@ body::before{background:var(--bg)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{border:0;background:transparent;padding:5px 10px;cursor:pointer;font:500 12.5px var(--f-body);color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--sunk);color:var(--ink)}
+.clim td,.clim th{white-space:nowrap}
+.clim .num{font-family:var(--f-mono,monospace)}
+.dchip{display:inline-block;min-width:52px;text-align:right;font:600 12px var(--f-mono,monospace);padding:1px 6px;border-radius:6px}
+.dchip.up{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.dchip.up2{background:color-mix(in srgb,var(--crit) 14%,transparent);color:var(--crit)}
+.dchip.dn{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.climbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;display:grid;gap:6px;font-size:13px}
+.climbox .row{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
 .chip-filter{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 6px 3px 10px;background:var(--sunk);font-size:12.5px}
 .chip-filter button{border:0;background:var(--surface);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1}
 
@@ -469,6 +477,20 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
     <div class="panel-b scroll-x"><table class="dams" id="damTable"></table></div>
   </section>
 
+  <section class="panel" aria-labelledby="h-clim" id="climSec">
+    <div class="panel-h">
+      <div><div class="eyebrow">ความเสี่ยงระยะยาว · กรมการเปลี่ยนแปลงสภาพภูมิอากาศและสิ่งแวดล้อม (DCCE)</div><h2 id="h-clim"><span class="ai" data-ico="rain" aria-hidden="true"></span>ภาพฉายฝนตกหนักในอนาคต ของจังหวัดที่ตั้ง SCGP</h2></div>
+      <div class="seg" id="climSeg" role="group" aria-label="ช่วงเวลาภาพฉาย">
+        <button type="button" data-p="0" aria-pressed="false">2015–2040</button><button type="button" data-p="1" aria-pressed="true">2041–2060</button><button type="button" data-p="2" aria-pressed="false">2081–2100</button>
+      </div>
+    </div>
+    <div class="panel-b" style="display:grid;gap:12px">
+      <p class="note" style="margin:0">เทียบค่าเฉลี่ยรายจังหวัดช่วงอดีต (Historical) กับอนาคตภายใต้ 2 ภาพฉาย: <b>SSP2-4.5</b> (ปล่อยก๊าซปานกลาง) และ <b>SSP5-8.5</b> (ปล่อยก๊าซสูง) · <b>RX1day</b> = ฝนสูงสุดใน 1 วันของปี ใช้ทบทวนขนาดระบบระบายน้ำ/คันกั้นน้ำ · <b>R20mm</b> = จำนวนวันที่ฝนตก ≥ 20 มม. ต่อปี ใช้ประเมินความถี่ที่ Trigger 5 จะทำงาน</p>
+      <div class="scroll-x"><table class="crit-table clim" id="climTable"></table></div>
+      <p class="note" style="margin:0">ที่มา: <a href="https://clim-webbased.dcce.go.th/RegCM" target="_blank" rel="noopener">DCCE Climate Data · RegCM5</a> (แบบจำลอง RegCM5 ขับเคลื่อนด้วย EC-Earth3-Veg ความละเอียด 25 กม.) อ่านค่าจากแผนที่รายจังหวัดเมื่อ 6 พ.ย. 2569 · ค่าเป็นผลแบบจำลองเพื่อวางแผนระยะยาว ไม่ใช่การพยากรณ์รายวัน · ข้อมูลกริดเต็มชุด (NetCDF/CSV) ขอได้ที่ <a href="https://clim-webbased.dcce.go.th/DataServices" target="_blank" rel="noopener">DCCE Data Service</a></p>
+    </div>
+  </section>
+
   <section class="panel" aria-labelledby="h-src">
     <div class="panel-h"><div><div class="eyebrow">ที่มาข้อมูลและเกณฑ์</div><h2 id="h-src"><span class="ai" data-ico="antenna" aria-hidden="true"></span>แหล่งข้อมูลเปิดภาครัฐ และเกณฑ์ของแต่ละ Trigger</h2></div></div>
     <div class="panel-b" style="display:grid;gap:16px">
@@ -477,6 +499,7 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
         <div class="src-card"><h3>กรมชลประทาน</h3><p>ข้อมูลอ่างเก็บน้ำขนาดใหญ่ 35 แห่ง: ปริมาตรน้ำ % ความจุ น้ำไหลเข้า น้ำระบาย (รายวัน) ผ่านคลังข้อมูลน้ำแห่งชาติ</p><p><code>…/public/thailand_main</code> (dam) · <code>app.rid.go.th/reservoir/api/dam/public</code></p><p><a href="https://app.rid.go.th/reservoir/" target="_blank" rel="noopener">app.rid.go.th/reservoir</a></p></div>
         <div class="src-card"><h3>กฟผ. ศูนย์บริหารจัดการน้ำอัจฉริยะ (EGAT WIC)</h3><p>โทรมาตรลุ่มแม่กลอง 26 สถานี (ระดับน้ำ/อัตราการไหล รายชั่วโมง), ข้อมูลเขื่อน กฟผ. 13 แห่งพร้อมเกณฑ์ Rule Curve (URC/LRC), ฝนรายวัน</p><p><code>api-egatwater.egat.co.th/api/Telemiter/Maeklong</code><br><code>…/api/DailyInfographic?date=</code></p><p><a href="https://egatwater.egat.co.th/info/infoSchematicMK" target="_blank" rel="noopener">egatwater.egat.co.th</a></p></div>
         <div class="src-card"><h3>สำนักการระบายน้ำ กทม.</h3><p>เซ็นเซอร์น้ำท่วมขังบนถนน 262 จุด (ใช้กับพื้นที่ในกรุงเทพฯ)</p><p><code>…/public/flood_road</code></p><p><a href="https://weather.bangkok.go.th/" target="_blank" rel="noopener">weather.bangkok.go.th</a></p></div>
+        <div class="src-card"><h3>กรมการเปลี่ยนแปลงสภาพภูมิอากาศและสิ่งแวดล้อม (DCCE)</h3><p>ภาพฉายภูมิอากาศ RegCM5 / WRF-Chem / Statistical downscaling (CMIP6, SSP2-4.5 และ SSP5-8.5, ถึงปี 2100) และดัชนีสภาวะสุดขั้ว RX1day, R20mm ใช้เป็นฐานเทียบของ Trigger 5 และประเมินความเสี่ยงระยะยาว</p><p><a href="https://clim-webbased.dcce.go.th/Home" target="_blank" rel="noopener">clim-webbased.dcce.go.th</a></p></div>
         <div class="src-card"><h3>น้ำทะเลหนุน</h3><p>สถานีป้อมพระจุลจอมเกล้า (ปากแม่น้ำเจ้าพระยา) และปากรอ (ทะเลสาบสงขลา) จากเครือข่าย สสน. ตารางน้ำขึ้นลงพยากรณ์ดูได้จากกรมอุทกศาสตร์</p><p><a href="https://www.hydro.navy.mi.th/" target="_blank" rel="noopener">hydro.navy.mi.th</a></p></div>
       </div>
       <div class="scroll-x"><table class="crit-table" id="critTable"></table></div>
@@ -494,6 +517,7 @@ footer{padding-block:0 30px;font-size:12px;color:var(--muted)}
 <script>
 window.SITES = /*SITES*/;
 window.SNAPSHOT = /*SNAPSHOT*/;
+window.CLIMATE = /*CLIMATE*/;
 window.REGION_GEO = /*GEO*/;
 </script>
 <script>/*APP*/</script>

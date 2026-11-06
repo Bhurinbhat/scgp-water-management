@@ -31,7 +31,36 @@ var TRIGGERS = [
 ];
 
 var SITES = window.SITES, hv = window.WaterTransform.haversine;
-var state = { zone: 'all', q: '', lvl: null, trig: null, sel: null, mode: 'load', data: null, evals: {}, range: '1D', sort: 'risk', hist: {}, hmode: 'bank', open: null, near: null, userPicked: false };
+var state = { zone: 'all', q: '', lvl: null, trig: null, sel: null, mode: 'load', data: null, evals: {}, range: '1D', sort: 'risk', hist: {}, hmode: 'bank', open: null, near: null, userPicked: false, climP: 1 };
+/* DCCE climate projections (RegCM5, provincial means): RX1day = wettest day of the year (mm), R20mm = days/yr with ≥ 20 mm */
+var CLIM = window.CLIMATE || { prov: {}, periods: [] };
+function climOf(s) { return CLIM.prov[s.prov] || null; }
+function dPct(v, base) { return base ? (v - base) / base * 100 : null; }
+function dChip(v, base) {
+  var d = dPct(v, base); if (d == null) return '';
+  return '<span class="dchip ' + (d >= 25 ? 'up2' : d >= 5 ? 'up' : d <= -5 ? 'dn' : '') + '">' + (d > 0 ? '+' : '') + f(d, 0) + '%</span>';
+}
+function climateBox(s) {
+  var c = climOf(s); if (!c) return '';
+  var p = state.climP, per = CLIM.periods[p], r = c.RX1day, n = c.R20mm;
+  return '<div class="climbox"><div class="row"><b>' + icon('rain') + 'ภาพฉายฝนตกหนัก จ.' + esc(s.prov) + '</b><span class="muted" style="font-size:12px">ช่วง ' + esc(per) + ' · DCCE RegCM5</span></div>' +
+    '<div class="row"><span>ฝนสูงสุด 1 วัน (RX1day): อดีต <b class="num">' + f(r.hist, 0) + '</b> มม.</span><span>→ SSP2-4.5 <b class="num">' + f(r.ssp245[p], 0) + '</b> ' + dChip(r.ssp245[p], r.hist) + '</span><span>SSP5-8.5 <b class="num">' + f(r.ssp585[p], 0) + '</b> ' + dChip(r.ssp585[p], r.hist) + '</span></div>' +
+    '<div class="row"><span>วันฝนตกหนัก ≥ 20 มม. (R20mm): อดีต <b class="num">' + f(n.hist, 0) + '</b> วัน/ปี</span><span>→ SSP2-4.5 <b class="num">' + f(n.ssp245[p], 0) + '</b> ' + dChip(n.ssp245[p], n.hist) + '</span><span>SSP5-8.5 <b class="num">' + f(n.ssp585[p], 0) + '</b> ' + dChip(n.ssp585[p], n.hist) + '</span></div></div>';
+}
+function renderClimate() {
+  var el = document.getElementById('climTable'); if (!el) return;
+  var p = state.climP, provs = {};
+  SITES.forEach(function (s) { if (CLIM.prov[s.prov]) (provs[s.prov] = provs[s.prov] || []).push(s); });
+  var rows = Object.keys(provs).map(function (k) { var c = CLIM.prov[k]; return { k: k, c: c, d: dPct(c.RX1day.ssp585[p], c.RX1day.hist) }; }).sort(function (a, b) { return b.d - a.d; });
+  var h = '<thead><tr><th rowspan="2">จังหวัด</th><th rowspan="2">พื้นที่ SCGP</th><th colspan="3" style="text-align:center">RX1day ฝนสูงสุด 1 วัน (มม.)</th><th colspan="3" style="text-align:center">R20mm วันฝน ≥ 20 มม. (วัน/ปี)</th></tr><tr><th>อดีต</th><th>SSP2-4.5</th><th>SSP5-8.5</th><th>อดีต</th><th>SSP2-4.5</th><th>SSP5-8.5</th></tr></thead><tbody>';
+  rows.forEach(function (r) {
+    var c = r.c, R = c.RX1day, N = c.R20mm;
+    h += '<tr><td><b>' + esc(r.k) + '</b></td><td class="muted" style="white-space:normal;min-width:160px;font-size:12.5px">' + provs[r.k].map(function (s) { return esc(s.name); }).join(', ') + '</td>' +
+      '<td class="num">' + f(R.hist, 0) + '</td><td class="num">' + f(R.ssp245[p], 0) + ' ' + dChip(R.ssp245[p], R.hist) + '</td><td class="num">' + f(R.ssp585[p], 0) + ' ' + dChip(R.ssp585[p], R.hist) + '</td>' +
+      '<td class="num">' + f(N.hist, 0) + '</td><td class="num">' + f(N.ssp245[p], 0) + ' ' + dChip(N.ssp245[p], N.hist) + '</td><td class="num">' + f(N.ssp585[p], 0) + ' ' + dChip(N.ssp585[p], N.hist) + '</td></tr>';
+  });
+  el.innerHTML = h + '</tbody>';
+}
 
 /* ---------- helpers ---------- */
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -177,9 +206,10 @@ function evaluate(s) {
   // 5 rain 24h
   var c5 = near(D.rain.filter(function (x) { return fresh(x.t); }), s, CRITERIA.radius.rain);
   if (c5.length) {
-    var w5 = c5.slice().sort(function (a, b) { return b.x.v - a.x.v; })[0];
+    var w5 = c5.slice().sort(function (a, b) { return b.x.v - a.x.v; })[0], cl5 = climOf(s);
     out[5] = { l: lvlBy(w5.x.v, CRITERIA.rain.bands), v: f(w5.x.v, 1), u: 'มม./24 ชม.', title: 'สูงสุดในรัศมี ' + CRITERIA.radius.rain + ' กม.: ' + w5.x.name,
-      why: c5.length + ' สถานีฝน · ' + (w5.x.v > 90 ? 'ฝนตกหนักมาก' : w5.x.v > 35 ? 'ฝนตกหนัก' : w5.x.v > 10 ? 'ฝนปานกลาง' : 'ฝนเล็กน้อย/ไม่มีฝน'),
+      why: c5.length + ' สถานีฝน · ' + (w5.x.v > 90 ? 'ฝนตกหนักมาก' : w5.x.v > 35 ? 'ฝนตกหนัก' : w5.x.v > 10 ? 'ฝนปานกลาง' : 'ฝนเล็กน้อย/ไม่มีฝน') +
+        (cl5 ? ' · เท่ากับ ' + f(w5.x.v / cl5.RX1day.hist * 100, 0) + '% ของฝนสูงสุด 1 วันเฉลี่ยในอดีตของ จ.' + s.prov + ' (RX1day ' + f(cl5.RX1day.hist, 0) + ' มม., DCCE)' : ''),
       src: 'คลังข้อมูลน้ำแห่งชาติ · ห่าง ' + km(w5.d) + ' · ' + fmtT(w5.x.t), geo: [{ lat: w5.x.lat, lng: w5.x.lng, n: w5.x.name }] };
   } else out[5] = { l: null, na: 'ไม่มีสถานีวัดฝนในรัศมี ' + CRITERIA.radius.rain + ' กม.' };
   // 6 drain / ponding
@@ -801,6 +831,7 @@ function renderFeatured() {
   o += '<div class="feat-trig"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>' + icon('factory') + esc(s.name) + '</b><span class="spill ' + sc(e.overall) + '">ภาพรวม 7 Trigger: ' + lname(e.overall) + '</span><span class="muted" style="font-size:12.5px">' + ZONES[s.zone] + ' · ลุ่มน้ำ' + esc(s.basin) + '</span></div>';
   o += '<div class="cells">' + [1, 2, 3, 4, 5, 6, 7].map(function (n) { var l = e[n].l; return '<span class="cell ' + sc(l) + '" title="' + n + ' ' + esc(TRIGGERS[n - 1].th) + ': ' + lname(l) + '">' + (l == null ? '·' : n) + '</span>'; }).join('') + '</div></div>';
   o += '<ul class="cos">' + s.cos.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul>';
+  o += climateBox(s);
   o += '<details class="more"><summary>ดูรายละเอียด 7 Trigger Point</summary>' + triggerBoxes(s) + '</details></div>';
   o += '</div>';
   el.innerHTML = o;
@@ -826,7 +857,7 @@ function renderList() {
     if (st && st.minBank != null) { var left = st.minBank - st.msl; o += '<span class="left-chip ' + sc(lv) + '">' + (left < 0 ? 'ล้น ' + f(-left) + ' ม.' : 'เหลือ ' + f(left) + ' ม.') + '</span>'; }
     o += st ? sparkline(st) : '';
     o += '</div>';
-    if (open) o += '<div class="srow-detail" data-stop="1">' + triggerBoxes(s) + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="btn primary" data-feature="' + s.id + '">แสดงในการ์ดด้านบน</button><button type="button" class="btn" data-mapto="' + s.id + '">📍 ดูบนแผนที่</button></div></div>';
+    if (open) o += '<div class="srow-detail" data-stop="1">' + triggerBoxes(s) + climateBox(s) + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="btn primary" data-feature="' + s.id + '">แสดงในการ์ดด้านบน</button><button type="button" class="btn" data-mapto="' + s.id + '">📍 ดูบนแผนที่</button></div></div>';
     o += '</div>';
   });
   document.getElementById('siteList').innerHTML = o || '<div class="empty">ไม่มีพื้นที่ตรงกับตัวกรอง</div>';
@@ -1064,7 +1095,13 @@ async function load() {
   if (!state.sel) state.sel = topSite().id;
   var first = !map;
   if (!map) { initMap(); initTip(); initSchemTip(); }
-  rerender(); renderDams(); renderCriteria();
+  rerender(); renderDams(); renderCriteria(); renderClimate();
+  if (first) document.getElementById('climSeg').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-p]'); if (!b) return;
+    state.climP = +b.dataset.p;
+    [].forEach.call(this.querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    renderClimate(); rerender();
+  });
   if (state.sel) { var s = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (s && map) showRefs(s); }
   refreshHistory();
   if (first) locate();
