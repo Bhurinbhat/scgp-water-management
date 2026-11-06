@@ -725,7 +725,7 @@ function lineChart(o) {
   // area + line
   var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
   s += '<path d="' + d + ' L' + X(pts[pts.length - 1][0]).toFixed(1) + ',' + (T + ph) + ' L' + X(pts[0][0]).toFixed(1) + ',' + (T + ph) + ' Z" style="fill:var(--water-soft)"/>';
-  s += '<path d="' + d + '" fill="none" style="stroke:var(--river)" stroke-width="2" stroke-linejoin="round"/>';
+  s += '<path class="ln" pathLength="1" d="' + d + '" fill="none" style="stroke:var(--river)" stroke-width="2" stroke-linejoin="round"/>';
   if (o.ref != null) s += '<line x1="' + L + '" x2="' + (L + pw) + '" y1="' + Y(o.ref) + '" y2="' + Y(o.ref) + '" style="stroke:var(--crit)" stroke-width="1.6" stroke-dasharray="6 4"/><text x="' + (L + 4) + '" y="' + (Y(o.ref) - 4) + '" style="fill:var(--crit)">' + esc(o.refLabel) + '</text>';
   var last = pts[pts.length - 1];
   if (o.proj) { s += '<line x1="' + X(last[0]) + '" y1="' + Y(last[1]) + '" x2="' + X(o.proj.t) + '" y2="' + Y(o.proj.v) + '" style="stroke:var(--river)" stroke-width="1.6" stroke-dasharray="4 4"/><text x="' + (X(o.proj.t) + 4) + '" y="' + (Y(o.proj.v) + 4) + '" class="lbl">+6 ชม. ≈ ' + f(o.proj.v, o.dec) + '</text>'; s += '<text x="' + (X(last[0]) + 4) + '" y="' + (T + ph - 4) + '">แนวโน้ม →</text>'; }
@@ -742,7 +742,7 @@ function sparkline(st) {
   var t0 = pts[0][0], t1 = pts[pts.length - 1][0];
   function X(t) { return 2 + (t - t0) / (t1 - t0 || 1) * 166; } function Y(v) { return 4 + (1 - (v - lo) / (hi - lo)) * 38; }
   var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
-  var s = '<svg class="spark" viewBox="0 0 170 46" aria-hidden="true"><path d="' + d + ' L168,42 L2,42 Z" style="fill:var(--water-soft)"/><path d="' + d + '" fill="none" style="stroke:var(--river)" stroke-width="1.5"/>';
+  var s = '<svg class="spark" viewBox="0 0 170 46" aria-hidden="true"><path d="' + d + ' L168,42 L2,42 Z" style="fill:var(--water-soft)"/><path class="ln" pathLength="1" d="' + d + '" fill="none" style="stroke:var(--river)" stroke-width="1.5"/>';
   if (h.bank != null) s += '<line x1="2" x2="168" y1="' + Y(h.bank) + '" y2="' + Y(h.bank) + '" style="stroke:var(--crit)" stroke-dasharray="3 3"/>';
   return s + '</svg>';
 }
@@ -835,6 +835,7 @@ function renderFeatured() {
   o += '<details class="more"><summary>ดูรายละเอียด 7 Trigger Point</summary>' + triggerBoxes(s) + '</details></div>';
   o += '</div>';
   el.innerHTML = o;
+  if (state._featId !== s.id) { state._featId = s.id; replay(el, 'enter'); countUp(el.querySelectorAll('.feat-big')); }
 }
 
 /* ---------- all-sites list ---------- */
@@ -857,11 +858,12 @@ function renderList() {
     if (st && st.minBank != null) { var left = st.minBank - st.msl; o += '<span class="left-chip ' + sc(lv) + '">' + (left < 0 ? 'ล้น ' + f(-left) + ' ม.' : 'เหลือ ' + f(left) + ' ม.') + '</span>'; }
     o += st ? sparkline(st) : '';
     o += '</div>';
-    if (open) o += '<div class="srow-detail" data-stop="1">' + triggerBoxes(s) + climateBox(s) + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="btn primary" data-feature="' + s.id + '">แสดงในการ์ดด้านบน</button><button type="button" class="btn" data-mapto="' + s.id + '">📍 ดูบนแผนที่</button></div></div>';
+    if (open) o += '<div class="srow-detail' + (state.justOpened === s.id ? ' enter' : '') + '" data-stop="1">' + triggerBoxes(s) + climateBox(s) + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button type="button" class="btn primary" data-feature="' + s.id + '">แสดงในการ์ดด้านบน</button><button type="button" class="btn" data-mapto="' + s.id + '">📍 ดูบนแผนที่</button></div></div>';
     o += '</div>';
   });
   document.getElementById('siteList').innerHTML = o || '<div class="empty">ไม่มีพื้นที่ตรงกับตัวกรอง</div>';
   document.getElementById('countLabel').textContent = list.length + '/' + SITES.length;
+  var dd = document.querySelector('.srow-detail.enter'); if (dd) countUp(dd.querySelectorAll('.tbox .val'));
   if (map) updateMarkers(list);
 }
 
@@ -923,6 +925,24 @@ function renderCriteria() {
   document.getElementById('critTable').innerHTML = h + '</tbody>';
 }
 
+/* ---------- motion helpers ---------- */
+var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function replay(el, cls) { if (REDUCED) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function countUp(nodes) {
+  if (REDUCED) return;
+  [].forEach.call(nodes, function (n) {
+    var tn = n.firstChild; if (!tn || tn.nodeType !== 3) return;
+    var txt = tn.nodeValue, m = /^(-?)([\d,]+)(?:\.(\d+))?$/.exec(txt.trim()); if (!m) return;
+    var dec = m[3] ? m[3].length : 0, target = parseFloat((m[1] + m[2]).replace(/,/g, '') + (m[3] ? '.' + m[3] : '')), t0 = performance.now(), dur = 900;
+    (function step(now) { var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); tn.nodeValue = f(target * e, dec); if (k < 1) requestAnimationFrame(step); else tn.nodeValue = txt; })(t0);
+  });
+}
+function initReveal() {
+  if (REDUCED || !('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+  [].forEach.call(document.querySelectorAll('main > section, main > .fw-sec'), function (el, i) { if (i < 2) return; el.classList.add('reveal'); io.observe(el); });
+}
+
 /* ---------- map ---------- */
 var map = null, siteLayer, refLayer, markers = {};
 function initMap() {
@@ -965,7 +985,7 @@ function initMap() {
   state.data.dam.filter(function (d) { return used[d.name]; }).forEach(function (d) {
     var l = damLevel(d), p = Math.max(0, Math.min(100, d.pct || 0));
     L.marker([d.lat, d.lng], { icon: L.divIcon({ className: '', html: '<div class="dam-mk ' + sc(l) + '"><span class="fill" style="height:' + p + '%"></span><span class="lbl">' + f(d.pct, 0) + '%</span></div>', iconSize: [30, 30], iconAnchor: [15, 15] }), keyboard: false })
-      .bindTooltip(function () { return damCard(d); }, TIP).addTo(damLayer);
+      .bindTooltip(function () { return damCard(d); }, TIP).addTo(damLayer); wireCardMotion(damLayer.getLayers()[damLayer.getLayers().length - 1]);
   });
   siteLayer = L.layerGroup().addTo(map);
   [['พื้นที่ SCGP', siteLayer], ['เขื่อน (% ความจุ)', damLayer], ['สถานีระดับน้ำ (% ตลิ่ง)', stnLayer], ['ฝนสะสม 24 ชม.', rainLayer]].forEach(function (x) { layerCtl.addOverlay(x[1], x[0]); });
@@ -988,6 +1008,7 @@ function initMap() {
   fitAll();
 }
 var TIP = { direction: 'auto', className: 'mcard', opacity: 1, offset: [0, 0] };
+function wireCardMotion(m) { m.on('tooltipopen', function (ev) { var el = ev.tooltip.getElement(); if (el) countUp(el.querySelectorAll('.mc-big b')); }); return m; }
 function fitAll() { if (map) map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15)); }
 
 /* 7-segment trigger ring: one arc per Trigger, coloured by its level */
@@ -1017,6 +1038,7 @@ function updateMarkers(list) {
   list.forEach(function (s) {
     var m = L.marker([s.lat, s.lng], { icon: siteIcon(s), riseOnHover: true, zIndexOffset: state.sel === s.id ? 1000 : (state.evals[s.id].overall || 0) * 100, keyboard: true, title: s.name })
       .bindTooltip(function () { return siteCard(s); }, TIP)
+      .on('tooltipopen', function (ev) { var el = ev.tooltip.getElement(); if (el) countUp(el.querySelectorAll('.mc-big b')); })
       .on('mouseover', function () { showRefs(s); })
       .on('mouseout', function () { var cur = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (cur) showRefs(cur); })
       .on('click', function () {
@@ -1150,7 +1172,13 @@ document.addEventListener('click', function (ev) {
   if (t.id === 'geoBack') { state.userPicked = false; select(state.near.site.id, false); return; }
   if (t.dataset.mapto) { mapTo(t.dataset.mapto); return; }
   if (t.dataset.feature) { select(t.dataset.feature, true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
-  if (t.dataset.row) { if (ev.target.closest('[data-stop]')) return; state.open = state.open === t.dataset.row ? null : t.dataset.row; renderList(); return; }
+  if (t.dataset.row) {
+    if (ev.target.closest('[data-stop]')) return;
+    var id = t.dataset.row, prev = state.open, old = prev && document.querySelector('.srow[data-row="' + prev + '"] .srow-detail');
+    var go = function () { state.open = prev === id ? null : id; state.justOpened = state.open; renderList(); state.justOpened = null; };
+    if (old && !REDUCED) { old.classList.add('leaving'); setTimeout(go, 230); } else go();
+    return;
+  }
   if (t.dataset.range) { state.range = t.dataset.range; renderFilters(); renderFeatured(); refreshHistory(); return; }
   if (t.dataset.hmode) { state.hmode = t.dataset.hmode; renderFilters(); renderHourTable(); return; }
   if (t.dataset.trig) { var n = +t.dataset.trig; state.trig = state.trig === n ? null : n; }
@@ -1216,7 +1244,7 @@ async function load() {
   rb.classList.remove('spin');
   if (!state.sel) state.sel = topSite().id;
   var first = !map;
-  if (!map) { initMap(); initTip(); initSchemTip(); }
+  if (!map) { initMap(); initTip(); initSchemTip(); initReveal(); }
   rerender(); renderDams(); renderCriteria(); renderClimate();
   if (first) document.getElementById('climSeg').addEventListener('click', function (ev) {
     var b = ev.target.closest('button[data-p]'); if (!b) return;

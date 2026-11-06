@@ -488,6 +488,62 @@ body{background:var(--bg);min-height:100vh}
 footer{text-align:center}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .fw-eyebrow img{background:rgba(255,255,255,.92);border-radius:7px;padding:3px 6px;height:26px}}
 :root[data-theme="dark"] .fw-eyebrow img{background:rgba(255,255,255,.92);border-radius:7px;padding:3px 6px;height:26px}
+/* ================= Motion: everything that opens moves into place ================= */
+:root{interpolate-size:allow-keywords;--ease:cubic-bezier(.22,1,.36,1)}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes sink{to{opacity:0;transform:translateY(-8px) scale(.985)}}
+@keyframes unfold{from{opacity:0;clip-path:inset(0 0 100% 0 round 14px)}to{opacity:1;clip-path:inset(0 0 0 0 round 14px)}}
+@keyframes growX{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes growY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes popIn{from{opacity:0;transform:translateY(6px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes glowRing{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 45%,transparent)}100%{box-shadow:0 0 0 10px transparent}}
+/* expanded site row */
+.srow-detail.enter{animation:unfold .5s var(--ease) both}
+.srow-detail.enter .tbox,.srow-detail.enter .climbox,.srow-detail.enter .btn{animation:rise .55s var(--ease) both}
+.srow-detail.leaving{animation:sink .23s ease-in both}
+.srow[aria-expanded="true"] .s-name span{display:inline-block;transform:rotate(180deg);transition:transform .3s var(--ease)}
+.s-name span{display:inline-block;transition:transform .3s var(--ease)}
+/* stagger for trigger boxes wherever they appear */
+.tgrid>.tbox:nth-child(1){animation-delay:.04s!important}.tgrid>.tbox:nth-child(2){animation-delay:.09s!important}.tgrid>.tbox:nth-child(3){animation-delay:.14s!important}
+.tgrid>.tbox:nth-child(4){animation-delay:.19s!important}.tgrid>.tbox:nth-child(5){animation-delay:.24s!important}.tgrid>.tbox:nth-child(6){animation-delay:.29s!important}.tgrid>.tbox:nth-child(7){animation-delay:.34s!important}
+.srow-detail.enter .climbox{animation-delay:.4s}.srow-detail.enter .btn{animation-delay:.46s}
+/* featured card when the selected site changes */
+#featured.enter .feat-left>*,#featured.enter .feat-right>*,#featured.enter .feat-trig{animation:rise .6s var(--ease) both}
+#featured.enter .feat-right>*:nth-child(1){animation-delay:.08s}#featured.enter .feat-right>*:nth-child(2){animation-delay:.16s}
+#featured.enter .feat-trig{animation-delay:.24s}
+#featured.enter .gauge{transform-origin:50% 100%;animation:growY .9s var(--ease) both}
+#featured.enter .ln{stroke-dasharray:1;animation:draw 1.3s var(--ease) .15s both}
+#featured.enter .spill{animation:popIn .45s var(--ease) .35s both}
+#featured.enter .feat-trig .cell{animation:popIn .4s var(--ease) both}
+#featured.enter .feat-trig .cell:nth-child(2){animation-delay:.05s}#featured.enter .feat-trig .cell:nth-child(3){animation-delay:.1s}#featured.enter .feat-trig .cell:nth-child(4){animation-delay:.15s}
+#featured.enter .feat-trig .cell:nth-child(5){animation-delay:.2s}#featured.enter .feat-trig .cell:nth-child(6){animation-delay:.25s}#featured.enter .feat-trig .cell:nth-child(7){animation-delay:.3s}
+/* <details> open/close: smooth height where supported, children rise in */
+details::details-content{block-size:0;overflow:clip;transition:block-size .45s var(--ease),content-visibility .45s allow-discrete}
+details[open]::details-content{block-size:auto}
+details[open] .tbox,details[open] .lg-row,details[open] .lg-scale{animation:rise .5s var(--ease) both}
+details>summary{transition:color .2s}
+details.more>summary::marker{content:""}
+details.more>summary::before{content:"▸";display:inline-block;margin-right:6px;transition:transform .3s var(--ease)}
+details.more[open]>summary::before{transform:rotate(90deg)}
+/* map hover cards */
+.mc{animation:popIn .32s var(--ease) both;transform-origin:top left}
+.mc>*{animation:rise .45s var(--ease) both}
+.mc>*:nth-child(2){animation-delay:.05s}.mc>*:nth-child(3){animation-delay:.1s}.mc>*:nth-child(4){animation-delay:.15s}.mc>*:nth-child(5){animation-delay:.2s}.mc>*:nth-child(6){animation-delay:.25s}
+.mc-bar span{transform-origin:left;animation:growX .8s var(--ease) .15s both}
+.mc .ln{stroke-dasharray:1;animation:draw 1.1s var(--ease) .2s both}
+.mc-t{animation:popIn .35s var(--ease) both}
+.mc-t:nth-child(2){animation-delay:.04s}.mc-t:nth-child(3){animation-delay:.08s}.mc-t:nth-child(4){animation-delay:.12s}.mc-t:nth-child(5){animation-delay:.16s}.mc-t:nth-child(6){animation-delay:.2s}.mc-t:nth-child(7){animation-delay:.24s}
+.mc-h .spill{animation:glowRing 1.4s ease-out .3s 2}
+/* sections glide in as you scroll */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal.vis{opacity:1;transform:none}
+/* climate period switch + segmented controls */
+#climTable tbody tr{animation:rise .45s var(--ease) both}
+#climTable tbody tr:nth-child(2){animation-delay:.03s}#climTable tbody tr:nth-child(3){animation-delay:.06s}#climTable tbody tr:nth-child(4){animation-delay:.09s}#climTable tbody tr:nth-child(5){animation-delay:.12s}#climTable tbody tr:nth-child(n+6){animation-delay:.15s}
+.seg button,.range button,.kpi,.btn{transition:background .25s,color .25s,transform .15s,box-shadow .25s}
+.srow{transition:background .25s}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after,details::details-content{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .fw-head,.fw-search,.fw-bar,.feat,.slist,.panel,.kpi,.src-card,.tbox,.map-legend,.leaflet-tooltip.mcard{background:var(--glass-hi)!important}}
 </style>
