@@ -928,16 +928,19 @@ var map = null, siteLayer, refLayer, markers = {};
 function initMap() {
   if (!window.L) { document.getElementById('map').innerHTML = '<div class="empty">โหลดแผนที่ไม่สำเร็จ</div>'; return; }
   map = L.map('map', { zoomControl: true, attributionControl: true, scrollWheelZoom: false }).setView([13.9, 100.6], 6);
+  var layerCtl = L.control.layers(null, null, { position: 'topright', collapsed: true }).addTo(map);
   L.geoJSON(window.REGION_GEO, { style: function (ft) { return { className: ft.properties.th ? 'geo-th' : 'geo-nb', weight: ft.properties.th ? 1.2 : .6 }; }, interactive: false }).addTo(map);
   // base maps (road / satellite / terrain) where the host allows map tiles; the outline map stays underneath otherwise
   var probe = new Image();
   probe.onload = function () {
-    var clean = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; OpenStreetMap contributors &copy; CARTO' });
+    var esriA = 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors';
+    var clean = L.layerGroup([L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, attribution: esriA }),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, pane: 'shadowPane', opacity: .9 })]);
     var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' });
     var sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18, attribution: 'Imagery &copy; Esri' });
     var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '&copy; OpenTopoMap (CC-BY-SA)' });
     clean.addTo(map);
-    L.control.layers({ 'แผนที่สะอาดตา': clean, 'แผนที่ถนน': road, 'ดาวเทียม': sat, 'ภูมิประเทศ': topo }, null, { position: 'topright', collapsed: true }).addTo(map);
+    layerCtl.addBaseLayer(clean, 'แผนที่สีอ่อน'); layerCtl.addBaseLayer(road, 'แผนที่ถนน'); layerCtl.addBaseLayer(sat, 'ดาวเทียม'); layerCtl.addBaseLayer(topo, 'ภูมิประเทศ');
     document.documentElement.classList.add('has-tiles');
   };
   probe.src = 'https://tile.openstreetmap.org/6/50/29.png';
@@ -965,7 +968,7 @@ function initMap() {
       .bindTooltip(function () { return damCard(d); }, TIP).addTo(damLayer);
   });
   siteLayer = L.layerGroup().addTo(map);
-  L.control.layers(null, { 'พื้นที่ SCGP': siteLayer, 'เขื่อน (% ความจุ)': damLayer, 'สถานีระดับน้ำ (% ตลิ่ง)': stnLayer, 'ฝนสะสม 24 ชม.': rainLayer }, { position: 'topright', collapsed: true }).addTo(map);
+  [['พื้นที่ SCGP', siteLayer], ['เขื่อน (% ความจุ)', damLayer], ['สถานีระดับน้ำ (% ตลิ่ง)', stnLayer], ['ฝนสะสม 24 ชม.', rainLayer]].forEach(function (x) { layerCtl.addOverlay(x[1], x[0]); });
   var all = L.control({ position: 'bottomleft' });
   all.onAdd = function () { var b = L.DomUtil.create('button', 'btn map-btn'); b.type = 'button'; b.textContent = '⤢ ดูทุกพื้นที่'; L.DomEvent.on(b, 'click', function (ev) { L.DomEvent.stop(ev); fitAll(); }); return b; };
   all.addTo(map);
