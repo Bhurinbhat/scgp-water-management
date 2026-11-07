@@ -1022,7 +1022,7 @@ main>*{min-width:0}
 .mc-bar em{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1.5px dashed var(--crit)}
 .mc-bar i{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1.5px;background:var(--ink);border-radius:1px}
 .mc-foot{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted)}
-.mc-spark{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted)}
+.mc-spark{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);white-space:nowrap}
 .mc-spark svg{width:100%;height:34px}
 .mfloat .mc-h{padding:9px 12px 8px}.mfloat .mc-sec{padding:7px 12px;gap:4px}.mfloat .mc-big b{font-size:24px}.mfloat .mc-cos{padding:6px 12px}
 .mc-trig{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
@@ -2624,7 +2624,7 @@ function hoverCard(m, fn, ll, onClick) {
   if (touch) m.on('click', function () { if (cardFor === m && onClick) return; showCard(fn(), ll, m, onClick); });
   return m;
 }
-function fitAll() { if (map) map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15)); }
+function fitAll() { if (map) map.invalidateSize(), map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15)); }
 
 /* 7-segment trigger ring: one arc per Trigger, coloured by its level */
 function ringPaths(e, cx, cy, r, w) {

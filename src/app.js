@@ -1068,7 +1068,7 @@ function hoverCard(m, fn, ll, onClick) {
   if (touch) m.on('click', function () { if (cardFor === m && onClick) return; showCard(fn(), ll, m, onClick); });
   return m;
 }
-function fitAll() { if (map) map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15)); }
+function fitAll() { if (map) map.invalidateSize(), map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15)); }
 
 /* 7-segment trigger ring: one arc per Trigger, coloured by its level */
 function ringPaths(e, cx, cy, r, w) {
