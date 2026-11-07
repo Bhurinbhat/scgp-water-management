@@ -2514,10 +2514,12 @@ function replay(el, cls) { if (REDUCED) return; el.classList.remove(cls); void e
 function countUp(nodes) {
   if (REDUCED) return;
   [].forEach.call(nodes, function (n) {
-    var tn = n.firstChild; if (!tn || tn.nodeType !== 3) return;
-    var txt = tn.nodeValue, m = /^(-?)([\d,]+)(?:\.(\d+))?$/.exec(txt.trim()); if (!m) return;
+    var tn = n.firstChild; if (!tn || tn.nodeType !== 3 || n._cu) return; // never stack two count-ups on one number
+    var txt = tn.nodeValue; n._cu = 1;
+    var m = /^(-?)([\d,]+)(?:\.(\d+))?$/.exec(txt.trim());
+    if (!m) { n._cu = 0; return; }
     var dec = m[3] ? m[3].length : 0, target = parseFloat((m[1] + m[2]).replace(/,/g, '') + (m[3] ? '.' + m[3] : '')), t0 = performance.now(), dur = 900;
-    (function step(now) { var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); tn.nodeValue = f(target * e, dec); if (k < 1) requestAnimationFrame(step); else tn.nodeValue = txt; })(t0);
+    (function step(now) { var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); tn.nodeValue = f(target * e, dec); if (k < 1) requestAnimationFrame(step); else { tn.nodeValue = txt; n._cu = 0; } })(t0);
   });
 }
 function initReveal() {
