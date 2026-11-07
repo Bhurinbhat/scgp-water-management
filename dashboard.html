@@ -2512,13 +2512,14 @@ function renderCriteria() {
 var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function replay(el, cls) { if (REDUCED) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function countUp(nodes) {
-  if (REDUCED) return;
+  if (REDUCED || document.hidden) return;
   [].forEach.call(nodes, function (n) {
     var tn = n.firstChild; if (!tn || tn.nodeType !== 3 || n._cu) return; // never stack two count-ups on one number
     var txt = tn.nodeValue; n._cu = 1;
     var m = /^(-?)([\d,]+)(?:\.(\d+))?$/.exec(txt.trim());
     if (!m) { n._cu = 0; return; }
     var dec = m[3] ? m[3].length : 0, target = parseFloat((m[1] + m[2]).replace(/,/g, '') + (m[3] ? '.' + m[3] : '')), t0 = performance.now(), dur = 900;
+    setTimeout(function () { if (n._cu) { tn.nodeValue = txt; n._cu = 0; } }, dur + 400); // safety: frames can pause in background tabs
     (function step(now) { var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); tn.nodeValue = f(target * e, dec); if (k < 1) requestAnimationFrame(step); else { tn.nodeValue = txt; n._cu = 0; } })(t0);
   });
 }
