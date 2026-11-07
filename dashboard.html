@@ -3,7 +3,7 @@
 <meta name="description" content="SCGP Water Management Dashboard — ติดตามสถานการณ์น้ำของสถานประกอบการ SCGP ตาม 7 Risk Trigger Point">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* required styles */
 
@@ -671,14 +671,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
 <style>
 /* Layout: operations console — river profile (7 triggers) on top, map + site register side by side, site detail and dam table below. */
 :root{
-  /* Flood Watch design language (Prompt + IBM Plex Mono, river teal) with SCGP status scale */
+  /* Flood Watch design language (Anuphan display + IBM Plex Sans Thai text, river teal) with SCGP status scale */
   --bg:#EEF3F2; --surface:#FFFFFF; --sunk:#E3EBEA; --ink:#0F1F1E; --muted:#566967; --line:#CFDAD8;
   --accent:#0E7C86; --accent-ink:#FFFFFF; --deep:#12403F; --river:#0E7C86; --water:#2A9DB0; --water-soft:#2A9DB033;
   --water-2:#1F7F8E; --sea:#2B8DC4; --land:#C9D7D6; --brand-red:#C23527; --brand-orange:#D0621D; --brand-amber:#B87A00;
   --ok:#2A8657; --watch:#B87A00; --warn:#D0621D; --crit:#C23527; --na:#8FA19F;
   --ok-bg:#2A865718; --watch-bg:#B87A001F; --warn-bg:#D0621D1C; --crit-bg:#C235271A; --na-bg:#8FA19F1F;
-  --f-body:"Prompt",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-data:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --f-body:"IBM Plex Sans Thai","Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-display:"Anuphan","IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif;
+  --f-data:"IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --r:12px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -752,8 +754,8 @@ body::before{background:var(--bg)}
 .seg button{border:0;background:transparent;padding:5px 10px;cursor:pointer;font:500 12.5px var(--f-body);color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--sunk);color:var(--ink)}
 .clim td,.clim th{white-space:nowrap}
-.clim .num{font-family:var(--f-mono,monospace)}
-.dchip{display:inline-block;min-width:52px;text-align:right;font:600 12px var(--f-mono,monospace);padding:1px 6px;border-radius:6px}
+.clim .num{font-family:var(--f-data)}
+.dchip{display:inline-block;min-width:52px;text-align:right;font:600 12px var(--f-data);padding:1px 6px;border-radius:6px}
 .dchip.up{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
 .dchip.up2{background:color-mix(in srgb,var(--crit) 14%,transparent);color:var(--crit)}
 .dchip.dn{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
@@ -1149,6 +1151,40 @@ body{background:var(--bg);min-height:100vh}
 footer{text-align:center}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .fw-eyebrow img{background:rgba(255,255,255,.92);border-radius:7px;padding:3px 6px;height:26px}}
 :root[data-theme="dark"] .fw-eyebrow img{background:rgba(255,255,255,.92);border-radius:7px;padding:3px 6px;height:26px}
+
+/* ================= Typography =================
+   Anuphan (display: headings, titles, key figures) + IBM Plex Sans Thai (text and data, tabular figures)
+   + IBM Plex Mono only for codes and key hints. */
+html{-webkit-text-size-adjust:100%}
+body{font-size:14.5px;line-height:1.62;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-variant-numeric:tabular-nums lining-nums;font-kerning:normal}
+h1,h2,h3,.fw-head h1,.fw-sec-h h2,.panel-h h2,.detail-head h2,.feat-code,.s-name,.mc-title,.src-card h3,.tcard b,.fw-search input::placeholder{font-family:var(--f-display)}
+h1,h2,h3,.mc-title,.feat-code{text-wrap:balance}
+p,.note,.why,.tbox .why{text-wrap:pretty}
+.fw-head h1{font:600 clamp(28px,3.6vw,42px)/1.08 var(--f-display);letter-spacing:-.022em}
+.fw-sec-h h2,.panel-h h2{font-family:var(--f-display);font-weight:600;font-size:clamp(18px,1.7vw,21px);letter-spacing:-.012em;line-height:1.3}
+.fw-sec-h h2 small{font-family:var(--f-body);font-weight:400;letter-spacing:0}
+.eyebrow,.fw-eyebrow,.mc-eyebrow,.mc-lbl{font-family:var(--f-body);letter-spacing:.07em;font-weight:500}
+.fw-eyebrow span{font-weight:600;letter-spacing:.14em;font-size:11.5px}
+.feat-code{font-weight:600;font-size:30px;letter-spacing:-.015em}
+.feat-big,.mc-big b,.tbox .val,.kpi .v,.dam-big{font-family:var(--f-display);font-weight:600;letter-spacing:-.025em;font-variant-numeric:tabular-nums lining-nums}
+.feat-big{font-size:48px}
+.feat-big small,.tbox .val small,.mc-big small{font-family:var(--f-body);letter-spacing:0;font-weight:500}
+.mc-big b{font-size:26px}
+.tbox .val{font-size:28px}
+.s-name{font-weight:600;font-size:16.5px;letter-spacing:-.008em}
+.mc-title{font-weight:600;font-size:15.5px;letter-spacing:-.01em}
+.range button,.seg button{font-family:var(--f-display);font-weight:600;letter-spacing:.01em}
+.btn,.kpi,.spill,.fab button,.map-btn{font-family:var(--f-body);font-weight:500;letter-spacing:.005em}
+.spill{font-weight:600}
+.fw-search kbd,code,kbd{font-family:var(--f-mono)}
+.lv-txt,.lv-foot,.kv dd,.num,.chart text,.htable{font-family:var(--f-data)}
+.lv-txt{font-weight:600}
+.htable td{font-weight:500;font-size:10.5px}
+.crit-table th,.dams th{letter-spacing:.03em}
+small,.muted{letter-spacing:.005em}
+.leaflet-container{font-family:var(--f-body)}
+.fw-search input{font-family:var(--f-body);font-size:15.5px}
+.fw-search input::placeholder{color:color-mix(in srgb,var(--muted) 80%,transparent);font-weight:400}
 /* ================= Motion: everything that opens moves into place ================= */
 :root{interpolate-size:allow-keywords;--ease:cubic-bezier(.22,1,.36,1)}
 @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
