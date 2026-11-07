@@ -172,13 +172,13 @@ function evaluate(s) {
   } else {
     var r1 = dams.map(function (x) { return { x: x, l: damLevel(x) }; }).sort(function (a, b) { return (b.l - a.l) || (b.x.pct - a.x.pct); });
     var w1 = r1[0].x, rc1 = D.egat && D.egat.byName[w1.name];
-    out[1] = { l: r1[0].l, v: f(w1.pct, 1), u: '%', title: 'เขื่อน' + w1.name + (rc1 && rc1.rc ? ' · ' + RC[rc1.rc].th + ' (กฟผ.)' : ''),
+    out[1] = { l: r1[0].l, mt: { x: w1.pct, b: CRITERIA.dam.bands, u: '% ความจุ' }, v: f(w1.pct, 1), u: '%', title: 'เขื่อน' + w1.name + (rc1 && rc1.rc ? ' · ' + RC[rc1.rc].th + ' (กฟผ.)' : ''),
       why: dams.map(function (x) { var g = D.egat && D.egat.byName[x.name]; return x.name + ' ' + f(x.pct, 1) + '%' + (g && g.upper ? ' (URC ' + f(g.upper, 1) + '%)' : ''); }).join(' · '),
       src: 'กรมชลประทาน · ปริมาตร ' + f(w1.st, 0) + ' / ' + f(w1.norm, 0) + ' ล้าน ลบ.ม.', geo: dams.map(function (x) { return { lat: x.lat, lng: x.lng, n: 'เขื่อน' + x.name }; }) };
     var rel = dams.map(function (x) { var p = x.norm ? x.rel / x.norm * 100 : null; var l = lvlBy(p, CRITERIA.release.bands); if (x.spill > 0) l = Math.max(l || 0, 2); return { x: x, p: p, l: l }; })
       .sort(function (a, b) { return (b.l - a.l) || (b.p - a.p); });
     var w2 = rel[0];
-    out[2] = { l: w2.l, v: f(w2.x.rel, 2), u: 'ล้าน ลบ.ม./วัน', title: 'ระบายจากเขื่อน' + w2.x.name,
+    out[2] = { l: w2.l, mt: { x: w2.p, b: CRITERIA.release.bands, u: '% ความจุ/วัน' }, v: f(w2.x.rel, 2), u: 'ล้าน ลบ.ม./วัน', title: 'ระบายจากเขื่อน' + w2.x.name,
       why: 'เท่ากับ ' + f(w2.p, 2) + '% ของความจุปกติต่อวัน · น้ำไหลเข้า ' + f(w2.x.inf, 2) + ' ล้าน ลบ.ม.' + (w2.x.spill > 0 ? ' · มีน้ำล้นทางระบายน้ำล้น' : ''),
       src: 'กรมชลประทาน · รายงานประจำวัน', dam: w2.x };
   }
@@ -191,7 +191,7 @@ function evaluate(s) {
     var x = r3.x, fb = x.diff == null ? null : (x.over ? -x.diff : x.diff), basis = 'ตลิ่งต่ำสุด ' + f(x.minBank) + ' ม.รทก.';
     if (x.crit != null && x.msl != null) { fb = x.crit - x.msl; basis = 'ระดับวิกฤต ' + f(x.crit) + ' ม.รทก.'; }
     var tr = x.prev == null || x.msl == null ? null : x.msl - x.prev;
-    out[3] = { l: lvlLow(fb, CRITERIA.river.bands), v: f(x.msl), u: 'ม.รทก.', title: x.name + (x.river ? ' · ' + x.river : ''),
+    out[3] = { l: lvlLow(fb, CRITERIA.river.bands), mt: { x: fb, b: CRITERIA.river.bands, u: 'ม. ต่ำกว่าตลิ่ง', low: true }, v: f(x.msl), u: 'ม.รทก.', title: x.name + (x.river ? ' · ' + x.river : ''),
       why: (fb == null ? '' : (fb < 0 ? 'สูงกว่า' : 'ต่ำกว่า') + basis.replace(/ .*/, '') + ' ' + f(Math.abs(fb)) + ' ม. (' + basis + ')'), trend: tr,
       src: x.ag + ' ' + x.code + ' · ห่าง ' + km(r3.d) + ' · ' + fmtT(x.t), geo: [{ lat: x.lat, lng: x.lng, n: x.name }], st: x };
   } else out[3] = { l: null, na: 'ไม่มีสถานีวัดระดับน้ำในรัศมี ' + CRITERIA.radius.river + ' กม.' };
@@ -199,7 +199,7 @@ function evaluate(s) {
   var c4 = near(fw, s, CRITERIA.radius.bank); if (!c4.length) c4 = near(fw, s, CRITERIA.radius.bankFallback).slice(0, 1);
   if (c4.length) {
     var w4 = c4.slice().sort(function (a, b) { return b.x.pct - a.x.pct; })[0];
-    out[4] = { l: lvlBy(w4.x.pct, CRITERIA.bank.bands), v: f(w4.x.pct, 1), u: '%', title: w4.x.name + (w4.x.river ? ' · ' + w4.x.river : ''),
+    out[4] = { l: lvlBy(w4.x.pct, CRITERIA.bank.bands), mt: { x: w4.x.pct, b: CRITERIA.bank.bands, u: '% ตลิ่ง' }, v: f(w4.x.pct, 1), u: '%', title: w4.x.name + (w4.x.river ? ' · ' + w4.x.river : ''),
       why: (w4.x.over ? 'ล้นตลิ่ง ' : 'ต่ำกว่าตลิ่ง ') + f(w4.x.diff) + ' ม. · พิจารณา ' + c4.length + ' สถานีใกล้พื้นที่',
       src: w4.x.ag + ' ' + w4.x.code + ' · ห่าง ' + km(w4.d) + ' · ' + fmtT(w4.x.t), geo: c4.map(function (z) { return { lat: z.x.lat, lng: z.x.lng, n: z.x.name }; }), st: w4.x };
   } else out[4] = { l: null, na: 'ไม่มีสถานีวัดระดับน้ำในรัศมี ' + CRITERIA.radius.bankFallback + ' กม.' };
@@ -207,7 +207,7 @@ function evaluate(s) {
   var c5 = near(D.rain.filter(function (x) { return fresh(x.t); }), s, CRITERIA.radius.rain);
   if (c5.length) {
     var w5 = c5.slice().sort(function (a, b) { return b.x.v - a.x.v; })[0], cl5 = climOf(s);
-    out[5] = { l: lvlBy(w5.x.v, CRITERIA.rain.bands), v: f(w5.x.v, 1), u: 'มม./24 ชม.', title: 'สูงสุดในรัศมี ' + CRITERIA.radius.rain + ' กม.: ' + w5.x.name,
+    out[5] = { l: lvlBy(w5.x.v, CRITERIA.rain.bands), mt: { x: w5.x.v, b: CRITERIA.rain.bands, u: 'มม./24 ชม.' }, v: f(w5.x.v, 1), u: 'มม./24 ชม.', title: 'สูงสุดในรัศมี ' + CRITERIA.radius.rain + ' กม.: ' + w5.x.name,
       why: c5.length + ' สถานีฝน · ' + (w5.x.v > 90 ? 'ฝนตกหนักมาก' : w5.x.v > 35 ? 'ฝนตกหนัก' : w5.x.v > 10 ? 'ฝนปานกลาง' : 'ฝนเล็กน้อย/ไม่มีฝน') +
         (cl5 ? ' · เท่ากับ ' + f(w5.x.v / cl5.RX1day.hist * 100, 0) + '% ของฝนสูงสุด 1 วันเฉลี่ยในอดีตของ จ.' + s.prov + ' (RX1day ' + f(cl5.RX1day.hist, 0) + ' มม., DCCE)' : ''),
       src: 'คลังข้อมูลน้ำแห่งชาติ · ห่าง ' + km(w5.d) + ' · ' + fmtT(w5.x.t), geo: [{ lat: w5.x.lat, lng: w5.x.lng, n: w5.x.name }] };
@@ -216,7 +216,7 @@ function evaluate(s) {
   var c6 = near(D.fr.filter(function (x) { return fresh(x.t); }), s, CRITERIA.radius.drain);
   if (c6.length) {
     var w6 = c6.slice().sort(function (a, b) { return b.x.v - a.x.v; })[0];
-    out[6] = { l: lvlBy(w6.x.v, CRITERIA.drain.bands), v: f(w6.x.v, 1), u: 'ซม.', title: 'น้ำท่วมขังถนนรอบพื้นที่: ' + w6.x.name,
+    out[6] = { l: lvlBy(w6.x.v, CRITERIA.drain.bands), mt: { x: w6.x.v, b: CRITERIA.drain.bands, u: 'ซม.' }, v: f(w6.x.v, 1), u: 'ซม.', title: 'น้ำท่วมขังถนนรอบพื้นที่: ' + w6.x.name,
       why: c6.length + ' จุดวัดในรัศมี ' + CRITERIA.radius.drain + ' กม. · ใช้แทนข้อมูลท่อภายในจนกว่าจะเชื่อมเซ็นเซอร์โรงงาน',
       src: 'สำนักการระบายน้ำ กทม. · ห่าง ' + km(w6.d) + ' · ' + fmtT(w6.x.t), geo: c6.map(function (z) { return { lat: z.x.lat, lng: z.x.lng, n: z.x.name }; }) };
   } else out[6] = { l: null, na: 'รอเชื่อมเซ็นเซอร์ระดับท่อ/บ่อพักภายในโรงงานหรือนิคม' };
@@ -225,7 +225,7 @@ function evaluate(s) {
     var ts = D.wl.filter(function (x) { return x.code === s.tide; })[0];
     if (ts && fresh(ts.t)) {
       var l7 = s.tide === 'GLF001' ? lvlBy(ts.msl, CRITERIA.tide.GLF001) : lvlBy(ts.pct, CRITERIA.tide.pct);
-      out[7] = { l: l7, v: f(ts.msl), u: 'ม.รทก.', title: 'สถานี' + ts.name, trend: ts.prev == null ? null : ts.msl - ts.prev,
+      out[7] = { l: l7, mt: s.tide === 'GLF001' ? { x: ts.msl, b: CRITERIA.tide.GLF001, u: 'ม.รทก.' } : { x: ts.pct, b: CRITERIA.tide.pct, u: '% ตลิ่ง' }, v: f(ts.msl), u: 'ม.รทก.', title: 'สถานี' + ts.name, trend: ts.prev == null ? null : ts.msl - ts.prev,
         why: s.tide === 'GLF001' ? 'เกณฑ์ปากแม่น้ำเจ้าพระยา: เฝ้าระวัง ' + CRITERIA.tide.GLF001[0] + ' / เตือนภัย ' + CRITERIA.tide.GLF001[1] + ' / วิกฤต ' + CRITERIA.tide.GLF001[2] + ' ม.รทก.' : f(ts.pct, 1) + '% ของตลิ่ง',
         src: ts.ag + ' ' + ts.code + ' · ห่าง ' + km(hv(s.lat, s.lng, ts.lat, ts.lng)) + ' · ' + fmtT(ts.t), geo: [{ lat: ts.lat, lng: ts.lng, n: ts.name }] };
     } else out[7] = { l: null, na: 'สถานีวัดน้ำทะเลไม่ส่งข้อมูลใน 24 ชม.' };
@@ -765,18 +765,45 @@ function gaugeSVG(st, h) {
   return s + '</svg>';
 }
 
+/* threshold meter: 4 coloured zones, safe → danger left to right (reversed for freeboard where lower is worse) */
+function meterHTML(mt, big) {
+  if (!mt || mt.x == null || isNaN(mt.x)) return '';
+  var b = mt.b, sg = mt.low ? -1 : 1, x = sg * mt.x, B = b.map(function (v) { return sg * v; });
+  var span = B[2] - B[0], lo = mt.low ? B[0] - span * 1.2 : Math.max(0, B[0] - span), hi = B[2] + span * 0.4;
+  var P = function (v) { return Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100)); };
+  var cuts = [P(B[0]), P(B[1]), P(B[2])], px = P(x);
+  var z = [[0, cuts[0], 'ok'], [cuts[0], cuts[1], 'watch'], [cuts[1], cuts[2], 'warn'], [cuts[2], 100, 'crit']];
+  var h = '<div class="meter' + (big ? ' big' : '') + '"><div class="mz">' + z.map(function (q) { return '<span style="left:' + q[0] + '%;width:' + (q[1] - q[0]) + '%;background:var(--' + q[2] + ')"></span>'; }).join('') + '</div>' +
+    '<i class="mk" style="left:' + px + '%"><b>' + f(mt.x, Math.abs(mt.x) < 10 ? 2 : 1) + '</b></i>';
+  if (big) h += '<div class="mt">' + b.map(function (v, k) { return '<span style="left:' + cuts[k] + '%">' + f(v, Math.abs(v) < 10 ? 1 : 0) + '</span>'; }).join('') + '</div>';
+  return h + '</div>';
+}
+function bandRows(mt) {
+  var b = mt.b, u = esc(mt.u), r;
+  if (mt.low) r = [['ok', 'ปกติ', 'มากกว่า ' + f(b[0], 1)], ['watch', 'เฝ้าระวัง', f(b[1], 1) + ' – ' + f(b[0], 1)], ['warn', 'เตือนภัย', f(b[2], 1) + ' – ' + f(b[1], 1)], ['crit', 'วิกฤต', 'ต่ำกว่า/เท่ากับ ' + f(b[2], 1)]];
+  else r = [['ok', 'ปกติ', 'ต่ำกว่า ' + f(b[0], 1)], ['watch', 'เฝ้าระวัง', f(b[0], 1) + ' – ' + f(b[1], 1)], ['warn', 'เตือนภัย', f(b[1], 1) + ' – ' + f(b[2], 1)], ['crit', 'วิกฤต', 'ตั้งแต่ ' + f(b[2], 1)]];
+  return '<div class="bands">' + r.map(function (q, k) { return '<div class="band"><i style="background:var(--' + q[0] + ')"></i><b>' + q[1] + '</b><span>' + q[2] + ' ' + u + '</span></div>'; }).join('') + '</div>';
+}
 function triggerBoxes(s) {
   var e = state.evals[s.id], prim = ZONE_TRIG[s.zone], h = '<div class="tgrid">';
   TRIGGERS.forEach(function (t) {
-    var r = e[t.n], isP = prim.indexOf(t.n) >= 0;
-    h += '<div class="tbox ' + sc(r.l) + (isP ? '' : ' irrelevant') + '">';
-    h += '<div class="hd"><span class="tt">' + icon(TRIG_ICON[t.n], '', 'background:var(--cb);color:var(--c)') + '<span><span class="num muted" style="font-size:11px">TRIGGER ' + t.n + '</span><br>' + esc(t.th) + '</span></span><span class="spill ' + sc(r.l) + '">' + lname(r.l) + '</span></div>';
-    if (r.l == null && r.na) h += '<div class="why muted">' + esc(r.na) + '</div>';
+    var r = e[t.n], isP = prim.indexOf(t.n) >= 0, key = s.id + ':' + t.n, open = state.tbOpen === key;
+    h += '<div class="tbox ' + sc(r.l) + (isP ? ' prim' : ' irrelevant') + (open ? ' open' : '') + '" data-tb="' + key + '" data-stop="1" role="button" tabindex="0" aria-expanded="' + open + '">';
+    h += '<span class="tb-shine" aria-hidden="true"></span>';
+    h += '<div class="hd"><span class="tt"><span class="tb-ico">' + icon(TRIG_ICON[t.n]) + '<em>' + t.n + '</em></span><span><span class="tb-k">TRIGGER ' + t.n + (isP ? ' · จุดหลัก' : '') + '</span><span class="tb-t">' + esc(t.th) + '</span></span></span><span class="spill ' + sc(r.l) + '">' + icon(LVL_ICON[r.l] || 'shield') + lname(r.l) + '</span></div>';
+    if (r.l == null && r.na) h += '<div class="why muted tb-na">' + icon('eye') + esc(r.na) + '</div>';
     else {
       h += '<div class="val">' + r.v + '<small>' + esc(r.u) + '</small>' + (r.trend != null ? ' <span class="trend" style="color:' + (r.trend > 0.005 ? 'var(--warn)' : r.trend < -0.005 ? 'var(--ok)' : 'var(--muted)') + '">' + (r.trend > 0.005 ? '▲' : r.trend < -0.005 ? '▼' : '■') + ' ' + f(Math.abs(r.trend)) + '</span>' : '') + '</div>';
-      h += '<div class="why"><b>' + esc(r.title) + '</b></div><div class="why muted">' + esc(r.why) + '</div><div class="src">' + esc(r.src) + '</div>';
+      h += meterHTML(r.mt, false);
+      h += '<div class="why tb-title">' + esc(r.title) + '</div>';
+      h += '<div class="tb-more"><div class="tb-more-in">';
+      h += '<div class="why muted">' + esc(r.why) + '</div>';
+      if (r.mt) h += '<div class="tb-lbl">ตำแหน่งเทียบเกณฑ์ (' + esc(r.mt.u) + ')</div>' + meterHTML(r.mt, true) + bandRows(r.mt);
+      h += '<div class="src">' + icon('drop') + esc(r.src) + '</div>';
+      if (r.geo && r.geo.length) h += '<div class="tb-act"><button type="button" class="btn" data-mapll="' + r.geo[0].lat + ',' + r.geo[0].lng + '">📍 ดูสถานีบนแผนที่</button></div>';
+      h += '</div></div>';
     }
-    h += '<div class="src">' + (isP ? 'จุดหลักของโซน' + ZONES[s.zone] : 'ข้อมูลประกอบ') + '</div></div>';
+    h += '<div class="tb-foot"><span>แหล่งข้อมูล: ' + esc(t.src) + '</span>' + (r.l == null ? '' : '<span class="tb-hint">' + (open ? 'ย่อ' : 'ดูเกณฑ์') + ' <i>▾</i></span>') + '</div></div>';
   });
   return h + '</div>';
 }
@@ -974,18 +1001,18 @@ function initMap() {
   state.data.rain.filter(function (x) { return fresh(x.t) && x.v >= 1 && nearAny(x, 30); }).forEach(function (x) {
     var l = lvlBy(x.v, CRITERIA.rain.bands);
     L.circleMarker([x.lat, x.lng], { pane: 'rainPane', radius: Math.min(26, 4 + Math.sqrt(x.v) * 2.2), className: 'rain-mk r' + (l || 0), weight: 0 })
-      .bindTooltip(function () { return rainCard(x); }, TIP).addTo(rainLayer);
+      .addTo(rainLayer).on('add', function () {}); hoverCard(rainLayer.getLayers()[rainLayer.getLayers().length - 1], function () { return rainCard(x); }, [x.lat, x.lng]);
   });
   state.data.wl.filter(function (x) { return fresh(x.t) && x.pct != null && nearAny(x, 25); }).forEach(function (x) {
     var l = lvlBy(x.pct, CRITERIA.bank.bands);
     L.circleMarker([x.lat, x.lng], { radius: 4.5, className: 'stn-mk ' + sc(l), weight: 1.5 })
-      .bindTooltip(function () { return stationCard(x); }, TIP).addTo(stnLayer);
+      .addTo(stnLayer); hoverCard(stnLayer.getLayers()[stnLayer.getLayers().length - 1], function () { return stationCard(x); }, [x.lat, x.lng]);
   });
   var used = {}; SITES.forEach(function (s) { s.dams.forEach(function (d) { used[d] = 1; }); });
   state.data.dam.filter(function (d) { return used[d.name]; }).forEach(function (d) {
     var l = damLevel(d), p = Math.max(0, Math.min(100, d.pct || 0));
     L.marker([d.lat, d.lng], { icon: L.divIcon({ className: '', html: '<div class="dam-mk ' + sc(l) + '"><span class="fill" style="height:' + p + '%"></span><span class="lbl">' + f(d.pct, 0) + '%</span></div>', iconSize: [30, 30], iconAnchor: [15, 15] }), keyboard: false })
-      .bindTooltip(function () { return damCard(d); }, TIP).addTo(damLayer); wireCardMotion(damLayer.getLayers()[damLayer.getLayers().length - 1]);
+      .addTo(damLayer); hoverCard(damLayer.getLayers()[damLayer.getLayers().length - 1], function () { return damCard(d); }, [d.lat, d.lng]);
   });
   siteLayer = L.layerGroup().addTo(map);
   [['พื้นที่ SCGP', siteLayer], ['เขื่อน (% ความจุ)', damLayer], ['สถานีระดับน้ำ (% ตลิ่ง)', stnLayer], ['ฝนสะสม 24 ชม.', rainLayer]].forEach(function (x) { layerCtl.addOverlay(x[1], x[0]); });
@@ -1007,8 +1034,40 @@ function initMap() {
   map.on('zoomend', function () { document.getElementById('map').classList.toggle('show-labels', map.getZoom() >= 9); });
   fitAll();
 }
-var TIP = { direction: 'auto', className: 'mcard', opacity: 1, offset: [0, 0] };
-function wireCardMotion(m) { m.on('tooltipopen', function (ev) { var el = ev.tooltip.getElement(); if (el) countUp(el.querySelectorAll('.mc-big b')); }); return m; }
+var cardEl = null, cardHide = null, cardFor = null;
+function cardBox() {
+  if (cardEl) return cardEl;
+  var host = document.getElementById('map').parentNode; host.style.position = 'relative';
+  cardEl = document.createElement('div'); cardEl.className = 'mfloat'; cardEl.setAttribute('role', 'tooltip'); host.appendChild(cardEl);
+  cardEl.addEventListener('mouseenter', function () { clearTimeout(cardHide); });
+  cardEl.addEventListener('mouseleave', function () { hideCard(); });
+  map.on('movestart zoomstart', function () { hideCard(true); });
+  return cardEl;
+}
+function showCard(html, latlng, owner, onClick) {
+  var el = cardBox(); clearTimeout(cardHide);
+  el.innerHTML = html; el.onclick = onClick || null; el.style.cursor = onClick ? 'pointer' : '';
+  cardFor = owner;
+  var mapEl = document.getElementById('map'), mr = mapEl.getBoundingClientRect(), hr = el.parentNode.getBoundingClientRect();
+  var pt = map.latLngToContainerPoint(latlng), ox = mr.left - hr.left, oy = mr.top - hr.top;
+  el.style.maxHeight = (mr.height - 16) + 'px';
+  el.classList.add('on');
+  var w = el.offsetWidth, h = el.offsetHeight, gap = 26;
+  var left = pt.x + gap + w <= mr.width - 8 ? pt.x + gap : pt.x - gap - w;
+  if (left < 8) left = Math.max(8, Math.min(mr.width - w - 8, pt.x - w / 2));
+  var top = Math.max(8, Math.min(mr.height - h - 8, pt.y - h * 0.35));
+  el.style.left = (ox + left) + 'px'; el.style.top = (oy + top) + 'px';
+  el.classList.toggle('from-left', left < pt.x);
+  replay(el, 'enter');
+  countUp(el.querySelectorAll('.mc-big b'));
+}
+function hideCard(now) { clearTimeout(cardHide); var go = function () { if (cardEl) cardEl.classList.remove('on'); cardFor = null; }; if (now) go(); else cardHide = setTimeout(go, 160); }
+function hoverCard(m, fn, ll, onClick) {
+  var touch = window.matchMedia('(hover: none)').matches;
+  m.on('mouseover', function () { showCard(fn(), ll, m, onClick); }).on('mouseout', function () { hideCard(); });
+  if (touch) m.on('click', function () { if (cardFor === m && onClick) return; showCard(fn(), ll, m, onClick); });
+  return m;
+}
 function fitAll() { if (map) map.fitBounds(L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lng]; })).pad(0.15)); }
 
 /* 7-segment trigger ring: one arc per Trigger, coloured by its level */
@@ -1022,28 +1081,51 @@ function ringPaths(e, cx, cy, r, w) {
   }
   return o;
 }
+/* 3-D map pin: glossy teardrop in the status colour, trigger ring round the head, isometric factory with smoke, soft ground shadow */
+function pinDefs() {
+  if (document.getElementById('pinDefs')) return;
+  var lv = [['s0', 'ok'], ['s1', 'watch'], ['s2', 'warn'], ['s3', 'crit'], ['sn', 'muted']];
+  var d = '<svg id="pinDefs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs>' + lv.map(function (q) {
+    return '<linearGradient id="pg-' + q[0] + '" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--' + q[1] + ') 62%,#fff)"/><stop offset=".55" style="stop-color:var(--' + q[1] + ')"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--' + q[1] + ') 70%,#000)"/></linearGradient>';
+  }).join('') + '<radialGradient id="pg-face" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#DCE6EC"/></radialGradient>' +
+    '<radialGradient id="pg-shadow"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs></svg>';
+  document.body.insertAdjacentHTML('afterbegin', d);
+}
 function siteIcon(s) {
-  var e = state.evals[s.id], sel = state.sel === s.id, sz = sel ? 46 : 38, c = sz / 2;
+  pinDefs();
+  var e = state.evals[s.id], sel = state.sel === s.id, k = sc(e.overall), W = 60, H = 76, cx = 30, cy = 28;
   var short = s.name.replace(/^(SCGP|TCG|TBSP|Siam|Thai)\s+/, '').slice(0, 22);
-  var h = '<div class="site-pin ' + sc(e.overall) + (sel ? ' sel' : '') + (e.overall >= 2 ? ' alarm' : '') + '" style="width:' + sz + 'px;height:' + sz + 'px">' +
-    '<span class="pulse"></span><svg width="' + sz + '" height="' + sz + '" viewBox="0 0 ' + sz + ' ' + sz + '">' + ringPaths(e, c, c, c - 3.5, 4.5) +
-    '<circle cx="' + c + '" cy="' + c + '" r="' + (c - 9) + '" style="fill:var(--c);stroke:var(--surface)" stroke-width="2"/>' +
-    '<g transform="translate(' + (c - 7) + ',' + (c - 7) + ') scale(.583)" style="fill:var(--surface)"><path d="M2 21V10l5 3V10l5 3V10l5 3V4h4v17z"/></g></svg>' +
-    '<span class="pin-lbl">' + esc(short) + '</span></div>';
-  return L.divIcon({ className: '', html: h, iconSize: [sz, sz], iconAnchor: [c, c], tooltipAnchor: [c - 4, 0] });
+  var svg = '<svg class="pin3d" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
+    '<ellipse class="pin-shadow" cx="30" cy="70" rx="13" ry="4" fill="url(#pg-shadow)"/>' +
+    (e.overall >= 2 ? '<ellipse class="pin-ripple" cx="30" cy="70" rx="13" ry="4" fill="none" style="stroke:var(--c)" stroke-width="2"/>' : '') +
+    '<g class="pin-body">' +
+    ringPaths(e, cx, cy, 26, 4) +
+    '<path d="M30 68 C24 55 9 46 9 28 A21 21 0 1 1 51 28 C51 46 36 55 30 68Z" fill="url(#pg-' + k + ')" stroke="#fff" stroke-width="1.6"/>' +
+    '<ellipse cx="22" cy="16" rx="9" ry="5" fill="#fff" opacity=".38" transform="rotate(-28 22 16)"/>' +
+    '<circle cx="30" cy="28" r="14.5" fill="url(#pg-face)" stroke="rgba(0,0,0,.12)" stroke-width=".8"/>' +
+    // isometric factory: front (sawtooth), side, chimney with smoke
+    '<g class="fac">' +
+    '<polygon points="20,36 31,36 31,28.5 27.3,31 27.3,28.5 23.6,31 23.6,28.5 20,31" fill="#1E3F66"/>' +
+    '<polygon points="31,36 38.5,32.5 38.5,25.5 31,28.5" fill="#3E78B5"/>' +
+    '<polygon points="20,31 23.6,28.5 23.6,31 27.3,28.5 27.3,31 31,28.5 38.5,25.5 34.9,24.5 27.3,27.2 27.3,25 23.6,27.4 23.6,25.6 20,28" fill="#7FB0DD"/>' +
+    '<rect x="33.4" y="18" width="2.6" height="8.6" fill="#1E3F66"/><rect x="33" y="17.3" width="3.4" height="1.4" rx=".4" fill="#D03030"/>' +
+    '<rect x="21.4" y="32.4" width="2" height="2" fill="#F0B040"/><rect x="25" y="32.4" width="2" height="2" fill="#F0B040"/><rect x="28.4" y="32.4" width="1.6" height="2" fill="#F0B040"/>' +
+    '<circle class="smoke s1" cx="34.7" cy="15.2" r="1.7"/><circle class="smoke s2" cx="34.7" cy="15.2" r="1.4"/></g>' +
+    '</g></svg>';
+  var h = '<div class="site-pin ' + k + (sel ? ' sel' : '') + (e.overall >= 2 ? ' alarm' : '') + '">' + svg + '<span class="pin-lbl">' + esc(short) + '</span></div>';
+  return L.divIcon({ className: '', html: h, iconSize: [W, H], iconAnchor: [30, 70] });
 }
 function updateMarkers(list) {
   siteLayer.clearLayers(); markers = {};
   var touch = window.matchMedia('(hover: none)').matches;
   list.forEach(function (s) {
-    var m = L.marker([s.lat, s.lng], { icon: siteIcon(s), riseOnHover: true, zIndexOffset: state.sel === s.id ? 1000 : (state.evals[s.id].overall || 0) * 100, keyboard: true, title: s.name })
-      .bindTooltip(function () { return siteCard(s); }, TIP)
-      .on('tooltipopen', function (ev) { var el = ev.tooltip.getElement(); if (el) countUp(el.querySelectorAll('.mc-big b')); })
-      .on('mouseover', function () { showRefs(s); })
-      .on('mouseout', function () { var cur = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (cur) showRefs(cur); })
+    var open = function () { select(s.id, true); hideCard(true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    var m = L.marker([s.lat, s.lng], { icon: siteIcon(s), riseOnHover: true, zIndexOffset: state.sel === s.id ? 1000 : (state.evals[s.id].overall || 0) * 100, keyboard: true, alt: s.name })
+      .on('mouseover', function () { showRefs(s); showCard(siteCard(s), [s.lat, s.lng], m, open); })
+      .on('mouseout', function () { hideCard(); var cur = SITES.filter(function (x) { return x.id === state.sel; })[0]; if (cur) showRefs(cur); })
       .on('click', function () {
-        if (touch && !m.isTooltipOpen()) { m.openTooltip(); showRefs(s); return; } // first tap previews, second tap opens
-        select(s.id, true); document.getElementById('h-near').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (touch && cardFor !== m) { showRefs(s); showCard(siteCard(s), [s.lat, s.lng], m, open); return; } // first tap previews, second tap opens
+        open();
       });
     m.addTo(siteLayer); markers[s.id] = m;
   });
@@ -1122,7 +1204,7 @@ function rainCard(x) {
 function mapTo(id) {
   var s = SITES.filter(function (x) { return x.id === id; })[0]; if (!s || !map) return;
   document.getElementById('mapSec').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  showRefs(s); map.setView([s.lat, s.lng], 11); if (markers[s.id]) markers[s.id].openTooltip();
+  showRefs(s); map.setView([s.lat, s.lng], 11); setTimeout(function () { showCard(siteCard(s), [s.lat, s.lng], markers[s.id], null); }, 450);
 }
 
 /* ---------- history (สสน. waterlevel_graph via /api/history) ---------- */
@@ -1163,6 +1245,29 @@ function select(id, user) {
 }
 function rerender() { renderProfile(); renderSchematic(); renderTrigCards(); renderKpis(); renderFilters(); renderFeatured(); renderList(); renderHourTable(); }
 
+/* trigger cards: pointer tilt + spotlight, click/Enter to expand thresholds */
+document.addEventListener('pointermove', function (ev) {
+  var c = ev.target.closest && ev.target.closest('.tbox'); if (!c || REDUCED || ev.pointerType !== 'mouse') return;
+  var r = c.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
+  c.style.setProperty('--mx', (x * 100).toFixed(1) + '%'); c.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+  if (!c.classList.contains('open')) c.style.transform = 'perspective(900px) rotateX(' + ((0.5 - y) * 5).toFixed(2) + 'deg) rotateY(' + ((x - 0.5) * 6).toFixed(2) + 'deg) translateY(-3px)';
+});
+document.addEventListener('pointerout', function (ev) { var c = ev.target.closest && ev.target.closest('.tbox'); if (c && !c.contains(ev.relatedTarget)) c.style.transform = ''; });
+function toggleTb(c) {
+  var key = c.dataset.tb; if (c.querySelector('.tb-na')) return;
+  var wasOpen = state.tbOpen === key; state.tbOpen = wasOpen ? null : key;
+  var grid = c.parentNode;
+  [].forEach.call(grid.querySelectorAll('.tbox.open'), function (o) { if (o !== c) { o.classList.remove('open'); o.setAttribute('aria-expanded', 'false'); var hh = o.querySelector('.tb-hint'); if (hh) hh.firstChild.nodeValue = 'ดูเกณฑ์ '; } });
+  c.classList.toggle('open', !wasOpen); c.setAttribute('aria-expanded', String(!wasOpen)); c.style.transform = '';
+  var hint = c.querySelector('.tb-hint'); if (hint) hint.firstChild.nodeValue = (wasOpen ? 'ดูเกณฑ์' : 'ย่อ') + ' ';
+  if (!wasOpen) { countUp(c.querySelectorAll('.val')); setTimeout(function () { c.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'nearest' }); }, 120); }
+}
+document.addEventListener('click', function (ev) {
+  var ll = ev.target.closest('[data-mapll]');
+  if (ll && map) { var a = ll.dataset.mapll.split(','); document.getElementById('mapSec').scrollIntoView({ behavior: 'smooth', block: 'start' }); map.setView([+a[0], +a[1]], 12); L.popup({ closeButton: false, className: 'pop-mini' }).setLatLng([+a[0], +a[1]]).setContent('สถานีอ้างอิง').openOn(map); return; }
+  var tb = ev.target.closest('[data-tb]'); if (tb && !ev.target.closest('a,button')) toggleTb(tb);
+}, true);
+document.addEventListener('keydown', function (ev) { if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('[data-tb]')) { ev.preventDefault(); toggleTb(ev.target); } });
 document.addEventListener('click', function (ev) {
   var t = ev.target.closest('[data-trig],[data-lvl],[data-zone],[data-clear],[data-range],[data-hmode],[data-feature],[data-mapto],[data-row],#geoRetry,#geoBack,#fabMap,#fabTop');
   if (!t || !state.data) return;
