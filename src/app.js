@@ -790,7 +790,7 @@ function triggerBoxes(s) {
     var r = e[t.n], isP = prim.indexOf(t.n) >= 0, key = s.id + ':' + t.n, open = state.tbOpen === key;
     h += '<div class="tbox ' + sc(r.l) + (isP ? ' prim' : ' irrelevant') + (open ? ' open' : '') + '" data-tb="' + key + '" data-stop="1" role="button" tabindex="0" aria-expanded="' + open + '">';
     h += '<span class="tb-shine" aria-hidden="true"></span>';
-    h += '<div class="hd"><span class="tt"><span class="tb-ico">' + icon(TRIG_ICON[t.n]) + '<em>' + t.n + '</em></span><span><span class="tb-k">TRIGGER ' + t.n + (isP ? ' · จุดหลัก' : '') + '</span><span class="tb-t">' + esc(t.th) + '</span></span></span><span class="spill ' + sc(r.l) + '">' + icon(LVL_ICON[r.l] || 'shield') + lname(r.l) + '</span></div>';
+    h += '<div class="hd"><span class="tt"><span class="tb-ico">' + icon(TRIG_ICON[t.n]) + '<em>' + t.n + '</em></span><span><span class="tb-k">TRIGGER ' + t.n + (isP ? ' · จุดหลัก' : '') + '</span><span class="tb-t">' + esc(t.th) + '</span></span></span><span class="spill ' + sc(r.l) + '">' + (r.l == null ? '' : icon(LVL_ICON[r.l] || 'shield')) + lname(r.l) + '</span></div>';
     if (r.l == null && r.na) h += '<div class="why muted tb-na">' + icon('eye') + esc(r.na) + '</div>';
     else {
       h += '<div class="val">' + r.v + '<small>' + esc(r.u) + '</small>' + (r.trend != null ? ' <span class="trend" style="color:' + (r.trend > 0.005 ? 'var(--warn)' : r.trend < -0.005 ? 'var(--ok)' : 'var(--muted)') + '">' + (r.trend > 0.005 ? '▲' : r.trend < -0.005 ? '▼' : '■') + ' ' + f(Math.abs(r.trend)) + '</span>' : '') + '</div>';
