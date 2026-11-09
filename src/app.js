@@ -89,10 +89,10 @@ function renderAtlas() {
   }
   [].forEach.call(box.querySelectorAll('.ca-map'), function (fig, fi) {
     var sk = scen[fi][0];
-    fig.querySelector('h4 small').textContent = scen[fi][2];
+    fig.querySelector('h4 small').textContent = scen[fi][2] + (sk === 'h' && m === 'chg' ? ' · แสดงเป็น มม.' : '');
     var paths = fig.querySelectorAll('.pv'), sum = 0, n = 0, sumS = 0, nS = 0, drops = '';
     T.p.forEach(function (p, k) {
-      var v = atlasVal(p, sk, i, m), c = lerpColor(stops, v), el = paths[k];
+      var v = atlasVal(p, sk, i, sk === 'h' ? 'abs' : m), c = lerpColor(sk === 'h' ? CA_ABS : stops, v), el = paths[k];
       el.classList.toggle('na', v == null); if (c) el.style.fill = c;
       var ch = atlasVal(p, sk, i, 'chg');
       if (ch != null) { sum += ch; n++; if (SITES.some(function (s) { return s.prov === p.th; })) { sumS += ch; nS++; } }
