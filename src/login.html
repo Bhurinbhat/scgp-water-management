@@ -101,6 +101,10 @@ h1,h2,h3,.sso,.tile b{font-family:var(--fd)}
 h1 b{font-weight:600}
 h1,h2{letter-spacing:-.015em;text-wrap:balance}
 body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;line-height:1.6}
+.lang-fixed{position:fixed;top:14px;right:14px;z-index:20}
+.lang-sw{display:inline-flex;padding:3px;border-radius:999px;background:var(--glass-hi,rgba(255,255,255,.8));border:1px solid var(--glass-edge,rgba(0,0,0,.1));box-shadow:0 4px 14px -6px rgba(15,40,60,.3);gap:2px}
+.lang-sw button{border:0;background:transparent;font:700 12px/1 var(--f-display,system-ui);letter-spacing:.06em;padding:7px 12px;border-radius:999px;cursor:pointer;color:var(--muted,#566967)}
+.lang-sw button[aria-pressed="true"]{background:var(--grad,linear-gradient(135deg,#0E7C86,#3070B8));color:#fff;box-shadow:0 2px 8px -2px rgba(48,112,184,.5)}
 </style>
 
 <main class="stage" aria-labelledby="title">
@@ -110,6 +114,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
     <rect x="1170" y="240" width="90" height="360"/><rect x="380" y="320" width="120" height="280"/>
   </svg>
 
+  <div class="lang-fixed"><div class="lang-sw" role="group" aria-label="ภาษา / Language"><button type="button" data-lang="th" aria-pressed="true">TH</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></div>
   <div class="grid">
     <section class="brand">
       <span class="logo-chip"><img class="logo" alt="SCGP" src="/*LOGO*/"></span>
@@ -254,3 +259,4 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
   });
 })();
 </script>
+<script>window.I18N_EN=/*I18N_DICT*/;/*I18N_JS*/</script>

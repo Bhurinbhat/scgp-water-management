@@ -660,6 +660,7 @@ small,.muted{letter-spacing:.005em}
 .map-legend .lg-sub{margin-top:8px;font:600 10.5px var(--f-body);letter-spacing:.1em;color:var(--muted)}
 .map-legend .lg-ic{width:44px;flex:none;display:grid;place-items:center}
 .map-legend .lg-ic .damx{transform:scale(.8)}
+.map-legend .damx-l{display:none}
 .map-legend .lg-ic .site-pin{display:block}
 .map-legend .lg-row b{font-weight:600}
 
@@ -805,6 +806,12 @@ svg.mk.playing .mk-fac3{animation:facPing .9s ease-out both;animation-delay:var(
 .clu-list b{color:var(--c);font-size:11px}
 #map.zoom-lo .damx-l{display:none}
 #map.zoom-lo .drop-mk{transform:scale(.7)}
+html[lang="en"] .leaflet-control-layers-toggle::before{content:"☰ Layers"}
+html[lang="en"] .q-btn .en{display:none}
+.lang-sw{display:inline-flex;padding:3px;border-radius:999px;background:var(--glass-hi,rgba(255,255,255,.8));border:1px solid var(--glass-edge,rgba(0,0,0,.1));box-shadow:0 4px 14px -6px rgba(15,40,60,.3);gap:2px}
+.lang-sw button{border:0;background:transparent;font:700 12px/1 var(--f-display,system-ui);letter-spacing:.06em;padding:7px 12px;border-radius:999px;cursor:pointer;color:var(--muted,#566967)}
+.lang-sw button[aria-pressed="true"]{background:var(--grad,linear-gradient(135deg,#0E7C86,#3070B8));color:#fff;box-shadow:0 2px 8px -2px rgba(48,112,184,.5)}
+.sb-lang{justify-self:start}
 /* ================= Motion: everything that opens moves into place ================= */
 :root{interpolate-size:allow-keywords;--ease:cubic-bezier(.22,1,.36,1)}
 @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
@@ -872,6 +879,7 @@ details.more[open]>summary::before{transform:rotate(90deg)}
   <button type="button" class="sb-tab" id="sbTab" aria-controls="sidebar" aria-expanded="false" title="เมนู"><span class="ai" data-ico="list" aria-hidden="true"></span><span class="sb-tab-t">เมนู</span></button>
   <div class="sb-in">
     <div class="sb-brand"><img src="/*LOGO*/" alt="SCGP" width="72" height="22"><span>Water Management</span></div>
+    <div class="lang-sw sb-lang" role="group" aria-label="ภาษา / Language"><button type="button" data-lang="th" aria-pressed="true">TH</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
     <div class="sb-status" id="sbStatus"></div>
     <div class="sb-grp"><div class="sb-h">ภาพรวม</div>
       <a href="#top" data-spy="top"><span class="ai" data-ico="shield"></span>สถานะรวม &amp; ค้นหา</a>
@@ -907,6 +915,7 @@ details.more[open]>summary::before{transform:rotate(90deg)}
       </select></label>
       <button class="btn primary" id="refreshBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>รีเฟรช</button>
       <span id="userChip"></span>
+      <div class="lang-sw" role="group" aria-label="ภาษา / Language"><button type="button" data-lang="th" aria-pressed="true">TH</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
     </div>
   </header>
 
@@ -1081,3 +1090,4 @@ window.THMAP = /*THMAP*/;
 window.REGION_GEO = /*GEO*/;
 </script>
 <script>/*APP*/</script>
+<script>window.I18N_EN=/*I18N_DICT*/;/*I18N_JS*/</script>

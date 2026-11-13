@@ -31,6 +31,13 @@ rep = {
     '/*APP*/': (R / 'src/app.js').read_text(),
     '/*LOGO*/': LOGO,
 }
+_d = json.loads((R / 'data/i18n.en.json').read_text())
+for _p in json.loads((R / 'data/thmap.json').read_text())['p']:
+    _d.setdefault(_p['th'], 'Bangkok' if _p['th'] == 'กรุงเทพ' else _p['en'])
+I18N_DICT = json.dumps(_d, ensure_ascii=False, separators=(',', ':'))
+I18N_JS = (R / 'src/i18n.js').read_text()
+rep['/*I18N_DICT*/'] = I18N_DICT
+rep['/*I18N_JS*/'] = I18N_JS
 for k, v in rep.items():
     assert k in t, k
     t = t.replace(k, v)
@@ -39,7 +46,7 @@ head = ('<!doctype html><html lang="th"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
         '<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}'
         'body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>')
-login = svg_vars((R / 'src/login.html').read_text()).replace('/*LOGO*/', LOGO)
+login = svg_vars((R / 'src/login.html').read_text()).replace('/*LOGO*/', LOGO).replace('/*I18N_DICT*/', I18N_DICT).replace('/*I18N_JS*/', I18N_JS)
 (R / 'index.html').write_text(head + login + '</body></html>')        # sign-in page
 (R / 'dashboard.html').write_text(head + t + '</body></html>')       # dashboard (after SSO)
 (R / 'dist').mkdir(exist_ok=True)
